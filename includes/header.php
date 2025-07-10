@@ -5,6 +5,12 @@
  * Mục đích: Header chung cho tất cả các trang
  */
 
+if (!function_exists('str_contains')) {
+    function str_contains($haystack, $needle) {
+        return $needle !== '' && strpos($haystack, $needle) !== false;
+    }
+}
+
 // Kiểm tra đã có session và current_user chưa
 if (!isset($current_user) || !$current_user) {
     $current_user = getCurrentUser();
