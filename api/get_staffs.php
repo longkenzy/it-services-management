@@ -133,7 +133,7 @@ try {
         $avatar_url = 'assets/images/default-avatar.svg';
         if (!empty($staff['avatar'])) {
             // Nếu avatar chứa đường dẫn đầy đủ thì dùng luôn
-            if (str_contains($staff['avatar'], '/')) {
+            if (strpos($staff['avatar'], '/') !== false) {
                 $avatar_url = $staff['avatar'];
             } else {
                 // Nếu chỉ là tên file thì thêm đường dẫn
