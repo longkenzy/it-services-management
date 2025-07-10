@@ -1,0 +1,256 @@
+/**
+ * Modern Alert System CSS
+ * Hệ thống thông báo đẹp mắt với các màu sắc khác nhau
+ */
+
+/* Container cho alerts */
+.alert-container {
+    position: fixed;
+    top: 80px;
+    right: 20px;
+    z-index: 9999;
+    max-width: 350px;
+    width: auto;
+    min-width: 280px;
+    pointer-events: none;
+}
+
+/* Base alert styles */
+.alert {
+    display: flex;
+    align-items: center;
+    padding: 12px 16px;
+    margin-bottom: 8px;
+    border-radius: 6px;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.12);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-size: 13px;
+    line-height: 1.4;
+    position: relative;
+    opacity: 0;
+    transform: translateX(100%);
+    transition: all 0.3s ease-in-out;
+    max-width: 100%;
+    word-wrap: break-word;
+    pointer-events: auto;
+    background-color: #fff;
+    border: 1px solid #ddd;
+    color: #333;
+}
+
+/* Show animation */
+.alert.show {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+/* Hide animation */
+.alert.hide {
+    opacity: 0;
+    transform: translateX(100%);
+}
+
+/* Alert content */
+.alert-content {
+    flex: 1;
+    padding-right: 8px;
+}
+
+/* Close button */
+.alert-close {
+    background: none;
+    border: none;
+    font-size: 16px;
+    cursor: pointer;
+    padding: 0;
+    margin-left: 8px;
+    opacity: 0.7;
+    transition: opacity 0.2s;
+    line-height: 1;
+    width: 18px;
+    height: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.alert-close:hover {
+    opacity: 1;
+}
+
+/* Default Alert (Gray) */
+.alert-default {
+    background-color: #f8f9fa;
+    border: 1px solid #dee2e6;
+    color: #495057;
+}
+
+.alert-default .alert-close {
+    color: #495057;
+}
+
+/* Success Alert (Green) */
+.alert-success {
+    background-color: #d1eddd;
+    border: 1px solid #badbcc;
+    color: #155724;
+}
+
+.alert-success .alert-close {
+    color: #155724;
+}
+
+/* Danger Alert (Red) */
+.alert-danger {
+    background-color: #f8d7da;
+    border: 1px solid #f5c6cb;
+    color: #721c24;
+}
+
+.alert-danger .alert-close {
+    color: #721c24;
+}
+
+/* Warning Alert (Yellow) */
+.alert-warning {
+    background-color: #fff3cd;
+    border: 1px solid #ffeaa7;
+    color: #856404;
+}
+
+.alert-warning .alert-close {
+    color: #856404;
+}
+
+/* Info Alert (Blue) */
+.alert-info {
+    background-color: #d1ecf1;
+    border: 1px solid #bee5eb;
+    color: #0c5460;
+}
+
+.alert-info .alert-close {
+    color: #0c5460;
+}
+
+/* Icon styles */
+.alert-icon {
+    margin-right: 10px;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.alert-success .alert-icon::before {
+    content: "✓";
+}
+
+.alert-danger .alert-icon::before {
+    content: "✕";
+}
+
+.alert-warning .alert-icon::before {
+    content: "⚠";
+}
+
+.alert-info .alert-icon::before {
+    content: "ℹ";
+}
+
+.alert-default .alert-icon::before {
+    content: "●";
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .alert-container {
+        top: 70px;
+        right: 10px;
+        left: 10px;
+        max-width: none;
+        min-width: auto;
+    }
+    
+    .alert {
+        padding: 10px 14px;
+        font-size: 12px;
+    }
+    
+    .alert-icon {
+        margin-right: 8px;
+        font-size: 12px;
+    }
+    
+    .alert-close {
+        font-size: 14px;
+        width: 16px;
+        height: 16px;
+        margin-left: 6px;
+    }
+}
+
+/* Progress bar for auto-dismiss */
+.alert-progress {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    height: 3px;
+    background-color: rgba(0, 0, 0, 0.2);
+    border-radius: 0 0 8px 8px;
+    transition: width linear;
+}
+
+.alert-success .alert-progress {
+    background-color: rgba(21, 87, 36, 0.3);
+}
+
+.alert-danger .alert-progress {
+    background-color: rgba(114, 28, 36, 0.3);
+}
+
+.alert-warning .alert-progress {
+    background-color: rgba(133, 100, 4, 0.3);
+}
+
+.alert-info .alert-progress {
+    background-color: rgba(12, 84, 96, 0.3);
+}
+
+/* Override Bootstrap alert styles */
+.alert-container .alert {
+    margin-bottom: 10px !important;
+    border: 1px solid #ddd;
+}
+
+.alert-container .alert.alert-success {
+    background-color: #d1eddd !important;
+    border-color: #badbcc !important;
+    color: #155724 !important;
+}
+
+.alert-container .alert.alert-danger {
+    background-color: #f8d7da !important;
+    border-color: #f5c6cb !important;
+    color: #721c24 !important;
+}
+
+.alert-container .alert.alert-warning {
+    background-color: #fff3cd !important;
+    border-color: #ffeaa7 !important;
+    color: #856404 !important;
+}
+
+.alert-container .alert.alert-info {
+    background-color: #d1ecf1 !important;
+    border-color: #bee5eb !important;
+    color: #0c5460 !important;
+}
+
+/* Hover effects */
+.alert:hover {
+    transform: translateX(-2px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+}
+
+.alert:hover .alert-progress {
+    animation-play-state: paused;
+} 

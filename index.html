@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IT Services Management - Login</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="assets/css/login.css">
+    
+    <!-- No Border Radius Override -->
+    <link rel="stylesheet" href="assets/css/no-border-radius.css">
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row min-vh-100">
+            <!-- Left Panel - IT Services Management -->
+            <div class="col-lg-7 col-md-6 d-none d-md-flex left-panel">
+                <div class="d-flex flex-column justify-content-center align-items-center w-100 text-white">
+                    <div class="text-center">
+                        <img src="assets/images/logo.png" alt="Logo công ty" class="login-big-logo mb-4" />
+                        <h1 class="display-4 fw-bold mb-4">IT SERVICES MANAGEMENT</h1>
+                        <div class="decorative-circles">
+                            <div class="circle circle-1"></div>
+                            <div class="circle circle-2"></div>
+                            <div class="circle circle-3"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Right Panel - Login Form -->
+            <div class="col-lg-5 col-md-6 col-12 right-panel">
+                <div class="d-flex flex-column justify-content-center align-items-center min-vh-100 p-4">
+                    <div class="login-container">
+                        <!-- Welcome Message -->
+                        <div class="text-center mb-4">
+                            <h2 class="welcome-title">Hello Again!</h2>
+                            <p class="welcome-subtitle text-muted">Welcome Back</p>
+                        </div>
+                        
+                        <!-- Login Form -->
+                        <form id="loginForm" class="w-100">
+                            <!-- Username/Email Input -->
+                            <div class="mb-3">
+                                <div class="input-group">
+                                    <span class="input-group-text bg-transparent border-end-0">
+                                        <i class="fas fa-user text-muted"></i>
+                                    </span>
+                                    <input type="text" class="form-control border-start-0 ps-0" 
+                                           id="email" name="email" placeholder="Username hoặc Email" required>
+                                </div>
+                            </div>
+                            
+                            <!-- Password Input -->
+                            <div class="mb-3">
+                                <div class="input-group">
+                                    <span class="input-group-text bg-transparent border-end-0">
+                                        <i class="fas fa-lock text-muted"></i>
+                                    </span>
+                                    <input type="password" class="form-control border-start-0 ps-0" 
+                                           id="password" name="password" placeholder="Password" required>
+                                    <button class="btn btn-link border-0 text-muted" type="button" id="togglePassword">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <!-- Remember Me & Forgot Password -->
+                            <div class="d-flex justify-content-between align-items-center mb-4">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="rememberMe" name="remember">
+                                    <label class="form-check-label text-muted" for="rememberMe">
+                                        Remember me
+                                    </label>
+                                </div>
+                                <a href="#" class="text-decoration-none forgot-password">Forgot Password?</a>
+                            </div>
+                            
+                            <!-- Login Button -->
+                            <button type="submit" class="btn btn-primary w-100 login-btn">
+                                <span class="btn-text">Login</span>
+                                <div class="spinner-border spinner-border-sm d-none" role="status">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                            </button>
+                        </form>
+                        
+                        <!-- Mobile Logo for small screens -->
+                        <div class="d-md-none text-center mt-5">
+                            <h4 class="text-primary fw-bold">IT SERVICES MANAGEMENT</h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    
+    <!-- Custom JavaScript -->
+    <script src="assets/js/login.js"></script>
+</body>
+</html> 

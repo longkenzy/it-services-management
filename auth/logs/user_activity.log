@@ -1,0 +1,96 @@
+{"timestamp":"2025-07-07 06:39:59","user_id":1,"username":"admin","action":"login","details":"\u0110\u0103ng nh\u1eadp th\u00e0nh c\u00f4ng t\u1eeb IP: ::1","ip_address":"::1"}
+{"timestamp":"2025-07-07 08:30:59","user_id":1,"username":"admin","action":"logout","details":"\u0110\u0103ng xu\u1ea5t t\u1eeb IP: ::1","ip_address":"::1"}
+{"timestamp":"2025-07-07 08:31:17","user_id":3,"username":"user","action":"login","details":"\u0110\u0103ng nh\u1eadp th\u00e0nh c\u00f4ng t\u1eeb IP: ::1","ip_address":"::1"}
+{"timestamp":"2025-07-07 08:48:56","user_id":3,"username":"user","action":"logout","details":"\u0110\u0103ng xu\u1ea5t t\u1eeb IP: ::1","ip_address":"::1"}
+{"timestamp":"2025-07-07 08:49:02","user_id":1,"username":"admin","action":"login","details":"\u0110\u0103ng nh\u1eadp th\u00e0nh c\u00f4ng t\u1eeb IP: ::1","ip_address":"::1"}
+{"timestamp":"2025-07-07 08:51:31","user_id":1,"username":"admin","action":"login","details":"\u0110\u0103ng nh\u1eadp th\u00e0nh c\u00f4ng t\u1eeb IP: ::1","ip_address":"::1"}
+{"timestamp":"2025-07-07 09:46:42","user_id":1,"username":"admin","action":"login","details":"\u0110\u0103ng nh\u1eadp th\u00e0nh c\u00f4ng t\u1eeb IP: ::1","ip_address":"::1"}
+{"timestamp":"2025-07-07 11:43:42","user_id":1,"username":"admin","action":"logout","details":"\u0110\u0103ng xu\u1ea5t t\u1eeb IP: ::1","ip_address":"::1"}
+{"timestamp":"2025-07-07 11:44:04","user_id":1,"username":"admin","action":"login","details":"\u0110\u0103ng nh\u1eadp th\u00e0nh c\u00f4ng t\u1eeb IP: ::1","ip_address":"::1"}
+{"timestamp":"2025-07-07 11:51:11","user_id":1,"username":"admin","action":"logout","details":"\u0110\u0103ng xu\u1ea5t t\u1eeb IP: ::1","ip_address":"::1"}
+{"timestamp":"2025-07-07 11:51:45","user_id":1,"username":"admin","action":"login","details":"\u0110\u0103ng nh\u1eadp th\u00e0nh c\u00f4ng t\u1eeb IP: ::1","ip_address":"::1"}
+{"timestamp":"2025-07-07 11:52:50","user_id":1,"username":"admin","action":"logout","details":"\u0110\u0103ng xu\u1ea5t t\u1eeb IP: ::1","ip_address":"::1"}
+{"timestamp":"2025-07-07 11:53:02","user_id":5,"username":"nghiatt","action":"login","details":"\u0110\u0103ng nh\u1eadp th\u00e0nh c\u00f4ng t\u1eeb IP: ::1","ip_address":"::1"}
+{"timestamp":"2025-07-07 16:13:50","user_id":1,"username":"admin","action":"login","details":"\u0110\u0103ng nh\u1eadp th\u00e0nh c\u00f4ng t\u1eeb IP: ::1","ip_address":"::1"}
+{"timestamp":"2025-07-07 16:33:46","user_id":1,"username":"admin","action":"login","details":"\u0110\u0103ng nh\u1eadp th\u00e0nh c\u00f4ng t\u1eeb IP: ::1","ip_address":"::1"}
+{"timestamp":"2025-07-07 17:53:24","user_id":1,"username":"admin","action":"logout","details":"\u0110\u0103ng xu\u1ea5t t\u1eeb IP: ::1","ip_address":"::1"}
+{"timestamp":"2025-07-07 17:56:49","user_id":1,"username":"admin","action":"login","details":"\u0110\u0103ng nh\u1eadp th\u00e0nh c\u00f4ng t\u1eeb IP: ::1","ip_address":"::1"}
+{"timestamp":"2025-07-07 17:57:13","user_id":1,"username":"admin","action":"logout","details":"\u0110\u0103ng xu\u1ea5t t\u1eeb IP: ::1","ip_address":"::1"}
+{"timestamp":"2025-07-07 17:58:06","user_id":1,"username":"admin","action":"login","details":"\u0110\u0103ng nh\u1eadp th\u00e0nh c\u00f4ng t\u1eeb IP: ::1","ip_address":"::1"}
+{"timestamp":"2025-07-07 17:58:18","user_id":1,"username":"admin","action":"logout","details":"\u0110\u0103ng xu\u1ea5t t\u1eeb IP: ::1","ip_address":"::1"}
+{"timestamp":"2025-07-07 17:58:37","user_id":1,"username":"admin","action":"login","details":"\u0110\u0103ng nh\u1eadp th\u00e0nh c\u00f4ng t\u1eeb IP: ::1","ip_address":"::1"}
+{"timestamp":"2025-07-07 18:08:48","user_id":1,"username":"admin","action":"logout","details":"\u0110\u0103ng xu\u1ea5t t\u1eeb IP: ::1","ip_address":"::1"}
+{"timestamp":"2025-07-07 18:09:04","user_id":6,"username":"usertest","action":"login","details":"\u0110\u0103ng nh\u1eadp th\u00e0nh c\u00f4ng t\u1eeb IP: ::1","ip_address":"::1"}
+{"timestamp":"2025-07-07 18:20:38","user_id":6,"username":"usertest","action":"logout","details":"\u0110\u0103ng xu\u1ea5t t\u1eeb IP: ::1","ip_address":"::1"}
+{"timestamp":"2025-07-07 18:20:51","user_id":1,"username":"admin","action":"login","details":"\u0110\u0103ng nh\u1eadp th\u00e0nh c\u00f4ng t\u1eeb IP: ::1","ip_address":"::1"}
+{"timestamp":"2025-07-07 18:43:54","user_id":1,"username":"admin","action":"logout","details":"\u0110\u0103ng xu\u1ea5t t\u1eeb IP: ::1","ip_address":"::1"}
+{"timestamp":"2025-07-07 18:44:02","user_id":1,"username":"admin","action":"login","details":"\u0110\u0103ng nh\u1eadp th\u00e0nh c\u00f4ng t\u1eeb IP: ::1","ip_address":"::1"}
+{"timestamp":"2025-07-07 18:44:22","user_id":1,"username":"admin","action":"logout","details":"\u0110\u0103ng xu\u1ea5t t\u1eeb IP: ::1","ip_address":"::1"}
+{"timestamp":"2025-07-07 18:44:31","user_id":7,"username":"longht","action":"login","details":"\u0110\u0103ng nh\u1eadp th\u00e0nh c\u00f4ng t\u1eeb IP: ::1","ip_address":"::1"}
+{"timestamp":"2025-07-07 18:55:42","user_id":7,"username":"longht","action":"logout","details":"\u0110\u0103ng xu\u1ea5t t\u1eeb IP: ::1","ip_address":"::1"}
+{"timestamp":"2025-07-07 18:55:55","user_id":6,"username":"usertest","action":"login","details":"\u0110\u0103ng nh\u1eadp th\u00e0nh c\u00f4ng t\u1eeb IP: ::1","ip_address":"::1"}
+{"timestamp":"2025-07-07 19:02:50","user_id":6,"username":"usertest","action":"logout","details":"\u0110\u0103ng xu\u1ea5t t\u1eeb IP: ::1","ip_address":"::1"}
+{"timestamp":"2025-07-07 19:02:56","user_id":7,"username":"longht","action":"login","details":"\u0110\u0103ng nh\u1eadp th\u00e0nh c\u00f4ng t\u1eeb IP: ::1","ip_address":"::1"}
+{"timestamp":"2025-07-07 19:03:30","user_id":7,"username":"longht","action":"logout","details":"\u0110\u0103ng xu\u1ea5t t\u1eeb IP: ::1","ip_address":"::1"}
+{"timestamp":"2025-07-07 19:03:35","user_id":1,"username":"admin","action":"login","details":"\u0110\u0103ng nh\u1eadp th\u00e0nh c\u00f4ng t\u1eeb IP: ::1","ip_address":"::1"}
+{"timestamp":"2025-07-07 19:38:45","user_id":1,"username":"admin","action":"logout","details":"\u0110\u0103ng xu\u1ea5t t\u1eeb IP: ::1","ip_address":"::1"}
+{"timestamp":"2025-07-07 19:38:54","user_id":9,"username":"longht","action":"login","details":"\u0110\u0103ng nh\u1eadp th\u00e0nh c\u00f4ng t\u1eeb IP: ::1","ip_address":"::1"}
+{"timestamp":"2025-07-07 19:41:17","user_id":9,"username":"longht","action":"logout","details":"\u0110\u0103ng xu\u1ea5t t\u1eeb IP: ::1","ip_address":"::1"}
+{"timestamp":"2025-07-07 19:41:22","user_id":9,"username":"longht","action":"login","details":"\u0110\u0103ng nh\u1eadp th\u00e0nh c\u00f4ng t\u1eeb IP: ::1","ip_address":"::1"}
+{"timestamp":"2025-07-07 19:44:09","user_id":9,"username":"longht","action":"logout","details":"\u0110\u0103ng xu\u1ea5t t\u1eeb IP: ::1","ip_address":"::1"}
+{"timestamp":"2025-07-07 19:44:16","user_id":9,"username":"longht","action":"login","details":"\u0110\u0103ng nh\u1eadp th\u00e0nh c\u00f4ng t\u1eeb IP: ::1","ip_address":"::1"}
+{"timestamp":"2025-07-07 19:58:48","user_id":9,"username":"longht","action":"logout","details":"\u0110\u0103ng xu\u1ea5t t\u1eeb IP: ::1","ip_address":"::1"}
+{"timestamp":"2025-07-07 19:59:02","user_id":2,"username":"manager","action":"login","details":"\u0110\u0103ng nh\u1eadp th\u00e0nh c\u00f4ng t\u1eeb IP: ::1","ip_address":"::1"}
+{"timestamp":"2025-07-07 20:00:31","user_id":2,"username":"manager","action":"logout","details":"\u0110\u0103ng xu\u1ea5t t\u1eeb IP: ::1","ip_address":"::1"}
+{"timestamp":"2025-07-07 20:00:40","user_id":1,"username":"admin","action":"login","details":"\u0110\u0103ng nh\u1eadp th\u00e0nh c\u00f4ng t\u1eeb IP: ::1","ip_address":"::1"}
+{"timestamp":"2025-07-07 20:28:55","user_id":1,"username":"admin","action":"logout","details":"\u0110\u0103ng xu\u1ea5t t\u1eeb IP: ::1","ip_address":"::1"}
+{"timestamp":"2025-07-07 20:29:07","user_id":1,"username":"admin","action":"login","details":"\u0110\u0103ng nh\u1eadp th\u00e0nh c\u00f4ng t\u1eeb IP: ::1","ip_address":"::1"}
+{"timestamp":"2025-07-08 03:28:22","user_id":1,"username":"admin","action":"login","details":"\u0110\u0103ng nh\u1eadp th\u00e0nh c\u00f4ng t\u1eeb IP: ::1","ip_address":"::1"}
+{"timestamp":"2025-07-08 03:43:00","user_id":1,"username":"admin","action":"logout","details":"\u0110\u0103ng xu\u1ea5t t\u1eeb IP: ::1","ip_address":"::1"}
+{"timestamp":"2025-07-08 03:43:06","user_id":1,"username":"admin","action":"login","details":"\u0110\u0103ng nh\u1eadp th\u00e0nh c\u00f4ng t\u1eeb IP: ::1","ip_address":"::1"}
+{"timestamp":"2025-07-08 03:51:12","user_id":1,"username":"admin","action":"logout","details":"\u0110\u0103ng xu\u1ea5t t\u1eeb IP: ::1","ip_address":"::1"}
+{"timestamp":"2025-07-08 03:51:18","user_id":9,"username":"longht","action":"login","details":"\u0110\u0103ng nh\u1eadp th\u00e0nh c\u00f4ng t\u1eeb IP: ::1","ip_address":"::1"}
+{"timestamp":"2025-07-08 03:52:39","user_id":9,"username":"longht","action":"logout","details":"\u0110\u0103ng xu\u1ea5t t\u1eeb IP: ::1","ip_address":"::1"}
+{"timestamp":"2025-07-08 03:52:46","user_id":9,"username":"longht","action":"login","details":"\u0110\u0103ng nh\u1eadp th\u00e0nh c\u00f4ng t\u1eeb IP: ::1","ip_address":"::1"}
+{"timestamp":"2025-07-08 06:23:24","user_id":9,"username":"longht","action":"logout","details":"\u0110\u0103ng xu\u1ea5t t\u1eeb IP: ::1","ip_address":"::1"}
+{"timestamp":"2025-07-08 06:23:41","user_id":9,"username":"longht","action":"login","details":"\u0110\u0103ng nh\u1eadp th\u00e0nh c\u00f4ng t\u1eeb IP: ::1","ip_address":"::1"}
+{"timestamp":"2025-07-08 08:49:06","user_id":9,"username":"longht","action":"logout","details":"\u0110\u0103ng xu\u1ea5t t\u1eeb IP: ::1","ip_address":"::1"}
+{"timestamp":"2025-07-08 08:49:14","user_id":1,"username":"admin","action":"login","details":"\u0110\u0103ng nh\u1eadp th\u00e0nh c\u00f4ng t\u1eeb IP: ::1","ip_address":"::1"}
+{"timestamp":"2025-07-08 09:33:35","user_id":1,"username":"admin","action":"logout","details":"\u0110\u0103ng xu\u1ea5t t\u1eeb IP: ::1","ip_address":"::1"}
+{"timestamp":"2025-07-08 09:33:44","user_id":1,"username":"admin","action":"login","details":"\u0110\u0103ng nh\u1eadp th\u00e0nh c\u00f4ng t\u1eeb IP: ::1","ip_address":"::1"}
+{"timestamp":"2025-07-08 09:34:17","user_id":1,"username":"admin","action":"logout","details":"\u0110\u0103ng xu\u1ea5t t\u1eeb IP: ::1","ip_address":"::1"}
+{"timestamp":"2025-07-08 09:34:23","user_id":1,"username":"admin","action":"login","details":"\u0110\u0103ng nh\u1eadp th\u00e0nh c\u00f4ng t\u1eeb IP: ::1","ip_address":"::1"}
+{"timestamp":"2025-07-08 09:45:27","user_id":1,"username":"admin","action":"logout","details":"\u0110\u0103ng xu\u1ea5t t\u1eeb IP: ::1","ip_address":"::1"}
+{"timestamp":"2025-07-08 09:45:35","user_id":9,"username":"longht","action":"login","details":"\u0110\u0103ng nh\u1eadp th\u00e0nh c\u00f4ng t\u1eeb IP: ::1","ip_address":"::1"}
+{"timestamp":"2025-07-08 10:01:34","user_id":9,"username":"longht","action":"logout","details":"\u0110\u0103ng xu\u1ea5t t\u1eeb IP: ::1","ip_address":"::1"}
+{"timestamp":"2025-07-08 10:01:40","user_id":1,"username":"admin","action":"login","details":"\u0110\u0103ng nh\u1eadp th\u00e0nh c\u00f4ng t\u1eeb IP: ::1","ip_address":"::1"}
+{"timestamp":"2025-07-08 10:12:42","user_id":1,"username":"admin","action":"logout","details":"\u0110\u0103ng xu\u1ea5t t\u1eeb IP: ::1","ip_address":"::1"}
+{"timestamp":"2025-07-08 10:13:09","user_id":1,"username":"admin","action":"login","details":"\u0110\u0103ng nh\u1eadp th\u00e0nh c\u00f4ng t\u1eeb IP: ::1","ip_address":"::1"}
+{"timestamp":"2025-07-08 11:02:15","user_id":1,"username":"admin","action":"login","details":"\u0110\u0103ng nh\u1eadp th\u00e0nh c\u00f4ng t\u1eeb IP: ::1","ip_address":"::1"}
+{"timestamp":"2025-07-09 03:26:25","user_id":1,"username":"admin","action":"login","details":"\u0110\u0103ng nh\u1eadp th\u00e0nh c\u00f4ng t\u1eeb IP: ::1","ip_address":"::1"}
+{"timestamp":"2025-07-09 05:42:29","user_id":1,"username":"admin","action":"logout","details":"\u0110\u0103ng xu\u1ea5t t\u1eeb IP: ::1","ip_address":"::1"}
+{"timestamp":"2025-07-09 05:42:36","user_id":1,"username":"admin","action":"login","details":"\u0110\u0103ng nh\u1eadp th\u00e0nh c\u00f4ng t\u1eeb IP: ::1","ip_address":"::1"}
+{"timestamp":"2025-07-09 05:42:41","user_id":1,"username":"admin","action":"logout","details":"\u0110\u0103ng xu\u1ea5t t\u1eeb IP: ::1","ip_address":"::1"}
+{"timestamp":"2025-07-09 05:42:52","user_id":1,"username":"admin","action":"login","details":"\u0110\u0103ng nh\u1eadp th\u00e0nh c\u00f4ng t\u1eeb IP: ::1","ip_address":"::1"}
+{"timestamp":"2025-07-09 09:34:41","user_id":1,"username":"admin","action":"login","details":"\u0110\u0103ng nh\u1eadp th\u00e0nh c\u00f4ng t\u1eeb IP: ::1","ip_address":"::1"}
+{"timestamp":"2025-07-09 10:35:49","user_id":1,"username":"admin","action":"login","details":"\u0110\u0103ng nh\u1eadp th\u00e0nh c\u00f4ng t\u1eeb IP: ::1","ip_address":"::1"}
+{"timestamp":"2025-07-09 16:17:31","user_id":1,"username":"admin","action":"login","details":"\u0110\u0103ng nh\u1eadp th\u00e0nh c\u00f4ng t\u1eeb IP: ::1","ip_address":"::1"}
+{"timestamp":"2025-07-09 16:17:56","user_id":1,"username":"admin","action":"logout","details":"\u0110\u0103ng xu\u1ea5t t\u1eeb IP: ::1","ip_address":"::1"}
+{"timestamp":"2025-07-09 16:18:02","user_id":1,"username":"admin","action":"login","details":"\u0110\u0103ng nh\u1eadp th\u00e0nh c\u00f4ng t\u1eeb IP: ::1","ip_address":"::1"}
+{"timestamp":"2025-07-10 03:30:55","user_id":1,"username":"admin","action":"login","details":"\u0110\u0103ng nh\u1eadp th\u00e0nh c\u00f4ng t\u1eeb IP: ::1","ip_address":"::1"}
+{"timestamp":"2025-07-10 04:07:48","user_id":1,"username":"admin","action":"logout","details":"\u0110\u0103ng xu\u1ea5t t\u1eeb IP: ::1","ip_address":"::1"}
+{"timestamp":"2025-07-10 04:07:58","user_id":15,"username":"khuongdt","action":"login","details":"\u0110\u0103ng nh\u1eadp th\u00e0nh c\u00f4ng t\u1eeb IP: ::1","ip_address":"::1"}
+{"timestamp":"2025-07-10 04:08:14","user_id":15,"username":"khuongdt","action":"logout","details":"\u0110\u0103ng xu\u1ea5t t\u1eeb IP: ::1","ip_address":"::1"}
+{"timestamp":"2025-07-10 04:08:39","user_id":1,"username":"admin","action":"login","details":"\u0110\u0103ng nh\u1eadp th\u00e0nh c\u00f4ng t\u1eeb IP: ::1","ip_address":"::1"}
+{"timestamp":"2025-07-10 10:33:32","user_id":1,"username":"admin","action":"logout","details":"\u0110\u0103ng xu\u1ea5t t\u1eeb IP: ::1","ip_address":"::1"}
+{"timestamp":"2025-07-10 10:33:43","user_id":1,"username":"admin","action":"login","details":"\u0110\u0103ng nh\u1eadp th\u00e0nh c\u00f4ng t\u1eeb IP: ::1","ip_address":"::1"}
+{"timestamp":"2025-07-10 11:05:28","user_id":1,"username":"admin","action":"login","details":"\u0110\u0103ng nh\u1eadp th\u00e0nh c\u00f4ng t\u1eeb IP: ::1","ip_address":"::1"}
+{"timestamp":"2025-07-10 11:17:26","user_id":1,"username":"admin","action":"logout","details":"\u0110\u0103ng xu\u1ea5t t\u1eeb IP: ::1","ip_address":"::1"}
+{"timestamp":"2025-07-10 11:17:31","user_id":19,"username":"vuta","action":"login","details":"\u0110\u0103ng nh\u1eadp th\u00e0nh c\u00f4ng t\u1eeb IP: ::1","ip_address":"::1"}
+{"timestamp":"2025-07-10 11:17:52","user_id":19,"username":"vuta","action":"logout","details":"\u0110\u0103ng xu\u1ea5t t\u1eeb IP: ::1","ip_address":"::1"}
+{"timestamp":"2025-07-10 11:17:57","user_id":1,"username":"admin","action":"login","details":"\u0110\u0103ng nh\u1eadp th\u00e0nh c\u00f4ng t\u1eeb IP: ::1","ip_address":"::1"}
+{"timestamp":"2025-07-10 11:51:26","user_id":1,"username":"admin","action":"logout","details":"\u0110\u0103ng xu\u1ea5t t\u1eeb IP: ::1","ip_address":"::1"}
+{"timestamp":"2025-07-10 11:51:31","user_id":27,"username":"datnt2","action":"login","details":"\u0110\u0103ng nh\u1eadp th\u00e0nh c\u00f4ng t\u1eeb IP: ::1","ip_address":"::1"}
+{"timestamp":"2025-07-10 11:52:10","user_id":27,"username":"datnt2","action":"logout","details":"\u0110\u0103ng xu\u1ea5t t\u1eeb IP: ::1","ip_address":"::1"}
+{"timestamp":"2025-07-10 11:52:17","user_id":1,"username":"admin","action":"login","details":"\u0110\u0103ng nh\u1eadp th\u00e0nh c\u00f4ng t\u1eeb IP: ::1","ip_address":"::1"}
+{"timestamp":"2025-07-10 14:50:21","user_id":1,"username":"admin","action":"login","details":"\u0110\u0103ng nh\u1eadp th\u00e0nh c\u00f4ng t\u1eeb IP: ::1","ip_address":"::1"}
