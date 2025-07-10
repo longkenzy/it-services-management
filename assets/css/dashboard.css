@@ -132,9 +132,10 @@ body {
     transform: translateY(-1px);
 }
 
+/* --- Force active navbar item to blue background and white text --- */
 .navbar-nav .nav-link.active {
-    background-color: #495057;
-    color: white;
+    background-color: #3b82f6 !important;
+    color: #fff !important;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
 
@@ -1282,4 +1283,10 @@ select.form-select option[value=""] {
 #createCaseModal select.form-select option[value=""] {
     color: #adb5bd !important;
     font-style: italic !important;
+} 
+
+/* --- Highlight active menu item in blue --- */
+.nav-link.active, .menu-item.active {
+    background-color: #3b82f6 !important;
+    color: #fff !important;
 } 

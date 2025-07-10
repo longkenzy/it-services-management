@@ -1157,14 +1157,4 @@ $(document).ready(function() {
     // ===== KHỞI TẠO ỨNG DỤNG ===== //
     init();
     
-    // Debug functions (remove in production)
-    window.debugPositions = function() {
-        
-    };
-    
-    window.forceLoadPositions = function() {
-        
-        loadPositionsDirectly();
-    };
-    
 }); 
