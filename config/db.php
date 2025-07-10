@@ -15,7 +15,7 @@ if (!defined('INCLUDED')) {
 // ===== CẤU HÌNH DATABASE ===== //
 $db_config = [
     'host'     => 'localhost',          // Địa chỉ server MySQL
-    'database' => 'thichhoc1_it_crm_db',          // Tên database
+    'database' => 'thichho1_it_crm_db',          // Tên database
     'username' => 'thichho1_root',               // Tên đăng nhập MySQL
     'password' => 'Longkenzy@7525',                   // Mật khẩu MySQL (để trống với XAMPP/WAMP)
     'charset'  => 'utf8mb4',            // Bộ mã ký tự
