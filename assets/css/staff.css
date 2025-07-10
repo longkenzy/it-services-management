@@ -194,8 +194,8 @@
     border-bottom: 2px solid #dee2e6;
     font-weight: 600;
     color: #495057;
-    padding: 20px 16px;
-    font-size: 1.15rem;
+    padding: 15px 12px;
+    font-size: 0.9rem;
     text-transform: uppercase;
     letter-spacing: 0.5px;
     overflow: hidden;
@@ -227,10 +227,10 @@
 }
 
 .staff-table tbody td {
-    padding: 20px 16px;
+    padding: 12px 10px;
     vertical-align: middle;
     border-bottom: 1px solid #e9ecef;
-    font-size: 1.15rem;
+    font-size: 0.85rem;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -240,18 +240,18 @@
 .staff-table .text-primary,
 .staff-table .fw-bold,
 .staff-table .fw-semibold {
-    font-size: 1.15rem;
+    font-size: 0.9rem;
 }
 
 /* Badge styles */
 .staff-table .badge {
-    font-size: 1.05rem;
-    padding: 8px 16px;
+    font-size: 0.8rem;
+    padding: 6px 12px;
 }
 
 .contract-badge {
-    font-size: 1.05rem;
-    padding: 8px 16px;
+    font-size: 0.8rem;
+    padding: 6px 12px;
     border-radius: 8px;
     font-weight: 500;
 }
@@ -281,8 +281,8 @@
 }
 
 .gender-badge {
-    font-size: 1.05rem;
-    padding: 8px 16px;
+    font-size: 0.8rem;
+    padding: 6px 12px;
     border-radius: 8px;
     font-weight: 500;
 }
@@ -829,7 +829,7 @@
     transition: all 0.3s ease;
 }
 
-.staff-avatar:hover {xaxam
+.staff-avatar:hover {
     transform: scale(1.1);
     border-color: #007bff;
 } 
