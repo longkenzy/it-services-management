@@ -1,0 +1,6 @@
+---
+deployment:
+  tasks:
+    - echo "✅ Deploy bắt đầu"
+    - /bin/cp -R * $HOME/public_html
+    - echo "✅ Deploy hoàn tất"
