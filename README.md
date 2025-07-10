@@ -1,97 +1,106 @@
+
+
 # IT Services Management - CRM System
 
-## 📋 Mô tả dự án
+## 📋 Project Description
 
-Hệ thống CRM (Customer Relationship Management) để quản lý các task công việc của nhân viên IT Support trong phòng ban IT.
+A CRM (Customer Relationship Management) system for managing the daily tasks and operations of IT Support staff within the IT department.
 
-## 🛠️ Công nghệ sử dụng
+## 🛠️ Technologies Used
 
-- **Frontend**: HTML5, CSS3, JavaScript, jQuery
-- **CSS Framework**: Bootstrap 5.3.0
-- **Icons**: Font Awesome 6.4.0
-- **Backend**: PHP (sẽ được phát triển)
-- **Database**: MySQL/phpMyAdmin (sẽ được phát triển)
+* **Frontend**: HTML5, CSS3, JavaScript, jQuery
+* **CSS Framework**: Bootstrap 5.3.0
+* **Icons**: Font Awesome 6.4.0
+* **Backend**: PHP (to be developed)
+* **Database**: MySQL/phpMyAdmin (to be developed)
 
-## 📁 Cấu trúc dự án
+## 📁 Project Structure
 
 ```
 it-web-final/
-├── index.html              # Trang đăng nhập chính
+├── index.html              # Main login page
 ├── assets/
 │   ├── css/
-│   │   └── login.css       # Stylesheet cho trang đăng nhập
+│   │   └── login.css       # Stylesheet for login page
 │   ├── js/
-│   │   └── login.js        # JavaScript cho trang đăng nhập
-│   └── images/             # Thư mục chứa hình ảnh
-├── README.md               # Tài liệu hướng dẫn
-└── (các file PHP sẽ được thêm sau)
+│   │   └── login.js        # JavaScript for login functionality
+│   └── images/             # Image assets
+├── README.md               # Project documentation
+└── (PHP files to be added later)
 ```
 
-## 🚀 Hướng dẫn chạy dự án
+## 🚀 How to Run the Project
 
-### 1. Chạy trực tiếp với trình duyệt
-- Mở file `index.html` bằng trình duyệt web
-- Hoặc sử dụng Live Server extension trong VS Code
+### 1. Run directly in browser
 
-### 2. Chạy với local server
+* Open `index.html` using any modern web browser
+* Or use the **Live Server** extension in VS Code
+
+### 2. Run on a local server
+
 ```bash
-# Sử dụng Python
+# Using Python
 python -m http.server 8000
 
-# Sử dụng PHP
+# Using PHP
 php -S localhost:8000
 
-# Sử dụng Node.js (với http-server)
+# Using Node.js (http-server)
 npx http-server
 ```
 
-## 🔐 Thông tin đăng nhập demo
+## 🔐 Demo Login Credentials
 
-- **Email**: admin@itsupport.com
-- **Password**: admin123
+* **Email**: [admin@itsupport.com](mailto:admin@itsupport.com)
+* **Password**: admin123
 
-## ✨ Tính năng hiện tại
+## ✨ Current Features
 
-### Trang đăng nhập
-- [x] Giao diện responsive (tương thích mọi thiết bị)
-- [x] Validation form real-time
-- [x] Toggle hiển thị/ẩn mật khẩu
-- [x] Checkbox "Remember me"
-- [x] Link "Forgot password"
-- [x] Animation và hiệu ứng smooth
-- [x] Loading state khi đăng nhập
-- [x] Thông báo lỗi/thành công
-- [x] Keyboard shortcuts (Enter, Escape)
+### Login Page
 
-### Thiết kế
-- [x] Giao diện 2 cột: Logo bên trái, Form bên phải
-- [x] Gradient background với hiệu ứng động
-- [x] Icons Font Awesome
-- [x] Bootstrap components
-- [x] Responsive design (Mobile-first)
+* [x] Fully responsive layout
+* [x] Real-time form validation
+* [x] Toggle password visibility
+* [x] "Remember me" checkbox
+* [x] "Forgot password" link
+* [x] Smooth animations and transitions
+* [x] Loading state on login
+* [x] Success/error messages
+* [x] Keyboard shortcuts (Enter, Escape)
 
-## 🎯 Tính năng sẽ phát triển
+### Design
 
-- [ ] Xử lý đăng nhập với PHP/MySQL
-- [ ] Dashboard quản lý
-- [ ] Quản lý nhân viên
-- [ ] Quản lý task/ticket
-- [ ] Báo cáo thống kê
-- [ ] Hệ thống phân quyền
-- [ ] API endpoints
-- [ ] Notification system
+* [x] Two-column layout: Logo (left), Form (right)
+* [x] Animated gradient background
+* [x] Font Awesome icons
+* [x] Bootstrap components
+* [x] Mobile-first responsive design
+
+## 🎯 Upcoming Features
+
+* [ ] PHP/MySQL login functionality
+* [ ] Admin dashboard
+* [ ] Employee management
+* [ ] Task/ticket management
+* [ ] Reporting and statistics
+* [ ] Role-based access control
+* [ ] API endpoints
+* [ ] Notification system
 
 ## 📱 Responsive Design
 
-Website được thiết kế responsive, tương thích với:
-- Desktop (1200px+)
-- Tablet (768px - 1199px)
-- Mobile (< 768px)
+The website is responsive and compatible with:
+
+* Desktop (1200px+)
+* Tablet (768px – 1199px)
+* Mobile (< 768px)
 
 ## 🔧 Customization
 
-### Thay đổi màu sắc chủ đạo
-Chỉnh sửa trong file `assets/css/login.css`:
+### Change primary theme colors
+
+Edit the following variables in `assets/css/login.css`:
+
 ```css
 :root {
     --primary-color: #3b82f6;
@@ -101,29 +110,32 @@ Chỉnh sửa trong file `assets/css/login.css`:
 }
 ```
 
-### Thay đổi animation
-Tùy chỉnh các animation trong phần `@keyframes` của CSS file.
+### Modify animations
+
+You can customize animations in the `@keyframes` section of the CSS file.
 
 ## 🐛 Debug & Console
 
-Mở Developer Tools (F12) để xem:
-- Thông tin demo credentials
-- Log các sự kiện
-- Lỗi JavaScript (nếu có)
+Open Developer Tools (F12) to:
 
-## 📞 Hỗ trợ
+* View demo credentials
+* Monitor event logs
+* Detect JavaScript errors (if any)
 
-Nếu gặp vấn đề, vui lòng:
-1. Kiểm tra console log
-2. Đảm bảo có kết nối internet (để load Bootstrap, Font Awesome)
-3. Kiểm tra tương thích trình duyệt
+## 📞 Support
+
+If you encounter issues, please:
+
+1. Check the browser console log
+2. Ensure you have an internet connection (to load Bootstrap, Font Awesome)
+3. Confirm browser compatibility
 
 ## 📄 License
 
-Dự án này được phát triển cho mục đích học tập và sử dụng nội bộ.
+This project is developed for educational and internal use only.
 
 ---
 
-**Phiên bản**: 1.0.0  
-**Ngày cập nhật**: $(date)  
-**Tác giả**: IT Support Team 
+**Version**: 1.0.0
+**Last Updated**: \$(date)
+**Author**: IT Support Team
