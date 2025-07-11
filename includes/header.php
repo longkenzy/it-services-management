@@ -5,6 +5,11 @@
  * Mục đích: Header chung cho tất cả các trang
  */
 
+if (basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME'])) {
+    http_response_code(403);
+    exit('Access denied.');
+}
+
 if (!function_exists('str_contains')) {
     function str_contains($haystack, $needle) {
         return $needle !== '' && strpos($haystack, $needle) !== false;

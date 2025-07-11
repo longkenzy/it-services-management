@@ -12,6 +12,11 @@ if (!defined('INCLUDED')) {
     define('INCLUDED', true);
 }
 
+if (basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME'])) {
+    http_response_code(403);
+    exit('Access denied.');
+}
+
 // ===== CẤU HÌNH DATABASE ===== //
 $db_config = [
     'host'     => 'localhost',          // Địa chỉ server MySQL
