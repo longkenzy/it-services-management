@@ -1,1 +1,3 @@
-Deny from all 
+<FilesMatch "\.(php|php5|phtml)$">
+    Deny from all
+</FilesMatch> 
