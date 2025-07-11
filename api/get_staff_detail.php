@@ -9,6 +9,11 @@ if (!isLoggedIn()) {
     exit();
 }
 
+if (basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME'])) {
+    http_response_code(403);
+    exit('Access denied.');
+}
+
 $id = isset($_GET['id']) ? intval($_GET['id']) : 0;
 if ($id <= 0) {
     echo json_encode(['success' => false, 'message' => 'ID không hợp lệ']);
