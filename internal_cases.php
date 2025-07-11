@@ -119,11 +119,11 @@ $flash_messages = getFlashMessages();
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="assets/css/dashboard.css">
-    <link rel="stylesheet" href="assets/css/alert.css">
+    <link rel="stylesheet" href="assets/css/dashboard.css?v=<?php echo filemtime('assets/css/dashboard.css'); ?>">
+    <link rel="stylesheet" href="assets/css/alert.css?v=<?php echo filemtime('assets/css/alert.css'); ?>">
     
     <!-- No Border Radius Override -->
-    <link rel="stylesheet" href="assets/css/no-border-radius.css">
+    <link rel="stylesheet" href="assets/css/no-border-radius.css?v=<?php echo filemtime('assets/css/no-border-radius.css'); ?>">
     
     <!-- Tooltip CSS -->
     <style>
@@ -999,7 +999,7 @@ $flash_messages = getFlashMessages();
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     
     <!-- Alert System -->
-    <script src="assets/js/alert.js"></script>
+    <script src="assets/js/alert.js?v=<?php echo filemtime('assets/js/alert.js'); ?>"></script>
     
     <script>
     $(document).ready(function() {
