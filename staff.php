@@ -31,12 +31,12 @@ $current_user = getCurrentUser();
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="assets/css/dashboard.css">
-    <link rel="stylesheet" href="assets/css/staff.css">
-    <link rel="stylesheet" href="assets/css/alert.css">
+    <link rel="stylesheet" href="assets/css/dashboard.css?v=<?php echo filemtime('assets/css/dashboard.css'); ?>">
+    <link rel="stylesheet" href="assets/css/staff.css?v=<?php echo filemtime('assets/css/staff.css'); ?>">
+    <link rel="stylesheet" href="assets/css/alert.css?v=<?php echo filemtime('assets/css/alert.css'); ?>">
     
     <!-- No Border Radius Override -->
-    <link rel="stylesheet" href="assets/css/no-border-radius.css">
+    <link rel="stylesheet" href="assets/css/no-border-radius.css?v=<?php echo filemtime('assets/css/no-border-radius.css'); ?>">
     
     <!-- Favicon -->
     <link rel="icon" type="image/png" href="assets/images/logo.png">
@@ -811,10 +811,10 @@ $current_user = getCurrentUser();
     </style>
 
     <!-- Alert System -->
-    <script src="assets/js/alert.js"></script>
+    <script src="assets/js/alert.js?v=<?php echo filemtime('assets/js/alert.js'); ?>"></script>
     
     <!-- Custom JavaScript -->
-    <script src="assets/js/staff.js"></script>
+    <script src="assets/js/staff.js?v=<?php echo filemtime('assets/js/staff.js'); ?>"></script>
     
     <script>
     $(document).ready(function() {
