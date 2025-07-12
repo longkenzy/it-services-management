@@ -83,7 +83,7 @@ $current_page = basename($_SERVER['PHP_SELF']);
                     <form class="search-form">
                         <div class="input-group">
                             <input type="text" class="form-control border-start-0" 
-                                   placeholder="Tìm kiếm case, nhân viên..." id="searchInput">
+                                   placeholder="Tìm kiếm case, nhân viên..." id="globalSearchInput">
                             <button class="btn btn-outline-primary" type="submit">
                                 <i class="fas fa-search"></i>
                             </button>

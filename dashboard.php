@@ -59,19 +59,6 @@ $flash_messages = getFlashMessages();
     <main class="main-content">
         <div class="container-fluid px-4 py-4">
             
-            <!-- Breadcrumb -->
-            <nav aria-label="breadcrumb" class="mb-4">
-                <ol class="breadcrumb">
-                    <li class="breadcrumb-item">
-                        <a href="#" class="text-decoration-none">
-                            <i class="fas fa-home me-1"></i>
-                            Trang chủ
-                        </a>
-                    </li>
-                    <li class="breadcrumb-item active" aria-current="page">Dashboard</li>
-                </ol>
-            </nav>
-            
             <!-- Page Title -->
             <div class="page-header mb-4">
                 <div class="row align-items-center">

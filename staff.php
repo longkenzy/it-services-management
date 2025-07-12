@@ -52,22 +52,6 @@ $current_user = getCurrentUser();
         <div class="container-fluid">
             <!-- Success/Error messages will be shown via JavaScript alert system -->
             
-            <!-- Breadcrumb -->
-            <nav aria-label="breadcrumb" class="breadcrumb-nav">
-                <ol class="breadcrumb">
-                    <li class="breadcrumb-item">
-                        <a href="dashboard.php">
-                            <i class="fas fa-home"></i>
-                            Trang chủ
-                        </a>
-                    </li>
-                    <li class="breadcrumb-item active" aria-current="page">
-                        <i class="fas fa-users"></i>
-                        Danh sách nhân sự
-                    </li>
-                </ol>
-            </nav>
-            
             <!-- Page Header -->
             <div class="page-header">
                 <div class="row align-items-center">
@@ -98,7 +82,7 @@ $current_user = getCurrentUser();
                                     <span class="input-group-text">
                                         <i class="fas fa-search"></i>
                                     </span>
-                                    <input type="text" class="form-control" placeholder="Tên, mã NV, email..." id="searchInput">
+                                    <input type="text" class="form-control" placeholder="Tên, mã NV, email..." id="staffSearchInput">
                                 </div>
                             </div>
                             <div class="col-md-2">

@@ -297,22 +297,6 @@ $flash_messages = getFlashMessages();
     <main class="main-content">
         <div class="container-fluid px-4 py-4">
             
-            <!-- Breadcrumb -->
-            <nav aria-label="breadcrumb" class="mb-4">
-                <ol class="breadcrumb">
-                    <li class="breadcrumb-item">
-                        <a href="dashboard.php" class="text-decoration-none">
-                            <i class="fas fa-home me-1"></i>
-                            Trang chủ
-                        </a>
-                    </li>
-                    <li class="breadcrumb-item">
-                        <a href="#" class="text-decoration-none">Công việc</a>
-                    </li>
-                    <li class="breadcrumb-item active" aria-current="page">Case nội bộ</li>
-                </ol>
-            </nav>
-            
             <!-- Page Header -->
             <div class="page-header mb-4">
                 <div class="row align-items-center">
@@ -483,9 +467,8 @@ $flash_messages = getFlashMessages();
                                                     </td>
                                                     <td>
                                                         <div class="action-buttons">
-                                                            <button type="button" class="btn btn-sm btn-outline-primary" 
-                                                                    title="Xem chi tiết"
-                                                                    onclick="viewCase(<?php echo $case['id']; ?>)">
+                                                            <button type="button" class="btn btn-sm btn-outline-primary btn-view-case" 
+                                                                    title="Xem chi tiết" data-id="<?php echo $case['id']; ?>">
                                                                 <i class="fas fa-eye"></i>
                                                             </button>
                                                             <button type="button" class="btn btn-sm btn-outline-secondary" 
@@ -769,7 +752,7 @@ $flash_messages = getFlashMessages();
     </div>
     
     <!-- Modal Chỉnh sửa Case Nội Bộ -->
-    <div class="modal fade" id="editCaseModal" tabindex="-1" aria-labelledby="editCaseModalLabel" aria-hidden="true">
+            <div class="modal fade" id="editCaseModal" tabindex="-1" aria-labelledby="editCaseModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-xl modal-dialog-centered">
             <div class="modal-content">
                 <form id="editCaseForm" autocomplete="off">
@@ -986,6 +969,211 @@ $flash_messages = getFlashMessages();
                         <button type="submit" class="btn btn-primary">
                             <i class="fas fa-save me-2"></i>Cập nhật
                         </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <!-- ===== MODAL XEM CHI TIẾT CASE ===== -->
+            <div class="modal fade" id="viewCaseModal" tabindex="-1" aria-labelledby="viewCaseModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-centered">
+            <div class="modal-content">
+                <form id="viewCaseForm" autocomplete="off">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="viewCaseModalLabel">
+                            <i class="fas fa-eye me-2"></i>Xem chi tiết case
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <!-- Copy nội dung form tạo case, tất cả trường readonly/disabled, id có tiền tố view -->
+                        <div class="row">
+                            <!-- Cột trái -->
+                            <div class="col-md-6">
+                            <div class="mb-3">
+                                    <div class="row align-items-center">
+                                        <div class="col-4">
+                                            <label class="form-label mb-0 fw-semibold">Số case</label>
+                                        </div>
+                                        <div class="col-8">
+                                            <input type="text" class="form-control" id="viewCaseNumber" readonly>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- Người yêu cầu -->
+                                <div class="mb-3">
+                                    <div class="row align-items-center">
+                                        <div class="col-4">
+                                            <label class="form-label mb-0 fw-semibold">Người yêu cầu <span class="text-danger">*</span></label>
+                                        </div>
+                                        <div class="col-8">
+                                            <select class="form-select" id="viewRequesterId" name="requester_id" disabled>
+                                                <option value="" class="placeholder-option">Chọn nhân sự</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- Chức danh -->
+                                <div class="mb-3">
+                                    <div class="row align-items-center">
+                                        <div class="col-4">
+                                            <label class="form-label mb-0 fw-semibold">Chức danh</label>
+                                        </div>
+                                        <div class="col-8">
+                                            <input type="text" class="form-control" id="viewRequesterPosition" readonly>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- Người chuyển case -->
+                                <div class="mb-3">
+                                    <div class="row align-items-center">
+                                        <div class="col-4">
+                                            <label class="form-label mb-0 fw-semibold">Người chuyển case</label>
+                                        </div>
+                                        <div class="col-8">
+                                            <input type="text" class="form-control" id="viewTransferredBy" readonly>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- Người xử lý -->
+                                <div class="mb-3">
+                                    <div class="row align-items-center">
+                                        <div class="col-4">
+                                            <label class="form-label mb-0 fw-semibold">Người xử lý <span class="text-danger">*</span></label>
+                                        </div>
+                                        <div class="col-8">
+                                            <select class="form-select" id="viewHandlerId" name="handler_id" disabled>
+                                                <option value="" class="placeholder-option">Chọn nhân sự</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- Loại case -->
+                                <div class="mb-3">
+                                    <div class="row align-items-center">
+                                        <div class="col-4">
+                                            <label class="form-label mb-0 fw-semibold">Loại case <span class="text-danger">*</span></label>
+                                        </div>
+                                        <div class="col-8">
+                                            <select class="form-select" id="viewCaseType" name="case_type" disabled>
+                                                <option value="" class="placeholder-option">Chọn loại case</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- Hình thức -->
+                                <div class="mb-3">
+                                    <div class="row align-items-center">
+                                        <div class="col-4">
+                                            <label class="form-label mb-0 fw-semibold">
+                                                Hình thức
+                                                <span class="tooltip-icon" data-tooltip="<div class='tooltip-content'>• <strong>Onsite:</strong> Bạn di chuyển đến site khách hàng để hỗ trợ<br>• <strong>Offsite:</strong> Bạn hỗ trợ khách hàng tại văn phòng, và khách hàng cũng đang ở đó<br>• <strong>Remote:</strong> Hỗ trợ khách hàng từ xa</div>">
+                                                    <i class="fas fa-info"></i>
+                                                </span>
+                                            </label>
+                                        </div>
+                                        <div class="col-8">
+                                            <select class="form-select" id="viewPriority" name="priority" disabled>
+                                                <option value="onsite">Onsite</option>
+                                                <option value="offsite">Offsite</option>
+                                                <option value="remote">Remote</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- Thêm trường Số case vào viewCaseModal -->
+                                
+                            </div>
+                            <!-- Cột phải -->
+                            <div class="col-md-6">
+                                <!-- Vụ việc -->
+                                <div class="mb-3">
+                                    <div class="row align-items-top">
+                                        <div class="col-4">
+                                            <label class="form-label mb-0 fw-semibold">
+                                                Vụ việc <span class="text-danger">*</span>
+                                                <span class="tooltip-icon" data-tooltip="Mô tả ngắn gọn">
+                                                    <i class="fas fa-info"></i>
+                                                </span>
+                                            </label>
+                                        </div>
+                                        <div class="col-8">
+                                            <input type="text" class="form-control" id="viewIssueTitle" name="issue_title" readonly>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- Mô tả chi tiết -->
+                                <div class="mb-3">
+                                    <div class="row align-items-top">
+                                        <div class="col-4">
+                                            <label class="form-label mb-0 fw-semibold">
+                                                Mô tả chi tiết <span class="text-danger">*</span>
+                                                <span class="tooltip-icon" data-tooltip="Mô tả chi tiết">
+                                                    <i class="fas fa-info"></i>
+                                                </span>
+                                            </label>
+                                        </div>
+                                        <div class="col-8">
+                                            <textarea class="form-control" id="viewIssueDescription" name="issue_description" rows="3" readonly></textarea>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- Bắt đầu -->
+                                <div class="mb-3">
+                                    <div class="row align-items-center">
+                                        <div class="col-4">
+                                            <label class="form-label mb-0 fw-semibold">Bắt đầu</label>
+                                        </div>
+                                        <div class="col-8">
+                                            <input type="datetime-local" class="form-control" id="viewStartDate" name="start_date" readonly>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- Kết thúc -->
+                                <div class="mb-3">
+                                    <div class="row align-items-center">
+                                        <div class="col-4">
+                                            <label class="form-label mb-0 fw-semibold">Kết thúc</label>
+                                        </div>
+                                        <div class="col-8">
+                                            <input type="datetime-local" class="form-control" id="viewDueDate" name="due_date" readonly>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- Trạng thái -->
+                                <div class="mb-3">
+                                    <div class="row align-items-center">
+                                        <div class="col-4">
+                                            <label class="form-label mb-0 fw-semibold">Trạng thái <span class="text-danger">*</span></label>
+                                        </div>
+                                        <div class="col-8">
+                                            <select class="form-select" id="viewStatus" name="status" disabled>
+                                                <option value="pending">Tiếp nhận</option>
+                                                <option value="in_progress">Đang xử lý</option>
+                                                <option value="completed">Hoàn thành</option>
+                                                <option value="cancelled">Huỷ</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- Ghi chú -->
+                                <div class="mb-3">
+                                    <div class="row align-items-top">
+                                        <div class="col-4">
+                                            <label class="form-label mb-0 fw-semibold">Ghi chú</label>
+                                        </div>
+                                        <div class="col-8">
+                                            <textarea class="form-control" id="viewNotes" name="notes" rows="4" readonly></textarea>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                        <button type="button" class="btn btn-primary" id="btnViewToEditCase"><i class="fas fa-edit me-2"></i>Chỉnh sửa</button>
                     </div>
                 </form>
             </div>
@@ -1306,7 +1494,7 @@ $flash_messages = getFlashMessages();
         
         // Search functionality
         $('#caseSearchInput').on('input', function() {
-            // TODO: Implement search functionality
+            // Search functionality will be implemented later
         });
         
         // Status filter
@@ -1364,7 +1552,6 @@ $flash_messages = getFlashMessages();
                     })
                     .catch(function(error) {
                         showError('Có lỗi xảy ra khi xóa case');
-                        console.error('Bulk delete error:', error);
                     });
             }
         }
@@ -1391,12 +1578,7 @@ $flash_messages = getFlashMessages();
     });
     
     // Case management functions
-    function viewCase(id) {
-        showInfo('Chức năng xem chi tiết case sẽ được phát triển sau...');
-    }
-    
     function editCase(id) {
-        // Load case data và hiển thị modal edit
         $.ajax({
             url: 'api/get_case_details.php?id=' + id,
             type: 'GET',
@@ -1405,7 +1587,6 @@ $flash_messages = getFlashMessages();
             },
             success: function(response) {
                 if (response.success) {
-                    // Load staff list và case types trước khi populate form
                     loadEditCaseData(response.data);
                 } else {
                     showError(response.error || 'Không thể tải thông tin case');
@@ -1418,22 +1599,37 @@ $flash_messages = getFlashMessages();
     }
     
     function loadEditCaseData(caseData) {
-        // Load staff list và case types trước
-        Promise.all([
+        return Promise.all([
             loadStaffListForEdit(),
             loadCaseTypesForEdit()
         ]).then(function() {
-            // Sau khi load xong, populate form với dữ liệu case
             populateEditForm(caseData);
-            // Hiển thị modal
             $('#editCaseModal').modal('show');
         }).catch(function(error) {
             showError('Không thể tải dữ liệu cần thiết');
+            throw error;
         });
     }
     
     function loadStaffListForEdit() {
         return new Promise(function(resolve, reject) {
+            $.ajax({
+                url: 'api/get_staff_list.php?all=1',
+                type: 'GET',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                success: function(response) {
+                    if (response.success) {
+                        var options = '<option value="">Chọn nhân sự</option>';
+                        response.data.forEach(function(staff) {
+                            options += '<option value="' + staff.id + '" data-position="' + staff.position + '">' + 
+                                      staff.fullname + '</option>';
+                        });
+                        $('#editRequesterId').html(options);
+                    }
+                }
+            });
             $.ajax({
                 url: 'api/get_staff_list.php',
                 type: 'GET',
@@ -1447,7 +1643,6 @@ $flash_messages = getFlashMessages();
                             options += '<option value="' + staff.id + '" data-position="' + staff.position + '">' + 
                                       staff.fullname + '</option>';
                         });
-                        $('#editRequesterId').html(options);
                         $('#editHandlerId').html(options);
                         resolve();
                     } else {
@@ -1642,6 +1837,25 @@ $flash_messages = getFlashMessages();
     
     // Helper functions for create case modal
     function loadStaffList() {
+        // Lấy toàn bộ nhân sự cho Người yêu cầu
+        $.ajax({
+            url: 'api/get_staff_list.php?all=1',
+            type: 'GET',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            success: function(response) {
+                if (response.success) {
+                    var options = '<option value="">Chọn nhân sự</option>';
+                    response.data.forEach(function(staff) {
+                        options += '<option value="' + staff.id + '" data-position="' + staff.position + '">' + 
+                                  staff.fullname + '</option>';
+                    });
+                    $('#requesterId').html(options);
+                }
+            }
+        });
+        // Lấy nhân sự IT Dept. cho Người xử lý
         $.ajax({
             url: 'api/get_staff_list.php',
             type: 'GET',
@@ -1655,14 +1869,8 @@ $flash_messages = getFlashMessages();
                         options += '<option value="' + staff.id + '" data-position="' + staff.position + '">' + 
                                   staff.fullname + '</option>';
                     });
-                    $('#requesterId').html(options);
                     $('#handlerId').html(options);
-                } else {
-                    console.error('Lỗi khi tải danh sách nhân sự:', response.error);
                 }
-            },
-            error: function(xhr, status, error) {
-                console.error('Lỗi AJAX:', error);
             }
         });
     }
@@ -1914,6 +2122,133 @@ $flash_messages = getFlashMessages();
             }
         });
     }
+    
+    // ===== JS: XEM CHI TIẾT CASE ===== //
+    $(document).on('click', '.btn-view-case', function() {
+        var caseId = $(this).data('id');
+        // Gọi API lấy chi tiết case
+        $.ajax({
+            url: 'api/get_case_details.php?id=' + caseId,
+            type: 'GET',
+            headers: { 'X-Requested-With': 'XMLHttpRequest' },
+            success: function(response) {
+                if (response.success) {
+                    fillViewCaseForm(response.data);
+                    $('#viewCaseModal').modal('show');
+                    $('#btnViewToEditCase').data('case', response.data);
+                } else {
+                    showError('Không thể tải chi tiết case');
+                }
+            },
+            error: function() {
+                showError('Có lỗi khi tải chi tiết case');
+            }
+        });
+    });
+
+    $(document).on('click', '#btnViewToEditCase', function() {
+        var caseData = $(this).data('case');
+        // Blur focus trước khi đóng modal để tránh lỗi ARIA
+        $(this).blur();
+        $('#viewCaseModal').modal('hide');
+        // Sau khi modal ẩn xong thì mở modal chỉnh sửa
+        setTimeout(function() {
+            loadEditCaseData(caseData).catch(function(error) {
+                showError('Lỗi khi load dữ liệu edit');
+            });
+        }, 400);
+    });
+
+    function fillViewCaseForm(caseData) {
+        $.ajax({
+            url: 'api/get_staff_list.php?all=1',
+            type: 'GET',
+            headers: { 'X-Requested-With': 'XMLHttpRequest' },
+            success: function(response) {
+                if (response.success) {
+                    var options = '<option value="">Chọn nhân sự</option>';
+                    response.data.forEach(function(staff) {
+                        options += '<option value="' + staff.id + '" data-position="' + staff.position + '">' + staff.fullname + '</option>';
+                    });
+                    $('#viewRequesterId').html(options).val(caseData.requester_id);
+                    // Cập nhật chức danh
+                    var selected = $('#viewRequesterId option:selected');
+                    $('#viewRequesterPosition').val(selected.data('position') || '');
+                }
+            }
+        });
+        $.ajax({
+            url: 'api/get_staff_list.php',
+            type: 'GET',
+            headers: { 'X-Requested-With': 'XMLHttpRequest' },
+            success: function(response) {
+                if (response.success) {
+                    var options = '<option value="">Chọn nhân sự</option>';
+                    response.data.forEach(function(staff) {
+                        options += '<option value="' + staff.id + '" data-position="' + staff.position + '">' + staff.fullname + '</option>';
+                    });
+                    $('#viewHandlerId').html(options).val(caseData.handler_id);
+                }
+            }
+        });
+        $.ajax({
+            url: 'api/case_types.php?type=internal&action=list',
+            type: 'GET',
+            headers: { 'X-Requested-With': 'XMLHttpRequest' },
+            success: function(response) {
+                if (response.success) {
+                    var options = '<option value="">Chọn loại case</option>';
+                    response.data.forEach(function(caseType) {
+                        if (caseType.status === 'active') {
+                            options += '<option value="' + caseType.name + '">' + caseType.name + '</option>';
+                        }
+                    });
+                    $('#viewCaseType').html(options).val(caseData.case_type);
+                }
+            }
+        });
+        // Các trường còn lại
+        var transferredName = 'Trần Nguyễn Anh Khoa';
+        $('#viewTransferredBy').val(transferredName);
+        $('#viewPriority').val(caseData.priority || 'onsite');
+        $('#viewIssueTitle').val(caseData.issue_title || '');
+        $('#viewIssueDescription').val(caseData.issue_description || '');
+        $('#viewStartDate').val(caseData.start_date ? formatDateTimeLocal(new Date(caseData.start_date)) : '');
+        $('#viewDueDate').val(caseData.due_date ? formatDateTimeLocal(new Date(caseData.due_date)) : '');
+        $('#viewStatus').val(caseData.status || 'pending');
+        $('#viewNotes').val(caseData.notes || '');
+        $('#viewCaseNumber').val(caseData.case_number || '');
+    }
+    
+    // ===== FOCUS MANAGEMENT FOR ACCESSIBILITY ===== //
+    // Xử lý focus khi đóng modal để tránh lỗi ARIA
+    $(document).on('click', '.btn-close', function() {
+        // Blur focus trước khi đóng modal
+        $(this).blur();
+    });
+    
+    // Xử lý focus khi đóng modal bằng ESC key
+    $(document).on('keydown', '.modal', function(e) {
+        if (e.key === 'Escape') {
+            // Blur tất cả focusable elements trong modal
+            $(this).find(':focus').blur();
+        }
+    });
+    
+    // Xử lý focus khi click outside modal
+    $(document).on('click', '.modal', function(e) {
+        if (e.target === this) {
+            // Blur tất cả focusable elements trong modal
+            $(this).find(':focus').blur();
+        }
+    });
+    
+    // Xử lý focus khi modal bắt đầu ẩn
+    $(document).on('hide.bs.modal', function(e) {
+        var modal = $(e.target);
+        // Blur tất cả focusable elements trong modal
+        modal.find(':focus').blur();
+    });
     </script>
 </body>
 </html> 

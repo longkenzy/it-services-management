@@ -24,8 +24,13 @@ if (!isset($_SESSION['user_id'])) {
 require_once '../config/db.php';
 
 try {
+    $all = isset($_GET['all']) && $_GET['all'] == '1';
     // Lấy danh sách nhân sự
-    $stmt = $pdo->prepare("SELECT id, fullname, position FROM staffs WHERE status = 'active' ORDER BY fullname");
+    if ($all) {
+        $stmt = $pdo->prepare("SELECT id, fullname, position FROM staffs WHERE status = 'active' ORDER BY fullname");
+    } else {
+        $stmt = $pdo->prepare("SELECT id, fullname, position FROM staffs WHERE status = 'active' AND department = 'IT Dept.' ORDER BY fullname");
+    }
     $stmt->execute();
     $staff_list = $stmt->fetchAll(PDO::FETCH_ASSOC);
     
