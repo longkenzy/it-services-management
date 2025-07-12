@@ -1,59 +1,99 @@
 <?php
-require_once 'includes/session.php';
-requireLogin();
-require_once 'config/db.php';
+// Enable error reporting for debugging (remove in production)
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
 
-// Lấy user hiện tại từ session
-$currentUser = getCurrentUser();
-$username = $currentUser ? $currentUser['username'] : null;
+try {
+    require_once 'includes/session.php';
+    requireLogin();
+    require_once 'config/db.php';
 
-// Lấy thông tin user từ database theo username với JOIN để lấy tên phòng ban và chức vụ
-$stmt = $pdo->prepare('
-    SELECT s.* 
-    FROM staffs s 
-    WHERE s.username = ?
-');
-$stmt->execute([$username]);
-$user = $stmt->fetch(PDO::FETCH_ASSOC);
+    // Lấy user hiện tại từ session
+    $currentUser = getCurrentUser();
+    $username = $currentUser ? $currentUser['username'] : null;
 
-// Debug: Kiểm tra dữ liệu thực tế
-error_log("Profile Debug - Username: " . $username);
-error_log("Profile Debug - User data: " . print_r($user, true));
-
-if (!$user) {
-    die('Không tìm thấy thông tin người dùng!');
-}
-
-// Xác định avatar
-$avatar_url = null;
-if (!empty($user['avatar'])) {
-    $avatar_path = $user['avatar'];
-    if (!str_contains($avatar_path, '/')) {
-        $avatar_url = 'assets/uploads/avatars/' . $avatar_path;
-    } else {
-        $avatar_url = $avatar_path;
+    if (!$username) {
+        throw new Exception('Không tìm thấy thông tin người dùng trong session');
     }
+
+    // Lấy thông tin user từ database theo username
+    $stmt = $pdo->prepare('
+        SELECT s.* 
+        FROM staffs s 
+        WHERE s.username = ?
+    ');
+    $stmt->execute([$username]);
+    $user = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    if (!$user) {
+        throw new Exception('Không tìm thấy thông tin người dùng trong database');
+    }
+
+    // Xác định avatar
+    $avatar_url = null;
+    if (!empty($user['avatar'])) {
+        $avatar_path = $user['avatar'];
+        if (!str_contains($avatar_path, '/')) {
+            $avatar_url = 'assets/uploads/avatars/' . $avatar_path;
+        } else {
+            $avatar_url = $avatar_path;
+        }
+    }
+
+    // Kiểm tra file avatar có tồn tại không
+    if (!$avatar_url || !file_exists($avatar_url)) {
+        $avatar_url = 'assets/images/default-avatar.svg';
+    }
+
+    // Tạo avatar từ chữ cái đầu của tên
+    $initials = '';
+    $name_parts = explode(' ', $user['fullname'] ?? '');
+    foreach ($name_parts as $part) {
+        if (!empty($part)) {
+            $initials .= strtoupper(substr($part, 0, 1));
+        }
+    }
+    $initials = substr($initials, 0, 2);
+
+    // Tạo màu background dựa trên user ID
+    $colors = ['#007bff', '#28a745', '#dc3545', '#ffc107', '#17a2b8', '#6f42c1'];
+    $color = $colors[($user['id'] ?? 0) % count($colors)];
+
+} catch (Exception $e) {
+    // Log error
+    error_log("Profile Error: " . $e->getMessage());
+    
+    // Show user-friendly error
+    http_response_code(500);
+    echo '<!DOCTYPE html>
+    <html lang="vi">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Lỗi - IT Services Management</title>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    </head>
+    <body class="bg-light">
+        <div class="container mt-5">
+            <div class="row justify-content-center">
+                <div class="col-md-6">
+                    <div class="card shadow">
+                        <div class="card-body text-center">
+                            <h3 class="text-danger mb-3">
+                                <i class="fas fa-exclamation-triangle"></i>
+                                Đã xảy ra lỗi
+                            </h3>
+                            <p class="text-muted">Không thể tải thông tin cá nhân. Vui lòng thử lại sau.</p>
+                            <a href="dashboard.php" class="btn btn-primary">Quay lại Dashboard</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </body>
+    </html>';
+    exit;
 }
-
-// Kiểm tra file avatar có tồn tại không
-if (!$avatar_url || !file_exists($avatar_url)) {
-    $avatar_url = 'assets/images/default-avatar.svg';
-}
-
-// Tạo avatar từ chữ cái đầu của tên
-$initials = '';
-$name_parts = explode(' ', $user['fullname']);
-foreach ($name_parts as $part) {
-    $initials .= strtoupper(substr($part, 0, 1));
-}
-$initials = substr($initials, 0, 2);
-
-// Tạo màu background dựa trên user ID
-$colors = ['#007bff', '#28a745', '#dc3545', '#ffc107', '#17a2b8', '#6f42c1'];
-$color = $colors[$user['id'] % count($colors)];
-
-
-
 ?>
 <!DOCTYPE html>
 <html lang="vi">
@@ -265,10 +305,10 @@ $color = $colors[$user['id'] % count($colors)];
                     <div class="d-flex align-items-center justify-content-md-end">
                         <span class="role-badge me-3">
                             <i class="fas fa-crown me-1"></i>
-                            <?php echo ucfirst($user['role']); ?>
+                            <?php echo ucfirst($user['role'] ?? 'User'); ?>
                         </span>
-                        <span class="status-badge bg-<?php echo (strtolower($user['status']) === 'active' || $user['status'] === 'Đang làm việc') ? 'success' : 'secondary'; ?>">
-                            <?php echo htmlspecialchars($user['status']); ?>
+                        <span class="status-badge bg-<?php echo (strtolower($user['status'] ?? '') === 'active' || ($user['status'] ?? '') === 'Đang làm việc') ? 'success' : 'secondary'; ?>">
+                            <?php echo htmlspecialchars($user['status'] ?? 'Unknown'); ?>
                         </span>
                     </div>
                 </div>
@@ -297,13 +337,13 @@ $color = $colors[$user['id'] % count($colors)];
                                 <input type="file" id="avatarInput" accept="image/*" style="display: none;">
                             </div>
                             
-                            <h4 class="fw-bold mb-2"><?php echo htmlspecialchars($user['fullname']); ?></h4>
-                            <p class="text-muted mb-3">@<?php echo htmlspecialchars($user['username']); ?></p>
+                            <h4 class="fw-bold mb-2"><?php echo htmlspecialchars($user['fullname'] ?? 'Unknown'); ?></h4>
+                            <p class="text-muted mb-3">@<?php echo htmlspecialchars($user['username'] ?? 'unknown'); ?></p>
                             
                             <div class="row text-center">
                                 <div class="col-6">
                                     <div class="stats-card">
-                                        <div class="stats-number"><?php echo htmlspecialchars($user['staff_code'] ?? $user['id']); ?></div>
+                                        <div class="stats-number"><?php echo htmlspecialchars($user['staff_code'] ?? $user['id'] ?? 'N/A'); ?></div>
                                         <div class="stats-label">Mã nhân viên</div>
                                     </div>
                                 </div>
@@ -312,10 +352,14 @@ $color = $colors[$user['id'] % count($colors)];
                                         <div class="stats-number">
                                             <?php 
                                             if (!empty($user['start_date'])) {
-                                                $start_date = new DateTime($user['start_date']);
-                                                $current_date = new DateTime();
-                                                $interval = $current_date->diff($start_date);
-                                                echo $interval->y;
+                                                try {
+                                                    $start_date = new DateTime($user['start_date']);
+                                                    $current_date = new DateTime();
+                                                    $interval = $current_date->diff($start_date);
+                                                    echo $interval->y;
+                                                } catch (Exception $e) {
+                                                    echo '0';
+                                                }
                                             } else {
                                                 echo '0';
                                             }
@@ -342,11 +386,11 @@ $color = $colors[$user['id'] % count($colors)];
                         <div class="card-body">
                             <div class="info-row">
                                 <div class="info-label">Họ và tên:</div>
-                                <div class="info-value"><?php echo htmlspecialchars($user['fullname']); ?></div>
+                                <div class="info-value"><?php echo htmlspecialchars($user['fullname'] ?? 'Chưa cập nhật'); ?></div>
                             </div>
                             <div class="info-row">
                                 <div class="info-label">Tên đăng nhập:</div>
-                                <div class="info-value"><?php echo htmlspecialchars($user['username']); ?></div>
+                                <div class="info-value"><?php echo htmlspecialchars($user['username'] ?? 'Chưa cập nhật'); ?></div>
                             </div>
                             <div class="info-row">
                                 <div class="info-label">Email:</div>
@@ -365,8 +409,12 @@ $color = $colors[$user['id'] % count($colors)];
                                 <div class="info-value <?php echo empty($user['birth_date']) ? 'empty' : ''; ?>">
                                     <?php 
                                     if (!empty($user['birth_date'])) {
-                                        $birth_date = new DateTime($user['birth_date']);
-                                        echo htmlspecialchars($birth_date->format('d/m/Y'));
+                                        try {
+                                            $birth_date = new DateTime($user['birth_date']);
+                                            echo htmlspecialchars($birth_date->format('d/m/Y'));
+                                        } catch (Exception $e) {
+                                            echo htmlspecialchars($user['birth_date']);
+                                        }
                                     } else {
                                         echo 'Chưa cập nhật';
                                     }
@@ -421,29 +469,33 @@ $color = $colors[$user['id'] % count($colors)];
                                 <div class="info-value <?php echo empty($user['start_date']) ? 'empty' : ''; ?>">
                                     <?php 
                                     if (!empty($user['start_date'])) {
-                                        $start_date = new DateTime($user['start_date']);
-                                        $current_date = new DateTime();
-                                        $interval = $current_date->diff($start_date);
-                                        
-                                        $years = $interval->y;
-                                        $months = $interval->m;
-                                        $days = $interval->d;
-                                        
-                                        $seniority_text = '';
-                                        if ($years > 0) {
-                                            $seniority_text .= $years . ' năm ';
-                                        }
-                                        if ($months > 0) {
-                                            $seniority_text .= $months . ' tháng ';
-                                        }
-                                        if ($days > 0) {
-                                            $seniority_text .= $days . ' ngày';
-                                        }
-                                        
-                                        if (empty($seniority_text)) {
-                                            echo 'Chưa đủ 1 ngày';
-                                        } else {
-                                            echo htmlspecialchars(trim($seniority_text));
+                                        try {
+                                            $start_date = new DateTime($user['start_date']);
+                                            $current_date = new DateTime();
+                                            $interval = $current_date->diff($start_date);
+                                            
+                                            $years = $interval->y;
+                                            $months = $interval->m;
+                                            $days = $interval->d;
+                                            
+                                            $seniority_text = '';
+                                            if ($years > 0) {
+                                                $seniority_text .= $years . ' năm ';
+                                            }
+                                            if ($months > 0) {
+                                                $seniority_text .= $months . ' tháng ';
+                                            }
+                                            if ($days > 0) {
+                                                $seniority_text .= $days . ' ngày';
+                                            }
+                                            
+                                            if (empty($seniority_text)) {
+                                                echo 'Chưa đủ 1 ngày';
+                                            } else {
+                                                echo htmlspecialchars(trim($seniority_text));
+                                            }
+                                        } catch (Exception $e) {
+                                            echo 'Chưa cập nhật';
                                         }
                                     } else {
                                         echo 'Chưa cập nhật';
@@ -454,15 +506,13 @@ $color = $colors[$user['id'] % count($colors)];
                             <div class="info-row">
                                 <div class="info-label">Trạng thái:</div>
                                 <div class="info-value">
-                                    <span class="status-badge bg-<?php echo (strtolower($user['status']) === 'active' || $user['status'] === 'Đang làm việc') ? 'success' : 'secondary'; ?>">
-                                        <?php echo htmlspecialchars($user['status']); ?>
+                                    <span class="status-badge bg-<?php echo (strtolower($user['status'] ?? '') === 'active' || ($user['status'] ?? '') === 'Đang làm việc') ? 'success' : 'secondary'; ?>">
+                                        <?php echo htmlspecialchars($user['status'] ?? 'Unknown'); ?>
                                     </span>
                                 </div>
                             </div>
                         </div>
                     </div>
-                    
-
                     
                     <!-- Action Buttons -->
                     <div class="action-buttons">
@@ -470,14 +520,11 @@ $color = $colors[$user['id'] % count($colors)];
                             <i class="fas fa-arrow-left me-2"></i>
                             Quay lại Dashboard
                         </a>
-
                     </div>
                 </div>
             </div>
         </div>
     </main>
-
-
 
     <!-- jQuery -->
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
@@ -517,8 +564,6 @@ $color = $colors[$user['id'] % count($colors)];
                 showInfo('Tính năng đang phát triển...');
             });
             
-
-            
             // ===== AVATAR UPLOAD ===== //
             
             // Xử lý upload avatar
@@ -557,13 +602,9 @@ $color = $colors[$user['id'] % count($colors)];
                     uploadAvatar(file);
                 }
             });
-            
-            
         });
         
         // ===== FUNCTIONS ===== //
-        
-
         
         function uploadAvatar(file) {
             const formData = new FormData();
