@@ -192,7 +192,7 @@ $current_page = basename($_SERVER['PHP_SELF']);
                             </li>
                             <li><hr class="dropdown-divider"></li>
                             <li>
-                                <a class="dropdown-item" href="#" data-action="profile">
+                                <a class="dropdown-item" href="profile.php">
                                     <i class="fas fa-user me-2"></i>
                                     Thông tin cá nhân
                                 </a>

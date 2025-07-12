@@ -350,7 +350,7 @@ $flash_messages = getFlashMessages();
                                             <span class="input-group-text">
                                                 <i class="fas fa-search"></i>
                                             </span>
-                                            <input type="text" class="form-control" id="searchInput" 
+                                            <input type="text" class="form-control" id="caseSearchInput" 
                                                    placeholder="Tìm kiếm case...">
                                         </div>
                                         <select class="form-select form-select-sm" id="statusFilter" style="width: 150px;">
@@ -402,7 +402,7 @@ $flash_messages = getFlashMessages();
                                         </thead>
                                         <tbody>
                                             <?php foreach ($cases as $case): ?>
-                                                <tr>
+                                                <tr data-status="<?php echo htmlspecialchars($case['status']); ?>">
                                                     <td>
                                                         <div class="form-check">
                                                             <input class="form-check-input" type="checkbox" 
@@ -1089,6 +1089,9 @@ $flash_messages = getFlashMessages();
             $.ajax({
                 url: 'change_password.php',
                 method: 'POST',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
                 data: {
                     old_password: oldPassword,
                     new_password: newPassword,
@@ -1302,13 +1305,25 @@ $flash_messages = getFlashMessages();
         });
         
         // Search functionality
-        $('#searchInput').on('input', function() {
+        $('#caseSearchInput').on('input', function() {
             // TODO: Implement search functionality
         });
         
         // Status filter
         $('#statusFilter').on('change', function() {
-            // TODO: Implement filter functionality
+            var selectedStatus = $(this).val();
+            $('tbody tr').each(function() {
+                var rowStatus = $(this).data('status');
+                if (!selectedStatus || selectedStatus === "") {
+                    $(this).show();
+                } else {
+                    if (rowStatus === selectedStatus) {
+                        $(this).show();
+                    } else {
+                        $(this).hide();
+                    }
+                }
+            });
         });
         
         // Select all checkbox
@@ -1333,6 +1348,9 @@ $flash_messages = getFlashMessages();
                     return $.ajax({
                         url: 'api/delete_case.php',
                         type: 'POST',
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest'
+                        },
                         contentType: 'application/json',
                         data: JSON.stringify({ case_id: id })
                     });
@@ -1382,6 +1400,9 @@ $flash_messages = getFlashMessages();
         $.ajax({
             url: 'api/get_case_details.php?id=' + id,
             type: 'GET',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            },
             success: function(response) {
                 if (response.success) {
                     // Load staff list và case types trước khi populate form
@@ -1416,6 +1437,9 @@ $flash_messages = getFlashMessages();
             $.ajax({
                 url: 'api/get_staff_list.php',
                 type: 'GET',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
                 success: function(response) {
                     if (response.success) {
                         var options = '<option value="">Chọn nhân sự</option>';
@@ -1442,6 +1466,9 @@ $flash_messages = getFlashMessages();
             $.ajax({
                 url: 'api/case_types.php?type=internal&action=list',
                 type: 'GET',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
                 success: function(response) {
                     if (response.success) {
                         var options = '<option value="">Chọn loại case</option>';
@@ -1549,6 +1576,9 @@ $flash_messages = getFlashMessages();
             $.ajax({
                 url: 'api/delete_case.php',
                 type: 'POST',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
                 contentType: 'application/json',
                 data: JSON.stringify({
                     case_id: id
@@ -1584,6 +1614,9 @@ $flash_messages = getFlashMessages();
             $.ajax({
                 url: 'api/update_case.php',
                 type: 'POST',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
                 contentType: 'application/json',
                 data: JSON.stringify({
                     case_id: id,
@@ -1612,6 +1645,9 @@ $flash_messages = getFlashMessages();
         $.ajax({
             url: 'api/get_staff_list.php',
             type: 'GET',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            },
             success: function(response) {
                 if (response.success) {
                     var options = '<option value="">Chọn nhân sự</option>';
@@ -1635,6 +1671,9 @@ $flash_messages = getFlashMessages();
         $.ajax({
             url: 'api/case_types.php?type=internal&action=list',
             type: 'GET',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            },
             success: function(response) {
                 if (response.success) {
                     var options = '<option value="">Chọn loại case</option>';
@@ -1725,6 +1764,9 @@ $flash_messages = getFlashMessages();
         $.ajax({
             url: 'api/create_case.php',
             type: 'POST',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            },
             contentType: 'application/json',
             data: JSON.stringify(formData),
             success: function(response) {
@@ -1845,6 +1887,9 @@ $flash_messages = getFlashMessages();
         $.ajax({
             url: 'api/update_case.php',
             type: 'POST',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            },
             contentType: 'application/json',
             data: JSON.stringify(formData),
             success: function(response) {

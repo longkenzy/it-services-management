@@ -13,9 +13,9 @@ $(document).ready(function() {
         search: '',
         department: '',
         position: '',
-        contract_type: '',
         sort_by: 'start_date',
-        sort_order: 'ASC'
+        sort_order: 'ASC',
+        gender: ''
     };
     let selectedStaffs = [];
     let staffData = [];
@@ -55,12 +55,13 @@ $(document).ready(function() {
         
         $('#positionFilter').on('change', function() {
             currentFilters.position = $(this).val();
+            console.log('Filter by position:', currentFilters.position); // DEBUG
             currentPage = 1;
             loadStaffData();
         });
-        
-        $('#contractFilter').on('change', function() {
-            currentFilters.contract_type = $(this).val();
+
+        $('#genderFilter').on('change', function() {
+            currentFilters.gender = $(this).val();
             currentPage = 1;
             loadStaffData();
         });
@@ -307,6 +308,16 @@ $(document).ready(function() {
             posFilter.append(`<option value="${pos.position}">${pos.position} (${pos.count})</option>`);
         });
         posFilter.val(currentPos);
+
+        // Update gender filter
+        const genderFilter = $('#genderFilter');
+        const currentGender = genderFilter.val();
+        genderFilter.find('option:not(:first)').remove();
+
+        stats.genders.forEach(gender => {
+            genderFilter.append(`<option value="${gender.gender}">${gender.gender} (${gender.count})</option>`);
+        });
+        genderFilter.val(currentGender);
     }
     
     // ===== HIỂN THỊ/ẨN TRẠNG THÁI ===== //
@@ -337,16 +348,16 @@ $(document).ready(function() {
             search: '',
             department: '',
             position: '',
-            contract_type: '',
             sort_by: 'start_date',
-            sort_order: 'ASC'
+            sort_order: 'ASC',
+            gender: ''
         };
         
         $('#searchInput').val('');
         $('#globalSearch').val('');
         $('#departmentFilter').val('');
         $('#positionFilter').val('');
-        $('#contractFilter').val('');
+        $('#genderFilter').val('');
         $('#sortFilter').val('start_date:ASC');
         
         currentPage = 1;
@@ -529,6 +540,36 @@ $(document).ready(function() {
             
             // Hiển thị modal sau khi tất cả đã sẵn sàng
             $('#addStaffModal').modal('show');
+        });
+    }
+    
+    // Thêm hàm showViewStaffModal
+    function showViewStaffModal(staff) {
+        // Gọi lại modal chỉnh sửa nhưng chuyển sang chế độ readonly
+        showEditStaffModal(staff);
+        // Đổi title
+        $('#addStaffModalLabel').html('<i class="fas fa-user me-2"></i>Xem thông tin nhân sự');
+        // Disable tất cả input, select, textarea, file trong form (KHÔNG disable button)
+        $('#addStaffForm input, #addStaffForm select, #addStaffForm textarea, #addStaffForm [type="file"]').prop('disabled', true).prop('readonly', true);
+        // Enable nút Đóng và nút Chỉnh sửa
+        $('#addStaffForm button[data-bs-dismiss], #btnViewToEdit').prop('disabled', false).prop('readonly', false);
+        // Thêm nút Chỉnh sửa nếu chưa có (ở footer)
+        if ($('#btnViewToEdit').length === 0) {
+            $('<button type="button" class="btn btn-primary ms-2" id="btnViewToEdit"><i class="fas fa-edit me-2"></i>Chỉnh sửa</button>')
+                .insertBefore($('#addStaffModal .modal-footer button[data-bs-dismiss]'));
+        }
+        // Ẩn nút Lưu/Thêm
+        $('#addStaffForm button[type="submit"]').hide();
+        // Sự kiện chuyển sang chế độ chỉnh sửa
+        $('#btnViewToEdit').off('click').on('click', function() {
+            // Enable lại các input
+            $('#addStaffForm input, #addStaffForm select, #addStaffForm textarea, #addStaffForm [type="file"]').removeAttr('disabled').removeAttr('readonly');
+            // Hiện nút Lưu/Thêm
+            $('#addStaffForm button[type="submit"]').show();
+            // Đổi title
+            $('#addStaffModalLabel').html('<i class="fas fa-user-edit me-2"></i>Chỉnh sửa nhân sự');
+            // Ẩn nút Chỉnh sửa
+            $('#btnViewToEdit').remove();
         });
     }
     
@@ -866,7 +907,22 @@ $(document).ready(function() {
     window.viewStaff = function(staffId) {
         const staff = staffData.find(s => s.id === staffId);
         if (staff) {
-            showInfo(`Xem chi tiết nhân sự: ${staff.fullname}\nChức năng này sẽ được phát triển trong phiên bản tiếp theo!`);
+            // Gọi API lấy chi tiết nhân sự mới nhất
+            $.ajax({
+                url: `api/get_staff_detail.php?id=${staffId}`,
+                method: 'GET',
+                dataType: 'json',
+                success: function(response) {
+                    if (response.success && response.data) {
+                        showViewStaffModal(response.data);
+                    } else {
+                        showNotification(response.message || 'Không lấy được dữ liệu nhân sự', 'error');
+                    }
+                },
+                error: function(xhr, status, error) {
+                    showNotification('Lỗi khi lấy dữ liệu nhân sự: ' + (xhr.responseJSON?.message || error), 'error');
+                }
+            });
         }
     };
     

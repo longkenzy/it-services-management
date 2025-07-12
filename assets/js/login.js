@@ -208,38 +208,15 @@ $(document).ready(function() {
     // ===== NOTIFICATION MESSAGES ===== //
     function showSuccessMessage(message) {
         hideLoadingState();
-        
-        const alert = $(`
-            <div class="alert alert-success alert-dismissible fade show mt-3" role="alert">
-                <i class="fas fa-check-circle me-2"></i>
-                ${message}
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            </div>
-        `);
-        
-        loginForm.after(alert);
-        
-        // Tự động ẩn sau 2 giây
-        setTimeout(function() {
-            alert.fadeOut();
-        }, 2000);
+        showSuccess(message);
     }
     
     function showErrorMessage(message) {
-        const alert = $(`
-            <div class="alert alert-danger alert-dismissible fade show mt-3" role="alert">
-                <i class="fas fa-exclamation-circle me-2"></i>
-                ${message}
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            </div>
-        `);
-        
-        loginForm.after(alert);
-        
-        // Tự động ẩn sau 2 giây
-        setTimeout(function() {
-            alert.fadeOut();
-        }, 2000);
+        showError(message);
+    }
+    
+    function showInfoMessage(message) {
+        showInfo(message);
     }
     
     // ===== REMEMBER ME FUNCTIONALITY ===== //
@@ -261,23 +238,6 @@ $(document).ready(function() {
         showInfoMessage('Chức năng quên mật khẩu sẽ được triển khai sau!');
     });
     
-    function showInfoMessage(message) {
-        const alert = $(`
-            <div class="alert alert-info alert-dismissible fade show mt-3" role="alert">
-                <i class="fas fa-info-circle me-2"></i>
-                ${message}
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            </div>
-        `);
-        
-        loginForm.after(alert);
-        
-        // Tự động ẩn sau 2 giây
-        setTimeout(function() {
-            alert.fadeOut();
-        }, 2000);
-    }
-    
     // ===== KEYBOARD SHORTCUTS ===== //
     $(document).on('keydown', function(e) {
         // Enter key để submit form
@@ -297,7 +257,10 @@ $(document).ready(function() {
         rememberMeCheckbox.prop('checked', false);
         clearInputError(emailInput);
         clearInputError(passwordInput);
-        $('.alert').remove();
+        // Xóa tất cả toast notifications
+        if (typeof alertSystem !== 'undefined') {
+            alertSystem.hideAll();
+        }
     }
     
     // ===== SMOOTH ANIMATIONS ===== //

@@ -314,14 +314,15 @@ $(document).ready(function() {
         $('#changePasswordModal').modal('show');
     }
     
-    function performLogout() {
-        showNotification('Đang đăng xuất...', 'info');
+    // Đã xóa đoạn logic logout trùng lặp. Chỉ giữ lại một nơi duy nhất xử lý logout.
+    // function performLogout() {
+    //     showNotification('Đang đăng xuất...', 'info');
         
-        setTimeout(function() {
-            // Redirect to logout handler
-            window.location.href = 'auth/logout.php';
-        }, 1000);
-    }
+    //     setTimeout(function() {
+    //         // Redirect to logout handler
+    //         window.location.href = 'auth/logout.php';
+    //     }, 1000);
+    // }
     
     // ===== BREADCRUMB FUNCTIONALITY ===== //
     

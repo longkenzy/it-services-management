@@ -47,6 +47,7 @@ try {
     $contract_type = isset($_GET['contract_type']) ? trim($_GET['contract_type']) : '';
     $sort_by = isset($_GET['sort_by']) ? trim($_GET['sort_by']) : 'start_date';
     $sort_order = isset($_GET['sort_order']) ? trim($_GET['sort_order']) : 'ASC';
+    $gender = isset($_GET['gender']) ? trim($_GET['gender']) : '';
     
     // Validate parameters
     if ($page < 1) $page = 1;
@@ -91,6 +92,12 @@ try {
     if (!empty($contract_type)) {
         $where_conditions[] = "job_type = :contract_type";
         $params['contract_type'] = $contract_type;
+    }
+    
+    // Lọc theo giới tính
+    if (!empty($gender)) {
+        $where_conditions[] = "gender = :gender";
+        $params['gender'] = $gender;
     }
     
     // Chỉ lấy nhân sự đang làm việc
@@ -187,6 +194,12 @@ try {
     $pos_stmt->execute();
     $positions = $pos_stmt->fetchAll();
     
+    // ===== LẤY THỐNG KÊ GIỚI TÍNH ===== //
+    $gender_sql = "SELECT gender, COUNT(*) as count FROM staffs WHERE status = 'active' AND gender IS NOT NULL AND gender != '' GROUP BY gender ORDER BY count DESC";
+    $gender_stmt = $pdo->prepare($gender_sql);
+    $gender_stmt->execute();
+    $genders = $gender_stmt->fetchAll();
+    
     // ===== TÍNH TOÁN PHÂN TRANG ===== //
     
     // ===== TRẢ VỀ KẾT QUẢ ===== //
@@ -198,6 +211,7 @@ try {
             'statistics' => [
                 'departments' => $departments,
                 'positions' => $positions,
+                'genders' => $genders,
                 'total_active_staff' => $total_records
             ],
             'filters' => [
@@ -205,6 +219,7 @@ try {
                 'department' => $department,
                 'position' => $position,
                 'contract_type' => $contract_type,
+                'gender' => $gender,
                 'sort_by' => $sort_by,
                 'sort_order' => $sort_order
             ]

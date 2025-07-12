@@ -1,7 +1,11 @@
 <?php
-if (basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME'])) {
-    http_response_code(403);
-    exit('Access denied.');
+// Bảo vệ file khỏi truy cập trực tiếp (chỉ cho phép từ cùng domain)
+if (!isset($_SERVER['HTTP_REFERER']) || !str_contains($_SERVER['HTTP_REFERER'], $_SERVER['HTTP_HOST'])) {
+    // Cho phép truy cập từ AJAX requests
+    if (!isset($_SERVER['HTTP_X_REQUESTED_WITH']) || $_SERVER['HTTP_X_REQUESTED_WITH'] !== 'XMLHttpRequest') {
+        http_response_code(403);
+        exit('Access denied.');
+    }
 }
 header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *');

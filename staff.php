@@ -114,13 +114,11 @@ $current_user = getCurrentUser();
                                 </select>
                             </div>
                             <div class="col-md-2">
-                                <label class="form-label">Loại hợp đồng</label>
-                                <select class="form-select" id="contractFilter">
-                                    <option value="">Tất cả loại HĐ</option>
-                                    <option value="Chính thức">Chính thức</option>
-                                    <option value="Thử việc">Thử việc</option>
-                                    <option value="Tạm thời">Tạm thời</option>
-                                    <option value="Thực tập">Thực tập</option>
+                                <label class="form-label">Giới tính</label>
+                                <select class="form-select" id="genderFilter">
+                                    <option value="">Tất cả</option>
+                                    <option value="Nam">Nam</option>
+                                    <option value="Nữ">Nữ</option>
                                 </select>
                             </div>
                             <div class="col-md-2">
@@ -541,7 +539,7 @@ $current_user = getCurrentUser();
                                                         <option value="">--Chọn--</option>
                                                         <option value="Chính thức">Chính thức</option>
                                                         <option value="Thử việc">Thử việc</option>
-                                                        <option value="Tạm thời">Tạm thời</option>
+                                                        <option value="Học việc">Học việc</option>
                                                         <option value="Thực tập">Thực tập</option>
                                                     </select>
                                                 </div>
