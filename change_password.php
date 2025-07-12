@@ -9,7 +9,7 @@
 require_once 'includes/session.php';
 
 // Set content type
-header('Content-Type: application/json');
+header('Content-Type: application/json; charset=utf-8');
 
 // Kiểm tra đăng nhập
 if (!isLoggedIn()) {
@@ -39,12 +39,12 @@ $current_user = getCurrentUser();
 
 try {
     // Lấy và validate dữ liệu
-    $old_password = trim($_POST['old_password'] ?? '');
+    $current_password = trim($_POST['current_password'] ?? '');
     $new_password = trim($_POST['new_password'] ?? '');
     $confirm_password = trim($_POST['confirm_password'] ?? '');
     
     // Validation
-    if (empty($old_password) || empty($new_password) || empty($confirm_password)) {
+    if (empty($current_password) || empty($new_password) || empty($confirm_password)) {
         echo json_encode([
             'success' => false,
             'message' => 'Vui lòng điền đầy đủ thông tin'
@@ -68,10 +68,10 @@ try {
         exit();
     }
     
-    if ($old_password === $new_password) {
+    if ($current_password === $new_password) {
         echo json_encode([
             'success' => false,
-            'message' => 'Mật khẩu mới phải khác mật khẩu cũ'
+            'message' => 'Mật khẩu mới phải khác mật khẩu hiện tại'
         ]);
         exit();
     }
@@ -79,23 +79,23 @@ try {
     // Bắt đầu transaction
     $pdo->beginTransaction();
     
-    // ===== KIỂM TRA MẬT KHẨU CŨ ===== //
+    // ===== KIỂM TRA MẬT KHẨU HIỆN TẠI ===== //
     
-    // Lấy mật khẩu hiện tại từ bảng users
-    $check_sql = "SELECT password FROM users WHERE id = ? LIMIT 1";
+    // Lấy mật khẩu hiện tại từ bảng staffs
+    $check_sql = "SELECT password FROM staffs WHERE username = ? LIMIT 1";
     $check_stmt = $pdo->prepare($check_sql);
-    $check_stmt->execute([$current_user['id']]);
+    $check_stmt->execute([$current_user['username']]);
     $user_data = $check_stmt->fetch();
     
     if (!$user_data) {
         throw new Exception('Không tìm thấy thông tin người dùng');
     }
     
-    // Kiểm tra mật khẩu cũ
-    if (!password_verify($old_password, $user_data['password'])) {
+    // Kiểm tra mật khẩu hiện tại
+    if (!password_verify($current_password, $user_data['password'])) {
         echo json_encode([
             'success' => false,
-            'message' => 'Mật khẩu cũ không đúng'
+            'message' => 'Mật khẩu hiện tại không đúng'
         ]);
         exit();
     }
@@ -105,19 +105,14 @@ try {
     // Mã hóa mật khẩu mới
     $new_password_hash = password_hash($new_password, PASSWORD_DEFAULT);
     
-    // Cập nhật mật khẩu trong bảng users
-    $update_users_sql = "UPDATE users SET password = ?, updated_at = NOW() WHERE id = ?";
-    $update_users_stmt = $pdo->prepare($update_users_sql);
-    $users_result = $update_users_stmt->execute([$new_password_hash, $current_user['id']]);
+    // Cập nhật mật khẩu trong bảng staffs
+    $update_sql = "UPDATE staffs SET password = ?, updated_at = NOW() WHERE username = ?";
+    $update_stmt = $pdo->prepare($update_sql);
+    $result = $update_stmt->execute([$new_password_hash, $current_user['username']]);
     
-    if (!$users_result) {
-        throw new Exception('Không thể cập nhật mật khẩu trong bảng users');
+    if (!$result) {
+        throw new Exception('Không thể cập nhật mật khẩu');
     }
-    
-    // Cập nhật mật khẩu trong bảng staffs (nếu có)
-    $update_staffs_sql = "UPDATE staffs SET password = ?, updated_at = NOW() WHERE username = ?";
-    $update_staffs_stmt = $pdo->prepare($update_staffs_sql);
-    $staffs_result = $update_staffs_stmt->execute([$new_password_hash, $current_user['username']]);
     
     // Ghi log hoạt động
     logUserActivity('change_password', 'Đổi mật khẩu thành công');
