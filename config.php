@@ -802,6 +802,45 @@ $flash_messages = getFlashMessages();
                     showAlert('<?php echo addslashes($message['message']); ?>', '<?php echo $message['type']; ?>');
                 <?php endforeach; ?>
             <?php endif; ?>
+            
+            // ===== DROPDOWN ACTIONS ===== //
+            
+            // Xử lý click "Đăng xuất"
+            $(document).on('click', '[data-action="logout"]', function(e) {
+                e.preventDefault();
+                showInfo('Đang đăng xuất...');
+                setTimeout(function() {
+                    window.location.href = 'auth/logout.php';
+                }, 1000);
+            });
+            
+            // Xử lý click "Thông tin cá nhân"
+            $(document).on('click', '[data-action="profile"]', function(e) {
+                e.preventDefault();
+                showInfo('Tính năng đang phát triển...');
+            });
+            
+            // Xử lý click "Cài đặt"
+            $(document).on('click', '[data-action="settings"]', function(e) {
+                e.preventDefault();
+                showInfo('Tính năng đang phát triển...');
+            });
+            
+            // Xử lý click "Thông báo"
+            $(document).on('click', '[data-action="notifications"]', function(e) {
+                e.preventDefault();
+                showInfo('Tính năng đang phát triển...');
+            });
+            
+            // Xử lý click "Đổi mật khẩu"
+            $(document).on('click', '[data-action="change-password"]', function(e) {
+                e.preventDefault();
+                $('#changePasswordModal').modal('show');
+                // Reset form khi mở modal
+                $('#changePasswordForm')[0].reset();
+                $('#changePasswordError').addClass('d-none');
+                $('#changePasswordSuccess').addClass('d-none');
+            });
         });
     </script>
 </body>
