@@ -38,7 +38,7 @@ $(document).ready(function() {
         setupHeaderEventListeners();
         
         // Search input
-        $('#searchInput').on('input', debounce(function() {
+        $('#staffSearchInput').on('input', debounce(function() {
             currentFilters.search = $(this).val().trim();
             currentPage = 1;
             loadStaffData();
@@ -353,7 +353,7 @@ $(document).ready(function() {
             gender: ''
         };
         
-        $('#searchInput').val('');
+        $('#staffSearchInput').val('');
         $('#globalSearch').val('');
         $('#departmentFilter').val('');
         $('#positionFilter').val('');
@@ -1004,7 +1004,7 @@ $(document).ready(function() {
         // Search form
         $('.search-form').on('submit', function(e) {
             e.preventDefault();
-            const searchValue = $('#searchInput').val().trim();
+            const searchValue = $('#staffSearchInput').val().trim();
             if (searchValue) {
                 currentFilters.search = searchValue;
                 currentPage = 1;
@@ -1013,7 +1013,7 @@ $(document).ready(function() {
         });
         
         // Global search input
-        $('#searchInput').on('input', debounce(function() {
+        $('#staffSearchInput').on('input', debounce(function() {
             const searchValue = $(this).val().trim();
             if (searchValue) {
                 currentFilters.search = searchValue;
@@ -1031,7 +1031,7 @@ $(document).ready(function() {
             // Ctrl+K for search
             if (e.ctrlKey && e.key === 'k') {
                 e.preventDefault();
-                $('#searchInput').focus();
+                $('#staffSearchInput').focus();
             }
         });
     }
