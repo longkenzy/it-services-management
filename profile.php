@@ -33,7 +33,7 @@ try {
     $avatar_url = null;
     if (!empty($user['avatar'])) {
         $avatar_path = $user['avatar'];
-        if (!str_contains($avatar_path, '/')) {
+        if (strpos($avatar_path, '/') === false) {
             $avatar_url = 'assets/uploads/avatars/' . $avatar_path;
         } else {
             $avatar_url = $avatar_path;
