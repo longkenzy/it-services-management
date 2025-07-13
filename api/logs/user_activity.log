@@ -1,2 +1,4 @@
 Deny from all
 {"timestamp":"2025-07-12 20:34:46","user_id":18,"username":"khuongdt","action":"create_deployment_case","details":"Created deployment case: CTK.2507005","ip_address":"::1"}
+{"timestamp":"2025-07-13 09:53:10","user_id":18,"username":"khuongdt","action":"create_deployment_case","details":"Created deployment case: CTK.2507006","ip_address":"::1"}
+{"timestamp":"2025-07-13 10:06:45","user_id":18,"username":"khuongdt","action":"create_deployment_case","details":"Created deployment case: CTK.2507007","ip_address":"::1"}
