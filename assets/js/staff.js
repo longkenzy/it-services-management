@@ -219,9 +219,10 @@ $(document).ready(function() {
                     <span class="gender-badge ${genderClass}">${staff.gender || ''}</span>
                 </td>
                 <td>
-                    <img src="${staff.avatar}" alt="Avatar" class="staff-avatar" 
+                    <img src="${staff.avatar ? (staff.avatar.includes('/') ? staff.avatar : 'assets/uploads/avatars/' + staff.avatar) : 'assets/images/default-avatar.svg'}" 
+                         alt="Avatar" class="staff-avatar" 
                          onerror="this.src='assets/images/default-avatar.svg'"
-                         style="cursor: pointer;" onclick="showAvatarModal('${staff.avatar}', '${staff.fullname}')">
+                         style="cursor: pointer;" onclick="showAvatarModal('${staff.avatar ? (staff.avatar.includes('/') ? staff.avatar : 'assets/uploads/avatars/' + staff.avatar) : 'assets/images/default-avatar.svg'}', '${staff.fullname}')">
                 </td>
                 <td>
                     <span class="fw-semibold text-dark">${staff.position || ''}</span>
