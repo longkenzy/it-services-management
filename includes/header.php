@@ -114,26 +114,28 @@ $current_page = basename($_SERVER['PHP_SELF']);
                         <ul class="dropdown-menu dropdown-menu-custom" aria-labelledby="workDropdown">
                             <li>
                                 <a class="dropdown-item" href="internal_cases.php">
-                                    <i class="fas fa-building me-2 text-primary"></i>
-                                    Case nội bộ
-                                    <small class="text-muted d-block">Xử lý sự cố nội bộ</small>
+                                    <i class="fas fa-ticket-alt me-2 text-primary"></i>
+                                    IT TICKET
                                 </a>
                             </li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li>
-                                <a class="dropdown-item" href="deployment_cases.php">
-                                    <i class="fas fa-rocket me-2 text-success"></i>
-                                    Case triển khai
-                                    <small class="text-muted d-block">Triển khai hệ thống mới</small>
+                            <li class="dropdown-submenu">
+                                <a class="dropdown-item dropdown-toggle d-flex justify-content-between align-items-center" href="#" id="projectDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <span><i class="fas fa-project-diagram me-2 text-success"></i>DỰ ÁN</span>
                                 </a>
-                            </li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li>
-                                <a class="dropdown-item" href="#" data-section="maintenance-case">
-                                    <i class="fas fa-wrench me-2 text-warning"></i>
-                                    Case bảo trì
-                                    <small class="text-muted d-block">Bảo trì hệ thống</small>
-                                </a>
+                                <ul class="dropdown-menu" aria-labelledby="projectDropdown">
+                                    <li>
+                                        <a class="dropdown-item" href="deployment_cases.php">
+                                            <i class="fas fa-rocket me-2 text-success"></i>
+                                            TRIỂN KHAI
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" href="#" data-section="maintenance-case">
+                                            <i class="fas fa-wrench me-2 text-warning"></i>
+                                            BẢO TRÌ
+                                        </a>
+                                    </li>
+                                </ul>
                             </li>
                         </ul>
                     </li>
