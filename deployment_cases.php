@@ -339,26 +339,30 @@ $flash_messages = getFlashMessages();
         .progress-badge {
             padding: 0.4rem 0.8rem;
             border-radius: 15px;
-            font-size: 0.6rem; /* Giảm font chữ nhỏ hơn nữa */
+            font-size: 0.8rem; /* Giảm font chữ nhỏ hơn nữa */
             font-weight: 600;
+            background: none !important;
+            border: none !important;
         }
         
-        .progress-CS { background: #007bff; color: white; }
-        .progress-SH { background: #28a745; color: white; }
-        .progress-GH { background: #ffc107; color: black; }
-        .progress-TK { background: #17a2b8; color: white; }
-        .progress-NT { background: #6f42c1; color: white; }
+        .progress-CS { color: #007bff; }
+        .progress-SH { color: #28a745; }
+        .progress-GH { color: #ffc107; }
+        .progress-TK { color: #17a2b8; }
+        .progress-NT { color: #6f42c1; }
         
         .priority-badge {
             padding: 0.4rem 0.8rem;
             border-radius: 15px;
-            font-size: 0.6rem; /* Giảm font chữ nhỏ hơn nữa */
+            font-size: 0.8rem;
             font-weight: 600;
+            background: none !important;
+            border: none !important;
         }
         
-        .priority-onsite { background: #dc3545; color: white; }
-        .priority-offsite { background: #fd7e14; color: white; }
-        .priority-remote { background: #20c997; color: white; }
+        .priority-onsite { color: #dc3545; }
+        .priority-offsite { color: #fd7e14; }
+        .priority-remote { color: #20c997; }
         
         /* Case status styles */
         .case-status {
@@ -368,10 +372,10 @@ $flash_messages = getFlashMessages();
             font-weight: 600;
         }
         
-        .status-pending { background: #ffc107; color: black; }
-        .status-in_progress { background: #17a2b8; color: white; }
+        .status-pending { background: #17a2b8; color: white; }
+        .status-in_progress { background: #ffc107; color: black; }
         .status-completed { background: #28a745; color: white; }
-        .status-cancelled { background: #6c757d; color: white; }
+        .status-cancelled { background: #dc3545; color: white; }
         
         /* Progress bar styles */
         .progress-bar-custom {
@@ -473,6 +477,11 @@ $flash_messages = getFlashMessages();
             .deployment-cases-table td {
                 padding: 0.5rem 0.25rem;
             }
+        }
+        /* Force black text for progress and priority badges */
+        .progress-badge,
+        .priority-badge {
+            color: #212529 !important;
         }
     </style>
 </head>
@@ -1106,13 +1115,45 @@ $flash_messages = getFlashMessages();
         }
         
         function markAsCompleted(id) {
-            // TODO: Implement mark as completed functionality
-            showAlert('Tính năng đánh dấu hoàn thành đang phát triển', 'info');
+            if (!confirm('Bạn có chắc chắn muốn đánh dấu case này là hoàn thành?')) return;
+            $.ajax({
+                url: 'api/mark_deployment_case_completed.php',
+                method: 'POST',
+                data: { id: id },
+                dataType: 'json',
+                success: function(response) {
+                    if (response.success) {
+                        showAlert('Đã đánh dấu hoàn thành thành công!', 'success');
+                        setTimeout(() => location.reload(), 1000);
+                    } else {
+                        showAlert(response.error || 'Không thể đánh dấu hoàn thành', 'error');
+                    }
+                },
+                error: function(xhr, status, error) {
+                    showAlert('Có lỗi xảy ra khi đánh dấu hoàn thành', 'error');
+                }
+            });
         }
         
         function deleteCase(id) {
-            // TODO: Implement delete case functionality
-            showAlert('Tính năng xóa đang phát triển', 'info');
+            if (!confirm('Bạn có chắc chắn muốn xoá case triển khai này? Hành động này không thể hoàn tác!')) return;
+            $.ajax({
+                url: 'api/delete_deployment_case.php',
+                method: 'POST',
+                data: { id: id },
+                dataType: 'json',
+                success: function(response) {
+                    if (response.success) {
+                        showAlert('Đã xoá case triển khai thành công!', 'success');
+                        setTimeout(() => location.reload(), 1000);
+                    } else {
+                        showAlert(response.error || 'Không thể xoá case triển khai', 'error');
+                    }
+                },
+                error: function(xhr, status, error) {
+                    showAlert('Có lỗi xảy ra khi xoá case', 'error');
+                }
+            });
         }
     </script>
 </body>

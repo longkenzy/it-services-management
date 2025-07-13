@@ -194,19 +194,21 @@ function h($str) { return htmlspecialchars($str ?? '', ENT_QUOTES, 'UTF-8'); }
                                 <div class="fs-5 mt-1 text-white-50"><?php echo h($case['project_name'] ?? ''); ?></div>
                             </div>
                         </div>
-                        <div class="d-flex flex-wrap gap-2 mt-3 mt-md-0">
+                        <div class="d-flex flex-wrap gap-2 mt-3 mt-md-0 align-items-center">
+                            <!-- Trạng thái -->
                             <span class="case-status status-<?php echo h($case['status']); ?> text-uppercase px-3 py-2 rounded fw-bold">
                                 <i class="fas fa-info-circle me-1"></i>
                                 <?php
                                 $statusText = [
-                                    'pending' => 'Tiếp nhận',
-                                    'in_progress' => 'Đang xử lý',
-                                    'completed' => 'Hoàn thành',
-                                    'cancelled' => 'Huỷ'
+                                    'pending' => 'TIẾP NHẬN',
+                                    'in_progress' => 'ĐANG XỬ LÝ',
+                                    'completed' => 'HOÀN THÀNH',
+                                    'cancelled' => 'HUỶ'
                                 ];
                                 echo $statusText[$case['status']] ?? h($case['status']);
                                 ?>
                             </span>
+                            <!-- Tiến trình -->
                             <span class="progress-badge progress-<?php echo h($case['progress']); ?> px-3 py-2 rounded fw-bold">
                                 <i class="fas fa-tasks me-1"></i>
                                 <?php
@@ -220,9 +222,10 @@ function h($str) { return htmlspecialchars($str ?? '', ENT_QUOTES, 'UTF-8'); }
                                 echo $progressLabels[$case['progress']] ?? h($case['progress']);
                                 ?>
                             </span>
-                            <span class="priority-badge priority-<?php echo h($case['job_type'] ?? $case['priority'] ?? ''); ?> px-3 py-2 rounded fw-bold">
+                            <!-- Hình thức -->
+                            <span class="badge px-3 py-2 rounded fw-bold bg-<?php echo ($case['method'] ?? '') === 'onsite' ? 'danger' : 'warning'; ?> text-uppercase">
                                 <i class="fas fa-briefcase me-1"></i>
-                                <?php echo h($case['job_type'] ?? $case['priority']); ?>
+                                <?php echo ($case['method'] ?? '') === 'onsite' ? 'Onsite' : 'Offsite'; ?>
                             </span>
                         </div>
                     </div>
@@ -258,6 +261,30 @@ function h($str) { return htmlspecialchars($str ?? '', ENT_QUOTES, 'UTF-8'); }
                                 <div class="case-row mb-3">
                                     <span class="case-label"><i class="fas fa-sticky-note me-2"></i>Ghi chú:</span>
                                     <span class="case-value ms-1"><?php echo nl2br(h($case['notes'])); ?></span>
+                                </div>
+                                <div class="case-row mb-3">
+                                    <span class="case-label"><i class="fas fa-info-circle me-2"></i>Trạng thái:</span>
+                                    <span class="case-value ms-1">
+                                        <span class="case-status status-<?php echo h($case['status']); ?> px-2 py-1 rounded fw-bold">
+                                            <?php echo $statusText[$case['status']] ?? h($case['status']); ?>
+                                        </span>
+                                    </span>
+                                </div>
+                                <div class="case-row mb-3">
+                                    <span class="case-label"><i class="fas fa-tasks me-2"></i>Tiến trình:</span>
+                                    <span class="case-value ms-1">
+                                        <span class="progress-badge progress-<?php echo h($case['progress']); ?> px-2 py-1 rounded fw-bold">
+                                            <?php echo $progressLabels[$case['progress']] ?? h($case['progress']); ?>
+                                        </span>
+                                    </span>
+                                </div>
+                                <div class="case-row mb-3">
+                                    <span class="case-label"><i class="fas fa-briefcase me-2"></i>Hình thức:</span>
+                                    <span class="case-value ms-1">
+                                        <span class="badge px-2 py-1 rounded fw-bold bg-<?php echo ($case['method'] ?? '') === 'onsite' ? 'danger' : 'warning'; ?> text-uppercase">
+                                            <?php echo ($case['method'] ?? '') === 'onsite' ? 'Onsite' : 'Offsite'; ?>
+                                        </span>
+                                    </span>
                                 </div>
                             </div>
                         </div>
