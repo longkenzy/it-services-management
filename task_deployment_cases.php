@@ -538,7 +538,7 @@ function h($str) { return htmlspecialchars($str ?? '', ENT_QUOTES, 'UTF-8'); }
             const query = $(this).val().trim();
             if (query.length > 2) {
                 // Implement search functionality here
-                console.log('Searching for:', query);
+                // Search functionality will be implemented
             }
         });
         

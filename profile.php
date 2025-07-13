@@ -564,6 +564,16 @@ try {
                 showInfo('Tính năng đang phát triển...');
             });
             
+            // Mở modal đổi mật khẩu khi click dropdown
+            $(document).on('click', '[data-action="change-password"]', function(e) {
+                e.preventDefault();
+                // Reset form nếu có
+                if ($('#changePasswordForm').length) {
+                    $('#changePasswordForm')[0].reset();
+                }
+                $('#changePasswordModal').modal('show');
+            });
+            
             // ===== AVATAR UPLOAD ===== //
             
             // Xử lý upload avatar

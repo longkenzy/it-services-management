@@ -248,12 +248,12 @@ $(document).ready(function() {
                         <button class="action-btn btn-view" onclick="viewStaff(${staff.id})" title="Xem chi tiết">
                             <i class="fas fa-eye"></i>
                         </button>
-                        <button class="action-btn btn-edit" onclick="editStaff(${staff.id})" title="Chỉnh sửa">
-                            <i class="fas fa-edit"></i>
-                        </button>
-                        <button class="action-btn btn-delete" onclick="deleteStaff(${staff.id})" title="Xóa">
-                            <i class="fas fa-trash"></i>
-                        </button>
+                        ${
+                            (window.currentUserRole !== 'user' && window.currentUserRole !== 'account user')
+                            ? `<button class="action-btn btn-edit" onclick="editStaff(${staff.id})" title="Chỉnh sửa"><i class="fas fa-edit"></i></button>
+                               <button class="action-btn btn-delete" onclick="deleteStaff(${staff.id})" title="Xóa"><i class="fas fa-trash"></i></button>`
+                            : ''
+                        }
                     </div>
                 </td>
             </tr>
@@ -554,10 +554,12 @@ $(document).ready(function() {
         $('#addStaffForm input, #addStaffForm select, #addStaffForm textarea, #addStaffForm [type="file"]').prop('disabled', true).prop('readonly', true);
         // Enable nút Đóng và nút Chỉnh sửa
         $('#addStaffForm button[data-bs-dismiss], #btnViewToEdit').prop('disabled', false).prop('readonly', false);
-        // Thêm nút Chỉnh sửa nếu chưa có (ở footer)
-        if ($('#btnViewToEdit').length === 0) {
+        // Thêm nút Chỉnh sửa nếu chưa có (ở footer) và user có quyền
+        if ($('#btnViewToEdit').length === 0 && window.currentUserRole !== 'user' && window.currentUserRole !== 'account user') {
             $('<button type="button" class="btn btn-primary ms-2" id="btnViewToEdit"><i class="fas fa-edit me-2"></i>Chỉnh sửa</button>')
                 .insertBefore($('#addStaffModal .modal-footer button[data-bs-dismiss]'));
+        } else if ((window.currentUserRole === 'user' || window.currentUserRole === 'account user') && $('#btnViewToEdit').length) {
+            $('#btnViewToEdit').remove();
         }
         // Ẩn nút Lưu/Thêm
         $('#addStaffForm button[type="submit"]').hide();
