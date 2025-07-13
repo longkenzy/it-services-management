@@ -153,7 +153,7 @@ body {
     border-radius: 12px;
     padding: 0.5rem 0;
     margin-top: 0.5rem;
-    min-width: 280px;
+    min-width: 220px;
 }
 
 .dropdown-menu-custom .dropdown-item {
@@ -1315,4 +1315,27 @@ select.form-select option[value=""] {
 .nav-link.active, .menu-item.active {
     background-color: #3b82f6 !important;
     color: #fff !important;
+} 
+
+/* ===== NESTED DROPDOWN SUPPORT ===== */
+.dropdown-submenu {
+    position: relative;
+}
+.dropdown-submenu > .dropdown-menu {
+    top: 0;
+    left: 100%;
+    margin-top: -0.25rem;
+    margin-left: 0.1rem;
+    min-width: 200px;
+    border-radius: 0.5rem;
+    display: none;
+    position: absolute;
+    border: none !important;
+    outline: none !important;
+    box-shadow: none !important;
+}
+.dropdown-submenu:hover > .dropdown-menu,
+.dropdown-submenu:focus-within > .dropdown-menu,
+.dropdown-submenu.show > .dropdown-menu {
+    display: block;
 } 
