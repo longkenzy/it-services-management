@@ -1012,6 +1012,15 @@ $flash_messages = getFlashMessages();
             $('#selectAll').on('change', function() {
                 $('.deployment-cases-table tbody input[type="checkbox"]').prop('checked', this.checked);
             });
+
+            // Mở modal đổi mật khẩu khi click dropdown
+            $(document).on('click', '[data-action="change-password"]', function(e) {
+                e.preventDefault();
+                if ($('#changePasswordForm').length) {
+                    $('#changePasswordForm')[0].reset();
+                }
+                $('#changePasswordModal').modal('show');
+            });
         });
         
         function showAddCaseModal() {
@@ -1105,12 +1114,12 @@ $flash_messages = getFlashMessages();
         }
         
         function viewCase(id) {
-            // TODO: Implement view case functionality
+            // View case functionality will be implemented
             showAlert('Tính năng xem chi tiết đang phát triển', 'info');
         }
         
         function editCase(id) {
-            // TODO: Implement edit case functionality
+            // Edit case functionality will be implemented
             showAlert('Tính năng chỉnh sửa đang phát triển', 'info');
         }
         

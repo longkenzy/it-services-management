@@ -62,12 +62,14 @@ $current_user = getCurrentUser();
                         </h1>
                         <p class="page-subtitle">Quản lý thông tin nhân sự trong hệ thống</p>
                     </div>
+                    <?php if ($current_user['role'] !== 'user' && $current_user['role'] !== 'account user'): ?>
                     <div class="col-md-6 text-end">
                         <button class="btn btn-primary btn-add-staff" id="btnAddStaff">
                             <i class="fas fa-plus me-2"></i>
                             Thêm nhân sự mới
                         </button>
                     </div>
+                    <?php endif; ?>
                 </div>
             </div>
 
@@ -465,16 +467,9 @@ $current_user = getCurrentUser();
                                         <h6 class="mb-0"><i class="fas fa-camera me-2"></i>ẢNH ĐẠI DIỆN</h6>
                                     </div>
                                     <div class="card-body text-center">
-                                        <div class="avatar-upload-container mb-3">
-                                            <div class="react-logo-container mb-3">
-                                                <svg width="120" height="120" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
-                                                    <defs>
-                                                        <linearGradient id="reactGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                                                            <stop offset="0%" style="stop-color:#61dafb;stop-opacity:1" />
-                                                            <stop offset="100%" style="stop-color:#21a0c4;stop-opacity:1" />
-                                                        </linearGradient>
-                                                    </defs>
-                                                    <circle cx="60" cy="60" r="58" fill="#f8f9fa" stroke="#dee2e6" stroke-width="2"/>
+                                        <div class="avatar-upload-container text-center mb-3">
+                                            <div class="react-logo-container mb-2" style="display: none;">
+                                                <svg width="120" height="120" viewBox="0 0 120 120">
                                                     <g transform="translate(60,60)">
                                                         <circle cx="0" cy="0" r="4" fill="#61dafb"/>
                                                         <ellipse cx="0" cy="0" rx="30" ry="12" fill="none" stroke="#61dafb" stroke-width="2"/>
@@ -486,11 +481,13 @@ $current_user = getCurrentUser();
                                             <img id="avatarPreview" src="" alt="Avatar Preview" 
                                                  class="rounded-circle border d-none" style="width: 120px; height: 120px; object-fit: cover;">
                                         </div>
+                                        <?php if ($current_user['role'] !== 'user'): ?>
                                         <div class="mb-3">
                                             <label for="avatar" class="form-label">Chọn ảnh đại diện</label>
                                             <input type="file" class="form-control" name="avatar" id="avatar" accept="image/*">
                                         </div>
                                         <small class="text-muted">Chấp nhận: JPG, PNG, GIF. Tối đa 2MB</small>
+                                        <?php endif; ?>
                                     </div>
                                 </div>
 
@@ -563,6 +560,7 @@ $current_user = getCurrentUser();
                                 </div>
 
                                 <!-- TÀI KHOẢN ĐĂNG NHẬP -->
+                                <?php if ($current_user['role'] !== 'user'): ?>
                                 <div class="card mb-3">
                                     <div class="card-header bg-info text-white">
                                         <h6 class="mb-0"><i class="fas fa-key me-2"></i>TÀI KHOẢN ĐĂNG NHẬP</h6>
@@ -609,6 +607,7 @@ $current_user = getCurrentUser();
                                         </div>
                                     </div>
                                 </div>
+                                <?php endif; ?>
                             </div>
                         </div>
                         
@@ -799,6 +798,7 @@ $current_user = getCurrentUser();
     <script src="assets/js/staff.js?v=<?php echo filemtime('assets/js/staff.js'); ?>"></script>
     
     <script>
+    window.currentUserRole = "<?php echo addslashes($current_user['role']); ?>";
     $(document).ready(function() {
         // Handle URL parameters for success/error messages
         const urlParams = new URLSearchParams(window.location.search);

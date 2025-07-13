@@ -26,10 +26,13 @@ body {
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
 }
 
-.navbar {
-    padding: 0.75rem 0;
-    min-height: 70px;
-}
+/* XÓA các dòng này nếu có ở block .navbar */
+
+/* .navbar {
+    min-height: 60px;
+    padding: 0.6rem 0 !important;
+} */
+
 
 /* ===== BRAND/LOGO STYLES ===== */
 .navbar-brand-wrapper {
@@ -124,10 +127,9 @@ body {
     transition: all 0.3s ease;
     color: #495057;
     font-weight: 500;
-    padding-left: 18px !important;
-    padding-right: 18px !important;
+    padding-left: 14px !important;
+    padding-right: 14px !important;
 }
-
 .navbar-nav .nav-link:hover {
     background-color: #f8f9fa;
     color: #495057;
@@ -1338,4 +1340,160 @@ select.form-select option[value=""] {
 .dropdown-submenu:focus-within > .dropdown-menu,
 .dropdown-submenu.show > .dropdown-menu {
     display: block;
+} 
+
+/* --- HEADER MINI STYLE --- */
+.main-header {
+    font-size: 0.97rem;
+}
+
+.navbar {
+    padding: 0.25rem 0 !important;
+    min-height: 40px;
+}
+
+.navbar-brand-wrapper .brand-logo {
+    width: 30px;
+    height: 30px;
+}
+
+.brand-text h5 {
+    font-size: 0.98rem;
+}
+
+.brand-text small {
+    font-size: 0.7rem;
+}
+
+.navbar-nav .nav-link {
+    font-size: 0.9rem;
+    padding: 0.3rem 0.3rem;
+}
+
+.navbar-nav .nav-link i {
+    font-size: 0.8rem;
+}
+
+.user-profile-link {
+    padding: 0.3rem 0.5rem;
+}
+
+.user-avatar, .user-avatar img, .user-avatar div {
+    width: 30px !important;
+    height: 30px !important;
+    font-size: 12px !important;
+}
+
+.user-info .user-name {
+    font-size: 0.85rem;
+}
+.user-info .user-role {
+    font-size: 0.7rem;
+}
+
+.search-wrapper {
+    margin: 0.3rem 0.5rem;
+    max-width: 220px;
+}
+
+.search-form .form-control {
+    font-size: 0.95rem;
+    padding: 0.3rem 0.6rem;
+    height: 32px;
+}
+
+.search-form .btn {
+    font-size: 0.95rem;
+    padding: 0.3rem 0.7rem;
+    height: 32px;
+}
+
+.header-notification .nav-link {
+    padding: 0.3rem 0.5rem;
+    font-size: 1.1rem;
+}
+
+.header-notification .badge {
+    font-size: 0.65rem;
+    padding: 2px 5px;
+}
+
+@media (max-width: 991.98px) {
+    .navbar {
+        padding: 0.15rem 0 !important;
+        min-height: 36px;
+    }
+    .navbar-brand-wrapper .brand-logo {
+        width: 24px;
+        height: 24px;
+    }
+    .brand-text h5 {
+        font-size: 0.9rem;
+    }
+    .search-wrapper {
+        margin: 0.2rem 0.2rem;
+        max-width: 100%;
+    }
+    .user-profile-link {
+        padding: 0.2rem 0.3rem;
+    }
+    .user-avatar, .user-avatar img, .user-avatar div {
+        width: 24px !important;
+        height: 24px !important;
+        font-size: 10px !important;
+    }
+} 
+
+/* --- HEADER SEARCH STYLE LIKE IMAGE (SMALLER) --- */
+.search-form .form-control {
+    font-size: 1.1rem;
+    height: 32px;
+    padding: 0 0.3rem 0 0;
+}
+.search-form .form-control::placeholder {
+    font-size: 0.9rem;
+    padding-left: 10px;
+}
+.search-form .btn {
+    border: none;
+    font-size: 1.1rem;
+    height: 32px;
+    padding: 0 0 0 0.7rem;
+    margin-left: 0.3rem;
+}
+.search-form .btn i {
+    font-size: 0.9rem;
+    padding-right: 10px;
+}
+.search-form .input-group::after {
+    height: 18px;
+    margin-left: 0.3rem;
+    margin-right: 0.3rem;
+}
+@media (max-width: 991.98px) {
+    .search-form .form-control, .search-form .form-control::placeholder {
+        font-size: 0.95rem;
+    }
+    .search-form .btn, .search-form .btn i {
+        font-size: 0.95rem;
+        height: 26px;
+    }
+    .search-form .input-group::after {
+        height: 12px;
+    }
+} 
+
+.search-form .input-group,
+.search-form .form-control,
+.search-form .form-control:focus,
+.search-form .btn,
+.search-form .btn:focus,
+.search-form .btn:active {
+    box-shadow: none !important;
+} 
+
+.search-form .form-control:focus,
+.search-form .btn:focus,
+.search-form .btn:active {
+    outline: none !important;
 } 

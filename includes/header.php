@@ -64,7 +64,7 @@ $current_page = basename($_SERVER['PHP_SELF']);
                 </div>
                 <div class="brand-text">
                     <h5 class="mb-0 fw-bold text-primary">IT Services Management</h5>
-                    <small class="text-muted">Quản lý dịch vụ IT</small>
+                    <small class="text-muted">ITSM - Quản lý Dịch vụ CNTT</small>
                 </div>
             </div>
             
@@ -78,19 +78,6 @@ $current_page = basename($_SERVER['PHP_SELF']);
             <!-- Navbar Content -->
             <div class="collapse navbar-collapse" id="navbarContent">
                 
-                <!-- Search Bar -->
-                <div class="search-wrapper mx-lg-4 my-3 my-lg-0">
-                    <form class="search-form">
-                        <div class="input-group">
-                            <input type="text" class="form-control border-start-0" 
-                                   placeholder="Tìm kiếm case, nhân viên..." id="globalSearchInput">
-                            <button class="btn btn-outline-primary" type="submit">
-                                <i class="fas fa-search"></i>
-                            </button>
-                        </div>
-                    </form>
-                </div>
-                
                 <!-- Main Navigation -->
                 <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                     
@@ -100,6 +87,15 @@ $current_page = basename($_SERVER['PHP_SELF']);
                            href="dashboard.php" id="homeLink">
                             <i class="fas fa-home me-2"></i>
                             Trang chủ
+                        </a>
+                    </li>
+
+                    <!-- Workspace -->
+                    <li class="nav-item">
+                        <a class="nav-link fw-semibold <?php echo $current_page === 'workspace.php' ? 'active' : ''; ?>" 
+                           href="workspace.php" id="workspaceLink">
+                            <i class="fas fa-bolt me-2"></i>
+                            Workspace
                         </a>
                     </li>
                     
@@ -149,7 +145,37 @@ $current_page = basename($_SERVER['PHP_SELF']);
                         </a>
                     </li>
                     
+                    <!-- Cấu hình -->
+                    <li class="nav-item">
+                        <a class="nav-link fw-semibold <?php echo $current_page === 'config.php' ? 'active' : ''; ?>" 
+                           href="config.php" id="configLink">
+                            <i class="fas fa-cogs me-2"></i>
+                            Cấu hình
+                        </a>
+                    </li>
+                    
                 </ul>
+                
+                <!-- Search Bar -->
+                <div class="search-wrapper mx-lg-4 my-3 my-lg-0">
+                    <form class="search-form">
+                        <div class="input-group">
+                            <input type="text" class="form-control border-start-0" 
+                                   placeholder="Tìm kiếm case, nhân viên..." id="globalSearchInput">
+                            <button class="btn btn-outline-primary" type="submit">
+                                <i class="fas fa-search"></i>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+                
+                <!-- Thông báo ngoài header -->
+                <div class="header-notification ms-auto me-3 d-flex align-items-center">
+                    <a class="nav-link position-relative" href="#" data-action="notifications" title="Thông báo">
+                        <i class="fas fa-bell fa-lg"></i>
+                        <span class="badge bg-danger position-absolute top-0 start-100 translate-middle ms-2">3</span>
+                    </a>
+                </div>
                 
                 <!-- User Profile -->
                 <div class="user-profile-wrapper">
@@ -199,27 +225,7 @@ $current_page = basename($_SERVER['PHP_SELF']);
                                     Thông tin cá nhân
                                 </a>
                             </li>
-                            <li>
-                                <?php if (isAdmin()): ?>
-                                    <a class="dropdown-item" href="config.php">
-                                        <i class="fas fa-cog me-2"></i>
-                                        Cài đặt hệ thống
-                                        <small class="text-muted d-block">Chỉ Admin</small>
-                                    </a>
-                                <?php else: ?>
-                                    <a class="dropdown-item" href="#" data-action="settings">
-                                        <i class="fas fa-cog me-2"></i>
-                                        Cài đặt
-                                    </a>
-                                <?php endif; ?>
-                            </li>
-                            <li>
-                                <a class="dropdown-item" href="#" data-action="notifications">
-                                    <i class="fas fa-bell me-2"></i>
-                                    Thông báo
-                                    <span class="badge bg-danger ms-2">3</span>
-                                </a>
-                            </li>
+
                             <li>
                                 <a class="dropdown-item" href="#" data-action="change-password">
                                     <i class="fas fa-key me-2"></i>

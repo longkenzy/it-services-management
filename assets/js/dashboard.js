@@ -474,12 +474,7 @@ $(document).ready(function() {
     init();
     
     // ===== DEMO DATA CONSOLE LOG ===== //
-    
-    
-    
-    
-    
-    
+    // Demo data removed for production
     
 });
 
