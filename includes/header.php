@@ -121,7 +121,7 @@ $current_page = basename($_SERVER['PHP_SELF']);
                             </li>
                             <li><hr class="dropdown-divider"></li>
                             <li>
-                                <a class="dropdown-item" href="#" data-section="deployment-case">
+                                <a class="dropdown-item" href="deployment_cases.php">
                                     <i class="fas fa-rocket me-2 text-success"></i>
                                     Case triển khai
                                     <small class="text-muted d-block">Triển khai hệ thống mới</small>
@@ -249,7 +249,7 @@ $current_page = basename($_SERVER['PHP_SELF']);
                     <h5 class="modal-title" id="changePasswordModalLabel">
                         <i class="fas fa-key me-2"></i>Đổi mật khẩu
                     </h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" tabindex="-1"></button>
                 </div>
                 <div class="modal-body">
                     <div class="mb-3">

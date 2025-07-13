@@ -307,11 +307,19 @@ function logUserActivity($action, $details = '') {
     
     // Ghi vào file log (có thể thay bằng database sau)
     $log_file = 'logs/user_activity.log';
-    if (!file_exists('logs')) {
-        mkdir('logs', 0755, true);
-    }
     
-    file_put_contents($log_file, json_encode($log_entry) . "\n", FILE_APPEND | LOCK_EX);
+    try {
+        if (!file_exists('logs')) {
+            mkdir('logs', 0755, true);
+        }
+        
+        if (is_writable('logs') || is_writable($log_file)) {
+            file_put_contents($log_file, json_encode($log_entry) . "\n", FILE_APPEND | LOCK_EX);
+        }
+    } catch (Exception $e) {
+        // Silently fail - không làm gián đoạn response chính
+        error_log("Failed to write user activity log: " . $e->getMessage());
+    }
 }
 
 /**

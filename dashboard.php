@@ -105,6 +105,89 @@ $flash_messages = getFlashMessages();
                 </div>
             </div>
             
+            <!-- Quick Access Cards -->
+            <div class="row mb-4">
+                <div class="col-xl-3 col-md-6 mb-4">
+                    <div class="card border-left-primary shadow h-100 py-2">
+                        <div class="card-body">
+                            <div class="row no-gutters align-items-center">
+                                <div class="col mr-2">
+                                    <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                        Case Nội Bộ
+                                    </div>
+                                    <div class="h5 mb-0 font-weight-bold text-gray-800">Quản lý</div>
+                                </div>
+                                <div class="col-auto">
+                                    <a href="internal_cases.php" class="btn btn-primary btn-sm">
+                                        <i class="fas fa-building me-1"></i>Truy cập
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-xl-3 col-md-6 mb-4">
+                    <div class="card border-left-success shadow h-100 py-2">
+                        <div class="card-body">
+                            <div class="row no-gutters align-items-center">
+                                <div class="col mr-2">
+                                    <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                        Case Triển Khai
+                                    </div>
+                                    <div class="h5 mb-0 font-weight-bold text-gray-800">Quản lý</div>
+                                </div>
+                                <div class="col-auto">
+                                    <a href="deployment_cases.php" class="btn btn-success btn-sm">
+                                        <i class="fas fa-rocket me-1"></i>Truy cập
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-xl-3 col-md-6 mb-4">
+                    <div class="card border-left-info shadow h-100 py-2">
+                        <div class="card-body">
+                            <div class="row no-gutters align-items-center">
+                                <div class="col mr-2">
+                                    <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                        Nhân Sự
+                                    </div>
+                                    <div class="h5 mb-0 font-weight-bold text-gray-800">Quản lý</div>
+                                </div>
+                                <div class="col-auto">
+                                    <a href="staff.php" class="btn btn-info btn-sm">
+                                        <i class="fas fa-users me-1"></i>Truy cập
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-xl-3 col-md-6 mb-4">
+                    <div class="card border-left-warning shadow h-100 py-2">
+                        <div class="card-body">
+                            <div class="row no-gutters align-items-center">
+                                <div class="col mr-2">
+                                    <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                        Thông Tin
+                                    </div>
+                                    <div class="h5 mb-0 font-weight-bold text-gray-800">Cá nhân</div>
+                                </div>
+                                <div class="col-auto">
+                                    <a href="profile.php" class="btn btn-warning btn-sm">
+                                        <i class="fas fa-user me-1"></i>Truy cập
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- Demo Content -->
             <div class="row">
                 <div class="col-12">
@@ -353,7 +436,7 @@ $flash_messages = getFlashMessages();
           <form id="avatarUploadForm" method="post" enctype="multipart/form-data" action="upload_avatar.php">
             <div class="modal-header">
               <h5 class="modal-title" id="profileModalLabel"><i class="fas fa-user me-2"></i>Thông tin cá nhân</h5>
-              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" tabindex="-1"></button>
             </div>
             <div class="modal-body">
               <div class="text-center mb-3">

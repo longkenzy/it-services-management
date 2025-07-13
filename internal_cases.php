@@ -539,7 +539,7 @@ $flash_messages = getFlashMessages();
                         <h5 class="modal-title" id="createCaseModalLabel">
                             <i class="fas fa-plus-circle me-2"></i>Tạo Case nội bộ mới
                         </h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" tabindex="-1"></button>
                     </div>
                     <div class="modal-body">
                         <div class="row">
@@ -760,7 +760,7 @@ $flash_messages = getFlashMessages();
                         <h5 class="modal-title" id="editCaseModalLabel">
                             <i class="fas fa-edit me-2"></i>Chỉnh sửa Case nội bộ
                         </h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" tabindex="-1"></button>
                     </div>
                     <div class="modal-body">
                         <div class="row">
@@ -984,7 +984,7 @@ $flash_messages = getFlashMessages();
                         <h5 class="modal-title" id="viewCaseModalLabel">
                             <i class="fas fa-eye me-2"></i>Xem chi tiết case
                         </h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" tabindex="-1"></button>
                     </div>
                     <div class="modal-body">
                         <!-- Copy nội dung form tạo case, tất cả trường readonly/disabled, id có tiền tố view -->

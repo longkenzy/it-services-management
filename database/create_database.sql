@@ -31,3 +31,21 @@ CREATE INDEX idx_role ON users(role);
 
 -- Hiển thị thông báo thành công
 SELECT 'Database và bảng users đã được tạo thành công!' AS message; 
+
+-- Bảng task triển khai cho case triển khai
+CREATE TABLE IF NOT EXISTS deployment_case_tasks (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    deployment_case_id INT NOT NULL,
+    task_number VARCHAR(50) NOT NULL,
+    task_type VARCHAR(100),
+    is_template BOOLEAN DEFAULT 0,
+    template_name VARCHAR(100),
+    start_date DATE,
+    end_date DATE,
+    assignee_id INT,
+    status VARCHAR(20) DEFAULT 'pending',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (deployment_case_id) REFERENCES deployment_cases(id),
+    FOREIGN KEY (assignee_id) REFERENCES staffs(id)
+); 

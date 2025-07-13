@@ -258,7 +258,7 @@ $current_user = getCurrentUser();
                         <h5 class="modal-title" id="addStaffModalLabel">
                             <i class="fas fa-user-plus me-2"></i>Thêm nhân sự mới
                         </h5>
-                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close" tabindex="-1"></button>
                     </div>
                     <div class="modal-body">
                         <div class="row">
