@@ -188,6 +188,42 @@ body {
     margin-bottom: 0.5rem;
 }
 
+/* ===== WORK DROPDOWN SPECIFIC STYLES ===== */
+#workDropdown + .dropdown-menu {
+    min-width: 180px;
+    padding: 0.4rem 0;
+    font-size: 0.85rem;
+}
+
+#workDropdown + .dropdown-menu .dropdown-item {
+    padding: 0.5rem 1rem;
+    font-size: 0.85rem;
+    line-height: 1.3;
+}
+
+#workDropdown + .dropdown-menu .dropdown-item i {
+    font-size: 0.8rem;
+    width: 16px;
+    margin-right: 0.5rem;
+}
+
+#workDropdown + .dropdown-menu .dropdown-submenu > .dropdown-menu {
+    min-width: 160px;
+    padding: 0.3rem 0;
+    font-size: 0.8rem;
+}
+
+#workDropdown + .dropdown-menu .dropdown-submenu > .dropdown-menu .dropdown-item {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.8rem;
+}
+
+#workDropdown + .dropdown-menu .dropdown-submenu > .dropdown-menu .dropdown-item i {
+    font-size: 0.75rem;
+    width: 14px;
+    margin-right: 0.4rem;
+}
+
 /* ===== USER PROFILE STYLES ===== */
 .user-profile-wrapper {
     margin-left: 1rem;

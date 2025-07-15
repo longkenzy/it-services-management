@@ -145,7 +145,8 @@ $current_page = basename($_SERVER['PHP_SELF']);
                         </a>
                     </li>
                     
-                    <!-- Cấu hình -->
+                    <!-- Cấu hình - Chỉ hiển thị cho admin và leader -->
+                    <?php if (hasRole(['admin', 'leader'])): ?>
                     <li class="nav-item">
                         <a class="nav-link fw-semibold <?php echo $current_page === 'config.php' ? 'active' : ''; ?>" 
                            href="config.php" id="configLink">
@@ -153,6 +154,7 @@ $current_page = basename($_SERVER['PHP_SELF']);
                             Cấu hình
                         </a>
                     </li>
+                    <?php endif; ?>
                     
                 </ul>
                 
