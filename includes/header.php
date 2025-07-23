@@ -120,7 +120,7 @@ $current_page = basename($_SERVER['PHP_SELF']);
                                 </a>
                                 <ul class="dropdown-menu" aria-labelledby="projectDropdown">
                                     <li>
-                                        <a class="dropdown-item" href="deployment_cases.php">
+                                        <a class="dropdown-item" href="deployment_requests.php">
                                             <i class="fas fa-rocket me-2 text-success"></i>
                                             TRIỂN KHAI
                                         </a>

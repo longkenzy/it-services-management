@@ -29,9 +29,17 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 }
 
 try {
-    $id = $_POST['id'] ?? null;
+    $input = json_decode(file_get_contents('php://input'), true);
+    
+    // Validate JSON input
+    if (json_last_error() !== JSON_ERROR_NONE) {
+        echo json_encode(['success' => false, 'error' => 'Invalid JSON data']);
+        exit;
+    }
+    
+    $id = $input['id'] ?? null;
     if (empty($id)) {
-        echo json_encode(['error' => 'ID case là bắt buộc']);
+        echo json_encode(['success' => false, 'error' => 'ID case là bắt buộc']);
         exit;
     }
     $current_user_id = $_SESSION['user_id'];
@@ -41,7 +49,7 @@ try {
     $stmt->execute([$id]);
     $case = $stmt->fetch();
     if (!$case) {
-        echo json_encode(['error' => 'Case không tồn tại']);
+        echo json_encode(['success' => false, 'error' => 'Case không tồn tại']);
         exit;
     }
 
@@ -51,7 +59,7 @@ try {
 
     if ($deleteStmt->rowCount() > 0) {
         // Ghi log
-        $log_message = "Xóa case triển khai: " . $case['case_number'] . " - " . ($case['case_description'] ?? '');
+        $log_message = "Xóa case triển khai: " . $case['case_code'] . " - " . ($case['case_description'] ?? '');
         $log_stmt = $pdo->prepare("
             INSERT INTO user_activity_logs (user_id, activity, details, created_at)
             VALUES (?, ?, ?, NOW())
@@ -63,12 +71,12 @@ try {
             'message' => 'Xóa case triển khai thành công',
             'deleted_case' => [
                 'id' => $case['id'],
-                'case_number' => $case['case_number'],
+                'case_code' => $case['case_code'],
                 'case_description' => $case['case_description']
             ]
         ]);
     } else {
-        echo json_encode(['error' => 'Không thể xóa case triển khai']);
+        echo json_encode(['success' => false, 'error' => 'Không thể xóa case triển khai']);
     }
 } catch (PDOException $e) {
     http_response_code(500);

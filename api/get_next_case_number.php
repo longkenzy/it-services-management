@@ -15,46 +15,51 @@ if (!isset($_SESSION['user_id'])) {
 
 require_once '../config/db.php';
 
-if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
+// Chỉ chấp nhận POST request
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
     echo json_encode(['success' => false, 'error' => 'Method not allowed']);
     exit;
 }
 
 try {
-    $type = $_GET['type'] ?? 'deployment';
+    // Đọc dữ liệu JSON từ request body
+    $input = json_decode(file_get_contents('php://input'), true);
     
-    if ($type === 'deployment') {
-        // Lấy số case triển khai cao nhất trong tháng hiện tại
-        $now = new DateTime();
-        $year = $now->format('y');
-        $month = $now->format('m');
-        $prefix = "CTK.{$year}{$month}";
-        
-        $stmt = $pdo->prepare("
-            SELECT MAX(CAST(SUBSTRING(case_number, 10) AS UNSIGNED)) as max_sequence
-            FROM deployment_cases 
-            WHERE case_number LIKE ?
-        ");
-        $stmt->execute([$prefix . '%']);
-        $result = $stmt->fetch(PDO::FETCH_ASSOC);
-        
-        $nextSequence = ($result['max_sequence'] ?? 0) + 1;
-        
-        echo json_encode([
-            'success' => true,
-            'sequence' => $nextSequence,
-            'case_number' => $prefix . str_pad($nextSequence, 3, '0', STR_PAD_LEFT)
-        ]);
-    } else {
-        echo json_encode(['success' => false, 'error' => 'Invalid type']);
+    if (!$input) {
+        throw new Exception('Invalid JSON data');
     }
     
+    $year = $input['year'] ?? date('y');
+    $month = $input['month'] ?? date('m');
+    
+    // Lấy số thứ tự lớn nhất hiện có trong tháng
+    $stmt = $pdo->prepare("
+        SELECT MAX(CAST(SUBSTRING(case_code, 8, 3) AS UNSIGNED)) as max_seq
+        FROM deployment_cases
+        WHERE case_code LIKE ?
+        AND MONTH(created_at) = ?
+        AND YEAR(created_at) = ?
+    ");
+    $stmt->execute(["CTK{$year}{$month}%", intval($month), 2000 + intval($year)]);
+    $result = $stmt->fetch();
+    $max_seq = $result['max_seq'] ?? null;
+    $sequence = ($max_seq === null) ? 1 : ($max_seq + 1);
+    
+    $case_code = "CTK{$year}{$month}" . str_pad($sequence, 3, '0', STR_PAD_LEFT);
+    
+    echo json_encode([
+        'success' => true,
+        'case_code' => $case_code,
+        'sequence' => $sequence
+    ]);
+    
 } catch (Exception $e) {
+    error_log("Error getting next case number: " . $e->getMessage());
     http_response_code(500);
     echo json_encode([
         'success' => false,
-        'error' => 'Server error: ' . $e->getMessage()
+        'error' => $e->getMessage()
     ]);
 }
 ?> 

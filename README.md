@@ -6,6 +6,8 @@
 
 A CRM (Customer Relationship Management) system for managing the daily tasks and operations of IT Support staff within the IT department.
 
+
+
 ## 🛠️ Technologies Used
 
 * **Frontend**: HTML5, CSS3, JavaScript, jQuery

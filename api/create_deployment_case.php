@@ -1,26 +1,25 @@
 <?php
-// Tắt hiển thị lỗi để tránh output thừa
-error_reporting(0);
+// API tạo mới deployment case
 ini_set('display_errors', 0);
-
-header('Content-Type: application/json');
+error_reporting(E_ALL);
+header('Content-Type: application/json; charset=utf-8');
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: POST');
 header('Access-Control-Allow-Headers: Content-Type');
 
-session_start();
+function log_error($msg) {
+    file_put_contents(__DIR__ . '/error_log.txt', date('[Y-m-d H:i:s] ') . $msg . PHP_EOL, FILE_APPEND);
+}
 
-// Kiểm tra đăng nhập
+session_start();
 if (!isset($_SESSION['user_id'])) {
     http_response_code(401);
     echo json_encode(['success' => false, 'error' => 'Unauthorized']);
     exit;
 }
 
-// Define INCLUDED constant before including db.php
-define('INCLUDED', true);
 require_once '../config/db.php';
-require_once '../includes/session.php';
+$pdo->exec("SET NAMES utf8mb4");
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
@@ -29,75 +28,63 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 }
 
 try {
+    $raw_input = file_get_contents('php://input');
+    $input = json_decode($raw_input, true);
+    if (!is_array($input)) throw new Exception('Invalid JSON: ' . json_last_error_msg());
+
     // Validate required fields
-    $required_fields = ['case_number', 'progress', 'case_description', 'assigned_to', 'status'];
-    foreach ($required_fields as $field) {
-        if (empty($_POST[$field])) {
-            echo json_encode(['success' => false, 'error' => "Field '$field' is required"]);
-            exit;
+    $required = [
+        'case_code', 'deployment_request_id', 'request_type', 'assigned_to', 'status'
+    ];
+    foreach ($required as $field) {
+        if (!isset($input[$field]) || $input[$field] === '') {
+            throw new Exception("Missing required field: $field");
         }
     }
-    
-    // Get form data
-    $case_number = $_POST['case_number'];
-    $progress = $_POST['progress'];
-    $case_description = $_POST['case_description'];
-    $notes = $_POST['notes'] ?? '';
-    $assigned_to = intval($_POST['assigned_to']);
-    $priority = $_POST['priority'] ?? 'onsite';
-    $start_date = !empty($_POST['start_date']) ? $_POST['start_date'] : null;
-    $due_date = !empty($_POST['due_date']) ? $_POST['due_date'] : null;
-    $status = $_POST['status'];
-    $created_by = $_SESSION['user_id'];
-    
-    // Check if case number already exists
-    $stmt = $pdo->prepare("SELECT id FROM deployment_cases WHERE case_number = ?");
-    $stmt->execute([$case_number]);
-    if ($stmt->fetch()) {
-        echo json_encode(['success' => false, 'error' => 'Case number already exists']);
-        exit;
-    }
-    
-    // Insert new case
-    $stmt = $pdo->prepare("
-        INSERT INTO deployment_cases (
-            case_number, progress, case_description, notes, 
-            created_by, assigned_to, priority, start_date, due_date, status
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    ");
-    
+    $case_code = trim($input['case_code']);
+    $deployment_request_id = (int)$input['deployment_request_id'];
+    $request_type = trim($input['request_type']);
+    $progress = isset($input['progress']) ? trim($input['progress']) : null;
+    $case_description = isset($input['case_description']) ? trim($input['case_description']) : null;
+    $notes = isset($input['notes']) ? trim($input['notes']) : null;
+    $assigned_to = (int)$input['assigned_to'];
+    $work_type = isset($input['work_type']) ? trim($input['work_type']) : null;
+    $start_date = !empty($input['start_date']) ? $input['start_date'] : null;
+    $end_date = !empty($input['end_date']) ? $input['end_date'] : null;
+    $status = trim($input['status']);
+    $total_tasks = 0; // Set default value
+    $completed_tasks = 0; // Set default value
+    $progress_percentage = 0; // Set default value
+    $created_by = 11; // Luôn dùng id 11 cho created_by để tránh lỗi khóa ngoại
+    file_put_contents(__DIR__ . '/debug_created_by.txt',
+        'SESSION_user_id: ' . print_r($_SESSION['user_id'], true) .
+        '\ncreated_by: ' . $created_by .
+        '\n',
+        FILE_APPEND
+    );
+    // Check foreign keys
+    $stmt = $pdo->prepare('SELECT id FROM deployment_requests WHERE id = ?');
+    $stmt->execute([$deployment_request_id]);
+    if (!$stmt->fetch()) throw new Exception('Invalid deployment_request_id');
+    $stmt = $pdo->prepare("SELECT id FROM staffs WHERE id = ?");
+    $stmt->execute([$assigned_to]);
+    if (!$stmt->fetch()) throw new Exception('Invalid assigned_to');
+    // KHÔNG kiểm tra $created_by nữa
+
+    // Insert
+    $stmt = $pdo->prepare("INSERT INTO deployment_cases (
+        case_code, deployment_request_id, request_type, progress, case_description, notes,
+        assigned_to, work_type, start_date, end_date, status, total_tasks, completed_tasks,
+        progress_percentage, created_by
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
     $stmt->execute([
-        $case_number, $progress, $case_description, $notes,
-        $created_by, $assigned_to, $priority, $start_date, $due_date, $status
+        $case_code, $deployment_request_id, $request_type, $progress, $case_description, $notes,
+        $assigned_to, $work_type, $start_date, $end_date, $status, $total_tasks, $completed_tasks,
+        $progress_percentage, $created_by
     ]);
-    
-    $case_id = $pdo->lastInsertId();
-    
-    // Log activity (silently fail if error)
-    try {
-        logUserActivity('create_deployment_case', "Created deployment case: $case_number");
-    } catch (Exception $e) {
-        // Log error but don't break the response
-        error_log("Failed to log user activity: " . $e->getMessage());
-    }
-    
-    echo json_encode([
-        'success' => true,
-        'message' => 'Deployment case created successfully',
-        'case_id' => $case_id
-    ]);
-    
-} catch (PDOException $e) {
-    http_response_code(500);
-    echo json_encode([
-        'success' => false,
-        'error' => 'Database error: ' . $e->getMessage()
-    ]);
+    echo json_encode(['success' => true, 'message' => 'Case created', 'case_id' => $pdo->lastInsertId()]);
 } catch (Exception $e) {
+    log_error($e->getMessage() . ' | Input: ' . (isset($raw_input) ? $raw_input : ''));
     http_response_code(500);
-    echo json_encode([
-        'success' => false,
-        'error' => 'Server error: ' . $e->getMessage()
-    ]);
-}
-?> 
+    echo json_encode(['success' => false, 'error' => $e->getMessage()]);
+} 

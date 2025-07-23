@@ -37,21 +37,16 @@ try {
         exit;
     }
     
-    // Lấy chi tiết case với thông tin nhân sự
+    // Lấy chi tiết deployment case với thông tin nhân sự
     $stmt = $pdo->prepare("
         SELECT 
-            ic.*,
-            r.fullname as requester_name,
-            h.fullname as handler_name,
-            CASE 
-                WHEN ic.transferred_by REGEXP '^[0-9]+$' THEN tb.fullname
-                ELSE ic.transferred_by
-            END as transferred_by_name
-        FROM internal_cases ic
-        LEFT JOIN staffs r ON ic.requester_id = r.id
-        LEFT JOIN staffs h ON ic.handler_id = h.id
-        LEFT JOIN staffs tb ON ic.transferred_by = tb.id AND ic.transferred_by REGEXP '^[0-9]+$'
-        WHERE ic.id = ?
+            dc.*,
+            s.fullname as assigned_to_name,
+            creator.fullname as created_by_name
+        FROM deployment_cases dc
+        LEFT JOIN staffs s ON dc.assigned_to = s.id
+        LEFT JOIN staffs creator ON dc.created_by = creator.id
+        WHERE dc.id = ?
     ");
     
     $stmt->execute([$case_id]);
