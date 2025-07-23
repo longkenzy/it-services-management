@@ -1,0 +1,176 @@
+<?php
+header('Content-Type: application/json');
+header('Access-Control-Allow-Origin: *');
+header('Access-Control-Allow-Methods: POST');
+header('Access-Control-Allow-Headers: Content-Type');
+
+require_once '../config/db.php';
+require_once '../includes/session.php';
+
+// Kiểm tra đăng nhập
+if (!isLoggedIn()) {
+    http_response_code(401);
+    echo json_encode(['success' => false, 'error' => 'Unauthorized']);
+    exit;
+}
+
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    http_response_code(405);
+    echo json_encode(['success' => false, 'error' => 'Method not allowed']);
+    exit;
+}
+
+try {
+    // Lấy dữ liệu từ form
+    $data = [
+        'request_code' => trim($_POST['request_code'] ?? ''),
+        'po_number' => trim($_POST['po_number'] ?? ''),
+        'no_contract_po' => isset($_POST['no_contract_po']) ? 1 : 0,
+        'contract_type' => trim($_POST['contract_type'] ?? ''),
+        'request_detail_type' => trim($_POST['request_detail_type'] ?? ''),
+        'email_subject_customer' => trim($_POST['email_subject_customer'] ?? ''),
+        'email_subject_internal' => trim($_POST['email_subject_internal'] ?? ''),
+        'expected_start' => trim($_POST['expected_start'] ?? ''),
+        'expected_end' => trim($_POST['expected_end'] ?? ''),
+        'customer_id' => trim($_POST['customer_id'] ?? ''),
+        'contact_person' => trim($_POST['contact_person'] ?? ''),
+        'contact_phone' => trim($_POST['contact_phone'] ?? ''),
+        'sale_id' => trim($_POST['sale_id'] ?? ''),
+        'requester_notes' => trim($_POST['requester_notes'] ?? ''),
+        'deployment_manager' => trim($_POST['deployment_manager'] ?? 'Trần Nguyễn Anh Khoa'),
+        'deployment_status' => trim($_POST['deployment_status'] ?? 'Tiếp nhận'),
+        'created_by' => null
+    ];
+
+    // Kiểm tra xem user hiện tại có tồn tại trong bảng staffs không
+    if (isset($_SESSION['user_id']) && !empty($_SESSION['user_id'])) {
+        $stmt = $pdo->prepare("SELECT id FROM staffs WHERE id = ?");
+        $stmt->execute([$_SESSION['user_id']]);
+        if ($stmt->fetch()) {
+            $data['created_by'] = $_SESSION['user_id'];
+        }
+    }
+
+    // Validation
+    $errors = [];
+    
+    // Kiểm tra các trường bắt buộc
+    if (empty($data['request_code'])) {
+        $errors[] = 'Mã yêu cầu không được để trống';
+    }
+    
+    if (empty($data['customer_id'])) {
+        $errors[] = 'Vui lòng chọn khách hàng';
+    }
+    
+    if (empty($data['sale_id'])) {
+        $errors[] = 'Vui lòng chọn sale phụ trách';
+    }
+    
+    if (empty($data['deployment_status'])) {
+        $errors[] = 'Vui lòng chọn trạng thái triển khai';
+    }
+
+    // Kiểm tra mã yêu cầu đã tồn tại chưa
+    if (!empty($data['request_code'])) {
+        $stmt = $pdo->prepare("SELECT id FROM deployment_requests WHERE request_code = ?");
+        $stmt->execute([$data['request_code']]);
+        if ($stmt->fetch()) {
+            $errors[] = 'Mã yêu cầu đã tồn tại';
+        }
+    }
+
+    // Kiểm tra khách hàng có tồn tại không
+    if (!empty($data['customer_id'])) {
+        $stmt = $pdo->prepare("SELECT id FROM partner_companies WHERE id = ?");
+        $stmt->execute([$data['customer_id']]);
+        if (!$stmt->fetch()) {
+            $errors[] = 'Khách hàng không tồn tại';
+        }
+    }
+
+    // Kiểm tra sale có tồn tại không
+    if (!empty($data['sale_id'])) {
+        $stmt = $pdo->prepare("SELECT id FROM staffs WHERE id = ? AND department = 'SALE Dept.' AND status = 'active'");
+        $stmt->execute([$data['sale_id']]);
+        if (!$stmt->fetch()) {
+            $errors[] = 'Sale phụ trách không tồn tại hoặc không hoạt động';
+        }
+    }
+
+    // Nếu có lỗi validation
+    if (!empty($errors)) {
+        http_response_code(400);
+        echo json_encode(['success' => false, 'error' => implode(', ', $errors)]);
+        exit;
+    }
+
+    // Xử lý ngày tháng
+    $expected_start = !empty($data['expected_start']) ? $data['expected_start'] : null;
+    $expected_end = !empty($data['expected_end']) ? $data['expected_end'] : null;
+
+    // Insert vào database
+    $sql = "INSERT INTO deployment_requests (
+        request_code, po_number, no_contract_po, contract_type, request_detail_type,
+        email_subject_customer, email_subject_internal, expected_start, expected_end,
+        customer_id, contact_person, contact_phone, sale_id, requester_notes,
+        deployment_manager, deployment_status, created_by
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+
+    $stmt = $pdo->prepare($sql);
+    $result = $stmt->execute([
+        $data['request_code'],
+        $data['po_number'],
+        $data['no_contract_po'],
+        $data['contract_type'],
+        $data['request_detail_type'],
+        $data['email_subject_customer'],
+        $data['email_subject_internal'],
+        $expected_start,
+        $expected_end,
+        $data['customer_id'],
+        $data['contact_person'],
+        $data['contact_phone'],
+        $data['sale_id'],
+        $data['requester_notes'],
+        $data['deployment_manager'],
+        $data['deployment_status'],
+        $data['created_by']
+    ]);
+
+    if ($result) {
+        $request_id = $pdo->lastInsertId();
+        
+        // Log hoạt động (chỉ log nếu có user_id hợp lệ)
+        if ($data['created_by']) {
+            $log_message = "Tạo yêu cầu triển khai mới: {$data['request_code']}";
+            $log_sql = "INSERT INTO activity_logs (user_id, action, details, ip_address) VALUES (?, ?, ?, ?)";
+            $log_stmt = $pdo->prepare($log_sql);
+            $log_stmt->execute([
+                $data['created_by'],
+                'CREATE_DEPLOYMENT_REQUEST',
+                $log_message,
+                $_SERVER['REMOTE_ADDR'] ?? 'unknown'
+            ]);
+        }
+
+        echo json_encode([
+            'success' => true,
+            'message' => 'Tạo yêu cầu triển khai thành công',
+            'request_id' => $request_id,
+            'request_code' => $data['request_code']
+        ]);
+    } else {
+        throw new Exception('Không thể tạo yêu cầu triển khai');
+    }
+
+} catch (PDOException $e) {
+    error_log("Database error in create_deployment_request.php: " . $e->getMessage());
+    http_response_code(500);
+    echo json_encode(['success' => false, 'error' => 'Lỗi database: ' . $e->getMessage()]);
+} catch (Exception $e) {
+    error_log("Error in create_deployment_request.php: " . $e->getMessage());
+    http_response_code(500);
+    echo json_encode(['success' => false, 'error' => 'Có lỗi xảy ra: ' . $e->getMessage()]);
+}
+?> 

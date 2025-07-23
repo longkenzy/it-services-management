@@ -14,18 +14,18 @@ INSERT INTO staffs (
 ) VALUES 
 (
     'NV001', 'Nguyễn Văn An', 'admin', 1990, 'Nam',
-    'Trưởng phòng IT', 'Công nghệ thông tin', 'Hà Nội', '0901234567', 'admin@company.com',
-    'Chính thức', 5, 'Đang làm việc'
+    'Trưởng phòng IT', 'IT Dept.', 'Hà Nội', '0901234567', 'admin@company.com',
+    'Chính thức', 5, 'active'
 ),
 (
     'NV002', 'Trần Thị Bình', 'user1', 1992, 'Nữ', 
-    'Nhân viên IT', 'Công nghệ thông tin', 'Hà Nội', '0901234568', 'user1@company.com',
-    'Chính thức', 3, 'Đang làm việc'
+    'Nhân viên IT', 'IT Dept.', 'Hà Nội', '0901234568', 'user1@company.com',
+    'Chính thức', 3, 'active'
 ),
 (
     'NV003', 'Lê Văn Cường', 'user2', 1988, 'Nam',
-    'Kỹ sư phần mềm', 'Công nghệ thông tin', 'Hà Nội', '0901234569', 'user2@company.com', 
-    'Chính thức', 7, 'Đang làm việc'
+    'Kỹ sư phần mềm', 'IT Dept.', 'Hà Nội', '0901234569', 'user2@company.com', 
+    'Chính thức', 7, 'active'
 ),
 (
     'NV004', 'Phạm Thị Dung', 'user3', 1995, 'Nữ',

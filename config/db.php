@@ -137,6 +137,11 @@ function fetchAll($sql, $params = []) {
     return $stmt ? $stmt->fetchAll() : false;
 }
 
+function getConnection() {
+    global $pdo;
+    return $pdo;
+}
+
 // ===== THÔNG BÁO KẾT NỐI THÀNH CÔNG ===== //
 if (defined('DEBUG') && DEBUG === true) {
     echo "<!-- Database connection established successfully -->\n";

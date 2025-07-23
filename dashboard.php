@@ -138,7 +138,7 @@ $flash_messages = getFlashMessages();
                                     <div class="h5 mb-0 font-weight-bold text-gray-800">Quản lý</div>
                                 </div>
                                 <div class="col-auto">
-                                    <a href="deployment_cases.php" class="btn btn-success btn-sm">
+                                    <a href="deployment_requests.php" class="btn btn-success btn-sm">
                                         <i class="fas fa-rocket me-1"></i>Truy cập
                                     </a>
                                 </div>

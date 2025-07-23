@@ -55,7 +55,7 @@ $(document).ready(function() {
         
         $('#positionFilter').on('change', function() {
             currentFilters.position = $(this).val();
-            console.log('Filter by position:', currentFilters.position); // DEBUG
+    
             currentPage = 1;
             loadStaffData();
         });
