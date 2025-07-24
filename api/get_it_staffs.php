@@ -12,11 +12,7 @@ try {
     // Lấy danh sách staff thuộc IT Dept
     $sql = "SELECT 
                 id,
-                employee_code,
                 fullname,
-                email,
-                phone,
-                position,
                 department
             FROM staffs
             WHERE department = 'IT Dept.'

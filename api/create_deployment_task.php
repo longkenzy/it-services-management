@@ -28,11 +28,13 @@ try {
     
     $deployment_case_id = $input['deployment_case_id'] ?? null;
     $task_type = $input['task_type'] ?? null;
-    $template_id = $input['template_id'] ?? null;
+    $template_name = $input['template_name'] ?? null;
     $task_description = $input['task_description'] ?? null;
     $start_date = $input['start_date'] ?? null;
     $end_date = $input['end_date'] ?? null;
     $assignee_id = $input['assignee_id'] ?? null;
+    $status = $input['status'] ?? 'Tiếp nhận';
+    $deployment_request_id = $input['request_id'] ?? null;
     
     // Validate dữ liệu
     if (!$deployment_case_id || !$task_type || !$task_description || !$start_date || !$end_date) {
@@ -61,26 +63,29 @@ try {
     $sql = "INSERT INTO deployment_tasks (
                 task_number, 
                 deployment_case_id, 
+                deployment_request_id,
                 task_type, 
-                template_id, 
+                template_name,
                 task_description, 
                 start_date, 
                 end_date, 
                 assignee_id, 
                 status, 
                 progress_percentage
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'pending', 0)";
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0)";
     
     $stmt = $pdo->prepare($sql);
     $stmt->execute([
         $task_number,
         $deployment_case_id,
+        $deployment_request_id,
         $task_type,
-        $template_id,
+        $template_name,
         $task_description,
         $start_date,
         $end_date,
-        $assignee_id
+        $assignee_id,
+        $status
     ]);
     
     $task_id = $pdo->lastInsertId();
@@ -88,11 +93,9 @@ try {
     // Lấy thông tin task vừa tạo
     $sql = "SELECT 
                 dt.*,
-                s.fullname as assignee_name,
-                dtt.template_name
+                s.fullname as assignee_name
             FROM deployment_tasks dt
             LEFT JOIN staffs s ON dt.assignee_id = s.id
-            LEFT JOIN deployment_task_templates dtt ON dt.template_id = dtt.id
             WHERE dt.id = ?";
     
     $stmt = $pdo->prepare($sql);

@@ -885,7 +885,7 @@ if (isset($_SESSION['user_id'])) {
                     echo '<option value="">-- Không có nhân viên SALE Dept --</option>';
                   } else {
                     foreach ($sales as $sale) {
-                      echo '<option value="'.$sale['id'].'">'.htmlspecialchars($sale['fullname']).'</option>';
+                      echo '<option value="'.$sale['id'].'">'.htmlspecialchars($sale['fullname']).' ID: '.$sale['id'].'</option>';
                     }
                   }
                   ?>
@@ -1998,8 +1998,31 @@ function createDeploymentTask() {
         return;
     }
 
+    // Lấy caseId từ form edit case hiện tại
+    const caseId = document.getElementById('edit_case_id').value;
+    if (!caseId) {
+        alert('Lỗi: Không tìm thấy thông tin case');
+        return;
+    }
+
     // Handler khi modal hiển thị
     const handler = function() {
+        // Lấy thông tin case và request
+        fetch('api/get_case_details.php?id=' + caseId)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success && data.data) {
+                    const caseData = data.data;
+                    document.getElementById('task_case_code').value = caseData.case_code || '';
+                    document.getElementById('task_request_code').value = caseData.request_code || '';
+                    document.getElementById('task_deployment_case_id').value = caseId;
+                    document.getElementById('task_request_id').value = caseData.deployment_request_id || '';
+                }
+            })
+            .catch(error => {
+                console.error('Error loading case details:', error);
+            });
+
         // Lấy số task tự động
         fetch('api/get_next_task_number.php')
             .then(response => response.json())
@@ -2020,7 +2043,7 @@ function createDeploymentTask() {
                     data.data.forEach(staff => {
                         const option = document.createElement('option');
                         option.value = staff.id;
-                        option.textContent = staff.fullname + (staff.staff_code ? ' (' + staff.staff_code + ')' : '');
+                        option.textContent = staff.fullname;
                         select.appendChild(option);
                     });
                 }
@@ -2068,14 +2091,14 @@ function loadDeploymentTasks(caseId) {
                     <td class='text-center'>${idx + 1}</td>
                     <td>${item.task_number || ''}</td>
                     <td>${item.task_type || ''}</td>
-                    <td>${item.template_name || 'Không'}</td>
+                    <td>${item.template_name || '-'}</td>
                     <td>${item.task_description || ''}</td>
                     <td>${formatDateForDisplay(item.start_date)}</td>
                     <td>${formatDateForDisplay(item.end_date)}</td>
                     <td>${item.assignee_name || ''}</td>
                     <td>
-                      <span class="badge bg-${(item.status === 'completed' ? 'success' : (item.status === 'in_progress' ? 'warning' : 'secondary'))}">
-                        ${item.status === 'completed' ? 'Hoàn thành' : (item.status === 'in_progress' ? 'Đang thực hiện' : 'Chờ thực hiện')}
+                      <span class="badge bg-${(item.status === 'Hoàn thành' ? 'success' : (item.status === 'Đang xử lý' ? 'warning' : (item.status === 'Huỷ' ? 'danger' : 'secondary')))}">
+                        ${item.status || 'Tiếp nhận'}
                       </span>
                     </td>
                     <td>
@@ -2230,11 +2253,12 @@ document.addEventListener('DOMContentLoaded', function() {
             const data = {
                 deployment_case_id: formData.get('deployment_case_id'),
                 task_type: formData.get('task_type'),
-                template_id: formData.get('template_id') || null,
-                task_description: formData.get('task_description'),
+                template_name: formData.get('task_template') || null,
+                task_description: formData.get('task_name'),
                 start_date: formData.get('start_date'),
                 end_date: formData.get('end_date'),
-                assignee_id: formData.get('assignee_id') || null
+                assignee_id: formData.get('assignee_id') || null,
+                status: formData.get('status')
             };
             
             console.log('Creating deployment task with data:', data);
@@ -2418,7 +2442,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     echo '<option value="">-- Không có nhân viên SALE Dept --</option>';
                   } else {
                     foreach ($sales as $sale) {
-                      echo '<option value="'.$sale['id'].'">'.htmlspecialchars($sale['fullname']).'</option>';
+                      echo '<option value="'.$sale['id'].'">'.htmlspecialchars($sale['fullname']).' ID: '.$sale['id'].'</option>';
                     }
                   }
                   ?>
@@ -2691,7 +2715,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     echo '<option value="">-- Không có nhân viên IT Dept --</option>';
                   } else {
                     foreach ($it_staffs as $staff) {
-                      echo '<option value="'.$staff['id'].'">'.htmlspecialchars($staff['fullname']).' (ID: '.$staff['id'].')</option>';
+                      echo '<option value="'.$staff['id'].'">'.htmlspecialchars($staff['fullname']).'</option>';
                     }
                   }
                   ?>
@@ -2821,7 +2845,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     echo '<option value="">-- Không có nhân viên IT Dept --</option>';
                   } else {
                     foreach ($it_staffs as $staff) {
-                      echo '<option value="'.$staff['id'].'">'.htmlspecialchars($staff['fullname']).' (ID: '.$staff['id'].')</option>';
+                      echo '<option value="'.$staff['id'].'">'.htmlspecialchars($staff['fullname']).'</option>';
                     }
                   }
                   ?>

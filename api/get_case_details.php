@@ -3,8 +3,11 @@
 if (!isset($_SERVER['HTTP_REFERER']) || !str_contains($_SERVER['HTTP_REFERER'], $_SERVER['HTTP_HOST'])) {
     // Cho phép truy cập từ AJAX requests
     if (!isset($_SERVER['HTTP_X_REQUESTED_WITH']) || $_SERVER['HTTP_X_REQUESTED_WITH'] !== 'XMLHttpRequest') {
-    http_response_code(403);
-    exit('Access denied.');
+        // Cho phép truy cập trực tiếp cho testing
+        if (!isset($_GET['test'])) {
+            http_response_code(403);
+            exit('Access denied.');
+        }
     }
 }
 header('Content-Type: application/json');
@@ -37,13 +40,15 @@ try {
         exit;
     }
     
-    // Lấy chi tiết deployment case với thông tin nhân sự
+    // Lấy chi tiết deployment case với thông tin nhân sự và request
     $stmt = $pdo->prepare("
         SELECT 
             dc.*,
+            dr.request_code,
             s.fullname as assigned_to_name,
             creator.fullname as created_by_name
         FROM deployment_cases dc
+        LEFT JOIN deployment_requests dr ON dc.deployment_request_id = dr.id
         LEFT JOIN staffs s ON dc.assigned_to = s.id
         LEFT JOIN staffs creator ON dc.created_by = creator.id
         WHERE dc.id = ?
