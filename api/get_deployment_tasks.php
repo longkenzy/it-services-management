@@ -43,23 +43,24 @@ if ($deployment_case_id <= 0) {
 }
 
 $sql = "SELECT 
-            dct.id,
-            dct.deployment_case_id,
-            dct.task_number,
-            dct.task_type,
-            dct.is_template,
-            dct.template_name,
-            dct.start_date,
-            dct.end_date,
-            dct.assignee_id,
-            dct.status,
-            dct.created_at,
-            dct.updated_at,
+            dt.id,
+            dt.deployment_case_id,
+            dt.task_number,
+            dt.task_type,
+            dt.template_name,
+            dt.task_description,
+            dt.start_date,
+            dt.end_date,
+            dt.assignee_id,
+            dt.status,
+            dt.progress_percentage,
+            dt.created_at,
+            dt.updated_at,
             s.fullname as assignee_name
-        FROM deployment_case_tasks dct
-        LEFT JOIN staffs s ON dct.assignee_id = s.id
-        WHERE dct.deployment_case_id = ?
-        ORDER BY dct.created_at ASC";
+        FROM deployment_tasks dt
+        LEFT JOIN staffs s ON dt.assignee_id = s.id
+        WHERE dt.deployment_case_id = ?
+        ORDER BY dt.created_at ASC";
 
 $pdo = getConnection();
 $stmt = $pdo->prepare($sql);
