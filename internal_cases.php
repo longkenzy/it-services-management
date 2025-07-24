@@ -584,8 +584,7 @@ $flash_messages = getFlashMessages();
                                             <label class="form-label mb-0 fw-semibold">Người chuyển case</label>
                                         </div>
                                         <div class="col-8">
-                                            <input type="text" class="form-control" id="transferredBy" 
-                                                   value="Trần Nguyễn Anh Khoa" readonly>
+                                            <input type="text" class="form-control" id="transferredBy" name="transferred_by" value="Trần Nguyễn Anh Khoa" readonly>
                                         </div>
                                     </div>
                                 </div>
@@ -1580,7 +1579,7 @@ $flash_messages = getFlashMessages();
     // Case management functions
     function editCase(id) {
         $.ajax({
-            url: 'api/get_case_details.php?id=' + id,
+            url: 'api/get_internal_case_details.php?id=' + id,
             type: 'GET',
             headers: {
                 'X-Requested-With': 'XMLHttpRequest'
@@ -1958,6 +1957,7 @@ $flash_messages = getFlashMessages();
         var formData = {
             requester_id: $('#requesterId').val(),
             handler_id: $('#handlerId').val(),
+            transferred_by: $('#transferredBy').val(),
             case_type: $('#caseType').val(),
             priority: $('#priority').val(),
             issue_title: $('#issueTitle').val(),
@@ -2128,7 +2128,7 @@ $flash_messages = getFlashMessages();
         var caseId = $(this).data('id');
         // Gọi API lấy chi tiết case
         $.ajax({
-            url: 'api/get_case_details.php?id=' + caseId,
+            url: 'api/get_internal_case_details.php?id=' + caseId,
             type: 'GET',
             headers: { 'X-Requested-With': 'XMLHttpRequest' },
             success: function(response) {

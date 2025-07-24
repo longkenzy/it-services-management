@@ -43,7 +43,8 @@ try {
     // Lấy chi tiết deployment case với thông tin nhân sự và request
     $stmt = $pdo->prepare("
         SELECT 
-            dc.*,
+            dc.*, 
+            dc.deployment_request_id, 
             dr.request_code,
             s.fullname as assigned_to_name,
             creator.fullname as created_by_name
