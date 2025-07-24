@@ -70,9 +70,8 @@ try {
                 start_date, 
                 end_date, 
                 assignee_id, 
-                status, 
-                progress_percentage
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0)";
+                status
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
     
     $stmt = $pdo->prepare($sql);
     $stmt->execute([
@@ -92,7 +91,9 @@ try {
     
     // Lấy thông tin task vừa tạo
     $sql = "SELECT 
-                dt.*,
+                dt.id, dt.deployment_case_id, dt.task_number, dt.task_type, dt.template_name, 
+                dt.task_description, dt.start_date, dt.end_date, dt.assignee_id, dt.status, 
+                dt.created_at, dt.updated_at,
                 s.fullname as assignee_name
             FROM deployment_tasks dt
             LEFT JOIN staffs s ON dt.assignee_id = s.id

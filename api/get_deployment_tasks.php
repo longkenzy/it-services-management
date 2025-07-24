@@ -53,7 +53,6 @@ $sql = "SELECT
             dt.end_date,
             dt.assignee_id,
             dt.status,
-            dt.progress_percentage,
             dt.created_at,
             dt.updated_at,
             s.fullname as assignee_name

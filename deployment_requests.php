@@ -708,17 +708,7 @@ if (isset($_SESSION['user_id'])) {
                                         <span class="text-dark"><?php echo $request['total_tasks'] ?? 0; ?></span>
                                     </td>
                                     <td>
-                                        <?php 
-                                        $progress = $request['progress_percentage'] ?? 0;
-                                        $progressClass = $progress >= 80 ? 'success' : ($progress >= 50 ? 'warning' : 'danger');
-                                        ?>
-                                        <div class="progress" style="width: 80px; height: 20px;">
-                                            <div class="progress-bar bg-<?php echo $progressClass; ?>" 
-                                                 style="width: <?php echo $progress; ?>%" 
-                                                 title="<?php echo $progress; ?>%">
-                                                <small><?php echo $progress; ?>%</small>
-                                            </div>
-                                        </div>
+                                        <div class="progress" style="width: 80px; height: 20px;"><div class="progress-bar bg-warning" style="width: <?php echo $request['progress_percentage'] ?? 0; ?>%" title="<?php echo $request['progress_percentage'] ?? 0; ?>%"><small><?php echo $request['progress_percentage'] ?? 0; ?>%</small></div></div>
                                     </td>
                                     <td>
                                         <?php
@@ -885,7 +875,7 @@ if (isset($_SESSION['user_id'])) {
                     echo '<option value="">-- Không có nhân viên SALE Dept --</option>';
                   } else {
                     foreach ($sales as $sale) {
-                      echo '<option value="'.$sale['id'].'">'.htmlspecialchars($sale['fullname']).' ID: '.$sale['id'].'</option>';
+                      echo '<option value="'.$sale['id'].'">'.htmlspecialchars($sale['fullname']).'</option>';
                     }
                   }
                   ?>
@@ -1125,7 +1115,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     modal.hide();
                 }
                 setTimeout(() => {
-                    location.reload();
+                    reloadDeploymentRequestsTable();
                 }, 1500);
             } else {
                 if (typeof showAlert === 'function') {
@@ -1362,7 +1352,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     modal.hide();
                 }
                 setTimeout(() => {
-                    location.reload();
+                    reloadDeploymentRequestsTable();
                 }, 1500);
             } else {
                 if (typeof showAlert === 'function') {
@@ -1449,7 +1439,7 @@ function loadDeploymentCases(requestId) {
             tbody.innerHTML = '';
 
             if (!data.success || !Array.isArray(data.data) || data.data.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="15" class="text-center text-muted py-3">
+                tbody.innerHTML = `<tr><td colspan="14" class="text-center text-muted py-3">
                   <i class='fas fa-inbox fa-2x mb-2'></i><br>Chưa có case triển khai nào
                 </td></tr>`;
                 return;
@@ -1462,20 +1452,21 @@ function loadDeploymentCases(requestId) {
                 tbody.innerHTML += `
                   <tr>
                     <td class='text-center'>${idx + 1}</td>
-                    <td>${item.case_code || ''}</td>
-                    <td>${item.progress || ''}</td>
-                    <td>${item.case_description || ''}</td>
-                    <td>${item.notes || ''}</td>
-                    <td>${item.assigned_to_name || ''}</td>
-                    <td>${formatDateForDisplay(item.start_date)}</td>
-                    <td>${formatDateForDisplay(item.end_date)}</td>
-                    <td>${item.status || ''}</td>
-                    <td>${item.progress || ''}</td>
-                    <td>${item.total_tasks || 0}</td>
-                    <td>${item.completed_tasks || 0}</td>
-                    <td>${item.progress_percentage || 0}%</td>
-                    <td>${item.work_type || ''}</td>
-                    <td>
+                    <td class='text-center'>${item.case_code || ''}</td>
+                    <td class='text-center'>${item.case_description || ''}</td>
+                    <td class='text-center'>${item.notes || ''}</td>
+                    <td class='text-center'>${item.assigned_to_name || ''}</td>
+                    <td class='text-center'>${formatDateForDisplay(item.start_date)}</td>
+                    <td class='text-center'>${formatDateForDisplay(item.end_date)}</td>
+                    <td class='text-center'>
+                      <span class="badge bg-${item.status === 'Hoàn thành' ? 'success' : (item.status === 'Đang xử lý' ? 'warning' : (item.status === 'Huỷ' ? 'danger' : 'secondary'))}">
+                        ${item.status || 'Tiếp nhận'}
+                      </span>
+                    </td>
+                    <td class='text-center'>${item.total_tasks || 0}</td>
+                    <td class='text-center'>${item.completed_tasks || 0}</td>
+                    <td class='text-center'>${item.work_type || ''}</td>
+                    <td class='text-center'>
                       <div class="btn-group" role="group">
                         <button type="button" class="btn btn-sm btn-outline-warning" onclick="editDeploymentCase(${item.id}); return false;" title="Chỉnh sửa">
                           <i class="fas fa-edit"></i>
@@ -1493,7 +1484,7 @@ function loadDeploymentCases(requestId) {
             console.error('Error loading deployment cases:', error);
             const tbody = document.getElementById('deployment-cases-table');
             if (tbody) {
-                tbody.innerHTML = `<tr><td colspan="15" class="text-center text-danger py-3">
+                tbody.innerHTML = `<tr><td colspan="14" class="text-center text-danger py-3">
                   <i class='fas fa-exclamation-triangle fa-2x mb-2'></i><br>Lỗi khi tải dữ liệu
                 </td></tr>`;
             }
@@ -2076,7 +2067,7 @@ function loadDeploymentTasks(caseId) {
             tbody.innerHTML = '';
             
             if (!data.success || !Array.isArray(data.data) || data.data.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="11" class="text-center text-muted py-3">
+                tbody.innerHTML = `<tr><td colspan="10" class="text-center text-muted py-3">
                   <i class='fas fa-inbox fa-2x mb-2'></i><br>Chưa có task triển khai nào
                 </td></tr>`;
                 return;
@@ -2089,28 +2080,19 @@ function loadDeploymentTasks(caseId) {
                 tbody.innerHTML += `
                   <tr>
                     <td class='text-center'>${idx + 1}</td>
-                    <td>${item.task_number || ''}</td>
-                    <td>${item.task_type || ''}</td>
-                    <td>${item.template_name || '-'}</td>
-                    <td>${item.task_description || ''}</td>
-                    <td>${formatDateForDisplay(item.start_date)}</td>
-                    <td>${formatDateForDisplay(item.end_date)}</td>
-                    <td>${item.assignee_name || ''}</td>
-                    <td>
+                    <td class='text-center'>${item.task_number || ''}</td>
+                    <td class='text-center'>${item.task_type || ''}</td>
+                    <td class='text-center'>${item.template_name || '-'}</td>
+                    <td class='text-center'>${item.task_description || ''}</td>
+                    <td class='text-center'>${formatDateForDisplay(item.start_date)}</td>
+                    <td class='text-center'>${formatDateForDisplay(item.end_date)}</td>
+                    <td class='text-center'>${item.assignee_name || ''}</td>
+                    <td class='text-center'>
                       <span class="badge bg-${(item.status === 'Hoàn thành' ? 'success' : (item.status === 'Đang xử lý' ? 'warning' : (item.status === 'Huỷ' ? 'danger' : 'secondary')))}">
                         ${item.status || 'Tiếp nhận'}
                       </span>
                     </td>
-                    <td>
-                      <div class="progress" style="width: 80px; height: 20px;">
-                        <div class="progress-bar bg-${(item.progress_percentage >= 80 ? 'success' : (item.progress_percentage >= 50 ? 'warning' : 'danger'))}" 
-                             style="width: ${item.progress_percentage || 0}%" 
-                             title="${item.progress_percentage || 0}%">
-                          <small>${item.progress_percentage || 0}%</small>
-                        </div>
-                      </div>
-                    </td>
-                    <td>
+                    <td class='text-center'>
                       <div class="btn-group" role="group">
                         <button type="button" class="btn btn-sm btn-outline-warning" onclick="editDeploymentTask(${item.id}); return false;" title="Chỉnh sửa">
                           <i class="fas fa-edit"></i>
@@ -2128,7 +2110,7 @@ function loadDeploymentTasks(caseId) {
             console.error('Error loading deployment tasks:', error);
             const tbody = document.getElementById('deployment-tasks-table');
             if (tbody) {
-                tbody.innerHTML = `<tr><td colspan="11" class="text-center text-danger py-3">
+                tbody.innerHTML = `<tr><td colspan="10" class="text-center text-danger py-3">
                   <i class='fas fa-exclamation-triangle fa-2x mb-2'></i><br>Lỗi khi tải dữ liệu
                 </td></tr>`;
             }
@@ -2143,11 +2125,69 @@ function editDeploymentTask(taskId) {
     event.preventDefault();
     event.stopPropagation();
     
-    if (typeof showAlert === 'function') {
-        showAlert('Tính năng chỉnh sửa task đang được phát triển', 'info');
-    } else {
-        alert('Tính năng chỉnh sửa task đang được phát triển');
-    }
+    // Lấy thông tin task
+    fetch('api/get_task_details.php?id=' + taskId)
+        .then(response => response.json())
+        .then(data => {
+            console.log('=== Task Details API Response ===', data);
+            if (data.success && data.data) {
+                const taskData = data.data;
+                console.log('=== Task Data ===', taskData);
+                
+                // Điền dữ liệu vào form edit task
+                document.getElementById('edit_task_id').value = taskData.id;
+                document.getElementById('edit_task_number').value = taskData.task_number || '';
+                document.getElementById('edit_task_type').value = taskData.task_type || '';
+                document.getElementById('edit_task_template').value = taskData.template_name || '';
+                document.getElementById('edit_task_name').value = taskData.task_description || '';
+                document.getElementById('edit_task_note').value = taskData.notes || taskData.task_note || '';
+                document.getElementById('edit_task_assignee_id').value = taskData.assignee_id || '';
+                
+                // Load danh sách nhân viên IT Dept trước
+                fetch('api/get_it_staffs.php')
+                    .then(response => response.json())
+                    .then(staffData => {
+                        const select = document.getElementById('edit_task_assignee_id');
+                        select.innerHTML = '<option value="">-- Chọn người thực hiện --</option>';
+                        if (staffData.success && Array.isArray(staffData.data)) {
+                            staffData.data.forEach(staff => {
+                                const option = document.createElement('option');
+                                option.value = staff.id;
+                                option.textContent = staff.fullname;
+                                select.appendChild(option);
+                            });
+                        }
+                        
+                        // Sau đó mới set giá trị cho assignee_id
+                        document.getElementById('edit_task_assignee_id').value = taskData.assignee_id || '';
+                        
+                        // Format datetime cho input datetime-local
+                        document.getElementById('edit_task_start_date').value = taskData.start_date ? formatDateTimeForInput(taskData.start_date) : '';
+                        document.getElementById('edit_task_end_date').value = taskData.end_date ? formatDateTimeForInput(taskData.end_date) : '';
+                        
+                        document.getElementById('edit_task_status').value = taskData.status || '';
+                        
+                        // Hiển thị modal edit task
+                        const editTaskModal = new bootstrap.Modal(document.getElementById('editDeploymentTaskModal'));
+                        editTaskModal.show();
+                    });
+                
+            } else {
+                if (typeof showAlert === 'function') {
+                    showAlert(data.message || 'Không thể lấy thông tin task', 'error');
+                } else {
+                    alert(data.message || 'Không thể lấy thông tin task');
+                }
+            }
+        })
+        .catch(error => {
+            console.error('Error fetching task details:', error);
+            if (typeof showAlert === 'function') {
+                showAlert('Có lỗi xảy ra khi lấy thông tin task', 'error');
+            } else {
+                alert('Có lỗi xảy ra khi lấy thông tin task');
+            }
+        });
 }
 
 // Function xóa task triển khai
@@ -2162,11 +2202,42 @@ function deleteDeploymentTask(taskId, caseId) {
     
     console.log('Deleting deployment task ID:', taskId);
     
-    if (typeof showAlert === 'function') {
-        showAlert('Tính năng xóa task đang được phát triển', 'info');
-    } else {
-        alert('Tính năng xóa task đang được phát triển');
-    }
+    fetch('api/delete_deployment_task.php', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            id: taskId
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            if (typeof showAlert === 'function') {
+                showAlert('Xóa task triển khai thành công!', 'success');
+            } else {
+                alert('Xóa task triển khai thành công!');
+            }
+            // Reload danh sách task
+            loadDeploymentTasks(caseId);
+            reloadDeploymentRequestsTable();
+        } else {
+            if (typeof showAlert === 'function') {
+                showAlert(data.message || 'Có lỗi xảy ra khi xóa task', 'error');
+            } else {
+                alert(data.message || 'Có lỗi xảy ra khi xóa task');
+            }
+        }
+    })
+    .catch(error => {
+        console.error('Error deleting deployment task:', error);
+        if (typeof showAlert === 'function') {
+            showAlert('Có lỗi xảy ra khi xóa task', 'error');
+        } else {
+            alert('Có lỗi xảy ra khi xóa task');
+        }
+    });
 }
 
 // Function xóa yêu cầu triển khai
@@ -2193,7 +2264,7 @@ function deleteRequest(requestId) {
                 alert('Xóa yêu cầu triển khai thành công!');
             }
             // Reload trang để cập nhật danh sách
-            location.reload();
+            reloadDeploymentRequestsTable();
         } else {
             if (typeof showAlert === 'function') {
                 showAlert('Lỗi: ' + (data.message || 'Không thể xóa yêu cầu triển khai'), 'error');
@@ -2233,7 +2304,7 @@ function reloadDeploymentRequestsTable() {
                     <td><span class="text-dark">${request.deployment_status || ''}</span></td>
                     <td><span class="text-dark">${request.total_cases || 0}</span></td>
                     <td><span class="text-dark">${request.total_tasks || 0}</span></td>
-                    <td><div class="progress" style="width: 80px; height: 20px;"><div class="progress-bar bg-${(request.progress_percentage >= 80 ? 'success' : (request.progress_percentage >= 50 ? 'warning' : 'danger'))}" style="width: ${request.progress_percentage || 0}%" title="${request.progress_percentage || 0}%"><small>${request.progress_percentage || 0}%</small></div></div></td>
+                    <td><div class="progress" style="width: 80px; height: 20px;"><div class="progress-bar bg-warning" style="width: ${request.progress_percentage || 0}%" title="${request.progress_percentage || 0}%"><small>${request.progress_percentage || 0}%</small></div></div></td>
                     <td><span class="badge bg-${(request.deployment_status === 'Hoàn thành' ? 'success' : (request.deployment_status === 'Đang xử lý' ? 'warning' : (request.deployment_status === 'Huỷ' ? 'danger' : 'secondary')))}">${request.deployment_status || ''}</span></td>
                     <td><div class="btn-group" role="group"><button class="btn btn-sm btn-outline-warning" onclick="editRequest(${request.id})" title="Chỉnh sửa"><i class="fas fa-edit"></i></button><button class="btn btn-sm btn-outline-danger" onclick="deleteRequest(${request.id})" title="Xóa"><i class="fas fa-trash"></i></button></div></td>
                 </tr>
@@ -2252,6 +2323,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const formData = new FormData(e.target);
             const data = {
                 deployment_case_id: formData.get('deployment_case_id'),
+                request_id: formData.get('request_id') || document.getElementById('task_request_id')?.value || '',
                 task_type: formData.get('task_type'),
                 template_name: formData.get('task_template') || null,
                 task_description: formData.get('task_name'),
@@ -2305,6 +2377,61 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
     });
+    
+    // Event listener cho form chỉnh sửa task
+    const editTaskForm = document.getElementById('editDeploymentTaskForm');
+    if (editTaskForm) {
+        editTaskForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(e.target);
+            const data = {
+                id: formData.get('id'),
+                task_type: formData.get('task_type'),
+                template_name: formData.get('task_template') || null,
+                task_description: formData.get('task_name'),
+                start_date: formData.get('start_date'),
+                end_date: formData.get('end_date'),
+                assignee_id: formData.get('assignee_id') || null,
+                status: formData.get('status')
+            };
+            
+            console.log('Updating deployment task with data:', data);
+            
+            fetch('api/update_deployment_task.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(result => {
+                if (result.success) {
+                    showAlert(result.message, 'success');
+                    
+                    // Close modal
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('editDeploymentTaskModal'));
+                    modal.hide();
+                    
+                    // Reload tasks table
+                    const caseId = document.getElementById('edit_case_id').value;
+                    if (caseId) {
+                        loadDeploymentTasks(caseId);
+                    }
+                    
+                    // Reset form
+                    e.target.reset();
+                } else {
+                    showAlert(result.message, 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error updating deployment task:', error);
+                showAlert('Lỗi khi cập nhật task triển khai', 'error');
+            });
+        });
+    }
 });
 </script>
 
@@ -2442,7 +2569,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     echo '<option value="">-- Không có nhân viên SALE Dept --</option>';
                   } else {
                     foreach ($sales as $sale) {
-                      echo '<option value="'.$sale['id'].'">'.htmlspecialchars($sale['fullname']).' ID: '.$sale['id'].'</option>';
+                      echo '<option value="'.$sale['id'].'">'.htmlspecialchars($sale['fullname']).'</option>';
                     }
                   }
                   ?>
@@ -2489,25 +2616,22 @@ document.addEventListener('DOMContentLoaded', function() {
                     <thead class="table-light">
                       <tr>
                         <th class="text-center">STT</th>
-                        <th>Số case</th>
-                        <th>Tiến trình</th>
-                        <th>Mô tả case</th>
-                        <th>Ghi chú</th>
-                        <th>Người phụ trách</th>
-                        <th>Ngày bắt đầu</th>
-                        <th>Ngày kết thúc</th>
-                        <th>Trạng thái</th>
-                        <th>Trạng thái tiến độ</th>
-                        <th>Tổng số task</th>
-                        <th>Task hoàn thành</th>
-                        <th>Tiến độ (%)</th>
-                        <th>Hình thức</th>
-                        <th>Thao tác</th>
+                        <th class="text-center">Số case</th>
+                        <th class="text-center">Mô tả case</th>
+                        <th class="text-center">Ghi chú</th>
+                        <th class="text-center">Người phụ trách</th>
+                        <th class="text-center">Ngày bắt đầu</th>
+                        <th class="text-center">Ngày kết thúc</th>
+                        <th class="text-center">Trạng thái</th>
+                        <th class="text-center">Tổng số task</th>
+                        <th class="text-center">Task hoàn thành</th>
+                        <th class="text-center">Hình thức</th>
+                        <th class="text-center">Thao tác</th>
                       </tr>
                     </thead>
                     <tbody id="deployment-cases-table">
                       <tr>
-                        <td colspan="15" class="text-center text-muted py-3">
+                        <td colspan="14" class="text-center text-muted py-3">
                           <i class="fas fa-inbox fa-2x mb-2"></i><br>
                           Chưa có case triển khai nào
                         </td>
@@ -2906,21 +3030,20 @@ document.addEventListener('DOMContentLoaded', function() {
                     <thead class="table-light">
                       <tr>
                         <th class="text-center">STT</th>
-                        <th>Số Task</th>
-                        <th>Loại Task</th>
-                        <th>Task mẫu</th>
-                        <th>Task</th>
-                        <th>Thời gian bắt đầu</th>
-                        <th>Thời gian kết thúc</th>
-                        <th>Người thực hiện</th>
-                        <th>Trạng thái</th>
-                        <th>Trạng thái tiến độ</th>
-                        <th>Thao tác</th>
+                        <th class="text-center">Số Task</th>
+                        <th class="text-center">Loại Task</th>
+                        <th class="text-center">Task mẫu</th>
+                        <th class="text-center">Task</th>
+                        <th class="text-center">Thời gian bắt đầu</th>
+                        <th class="text-center">Thời gian kết thúc</th>
+                        <th class="text-center">Người thực hiện</th>
+                        <th class="text-center">Trạng thái</th>
+                        <th class="text-center">Thao tác</th>
                       </tr>
                     </thead>
                     <tbody id="deployment-tasks-table">
                       <tr>
-                        <td colspan="11" class="text-center text-muted py-3">
+                        <td colspan="10" class="text-center text-muted py-3">
                           <i class="fas fa-inbox fa-2x mb-2"></i><br>
                           Chưa có task triển khai nào
                         </td>
@@ -2940,5 +3063,103 @@ document.addEventListener('DOMContentLoaded', function() {
     </div>
   </div>
 </div>
+    <!-- Modal chỉnh sửa task triển khai -->
+    <div class="modal fade" id="editDeploymentTaskModal" tabindex="-1" aria-labelledby="editDeploymentTaskModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-xl">
+    <div class="modal-content deployment-request-modal">
+      <div class="modal-header">
+        <h5 class="modal-title" id="editDeploymentTaskModalLabel">
+          <i class="fas fa-edit text-warning"></i> Chỉnh sửa Task Triển Khai
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form id="editDeploymentTaskForm">
+          <div class="row g-4">
+            <!-- Cột trái -->
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label class="form-label">Số task:</label>
+                <input type="text" class="form-control" name="task_number" id="edit_task_number" readonly>
+              </div>
+              <div class="mb-3">
+                <label for="edit_task_type" class="form-label">Loại Task <span class="text-danger">*</span></label>
+                <select class="form-select" name="task_type" id="edit_task_type" required>
+                  <option value="">-- Chọn loại task --</option>
+                  <option value="onsite">Onsite</option>
+                  <option value="offsite">Offsite</option>
+                  <option value="remote">Remote</option>
+                </select>
+              </div>
+              <div class="mb-3">
+                <label for="edit_task_template" class="form-label">Task mẫu</label>
+                <select class="form-select" name="task_template" id="edit_task_template">
+                  <option value="">-- Chọn task mẫu --</option>
+                  <option value="Cài đặt thiết bị">Cài đặt thiết bị</option>
+                  <option value="Cấu hình phần mềm">Cấu hình phần mềm</option>
+                  <option value="Kiểm tra hệ thống">Kiểm tra hệ thống</option>
+                  <option value="Đào tạo người dùng">Đào tạo người dùng</option>
+                  <option value="Bảo trì định kỳ">Bảo trì định kỳ</option>
+                  <option value="Khắc phục sự cố">Khắc phục sự cố</option>
+                  <option value="Nghiệm thu dự án">Nghiệm thu dự án</option>
+                </select>
+              </div>
+              <div class="mb-3">
+                <label for="edit_task_name" class="form-label">Task <span class="text-danger">*</span></label>
+                <input type="text" class="form-control" name="task_name" id="edit_task_name" required placeholder="Nhập tên task cụ thể">
+              </div>
+              <div class="mb-3">
+                <label for="edit_task_note" class="form-label">Ghi chú</label>
+                <textarea class="form-control" name="task_note" id="edit_task_note" rows="2" placeholder="Nhập ghi chú"></textarea>
+              </div>
+            </div>
+            <!-- Cột phải -->
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label for="edit_task_assignee_id" class="form-label">Người thực hiện</label>
+                <select class="form-select" name="assignee_id" id="edit_task_assignee_id">
+                  <option value="">-- Chọn người thực hiện --</option>
+                </select>
+              </div>
+              <div class="mb-3">
+                <label for="edit_task_start_date" class="form-label">Thời gian bắt đầu <span class="text-danger">*</span></label>
+                <input type="datetime-local" class="form-control" name="start_date" id="edit_task_start_date" required>
+              </div>
+              <div class="mb-3">
+                <label for="edit_task_end_date" class="form-label">Thời gian kết thúc <span class="text-danger">*</span></label>
+                <input type="datetime-local" class="form-control" name="end_date" id="edit_task_end_date" required>
+              </div>
+              <div class="mb-3">
+                <label for="edit_task_status" class="form-label">Trạng thái</label>
+                <select class="form-select" name="status" id="edit_task_status">
+                  <option value="Tiếp nhận">Tiếp nhận</option>
+                  <option value="Đang xử lý">Đang xử lý</option>
+                  <option value="Hoàn thành">Hoàn thành</option>
+                  <option value="Huỷ">Huỷ</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          <input type="hidden" name="id" id="edit_task_id">
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+          <i class="fas fa-times"></i> Hủy
+        </button>
+        <button type="submit" form="editDeploymentTaskForm" class="btn btn-warning">
+          <i class="fas fa-save"></i> Cập nhật Task
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    reloadDeploymentRequestsTable();
+});
+</script>

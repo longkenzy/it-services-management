@@ -13,7 +13,16 @@ if ($deployment_request_id <= 0) {
     echo json_encode(['success' => false, 'error' => 'Thiếu deployment_request_id']);
     exit;
 }
-$sql = "SELECT dc.*, s.fullname as assigned_to_name FROM deployment_cases dc LEFT JOIN staffs s ON dc.assigned_to = s.id WHERE dc.deployment_request_id = ? ORDER BY dc.id DESC";
+$sql = "SELECT dc.*, s.fullname as assigned_to_name, (
+    SELECT COUNT(*) FROM deployment_tasks dt WHERE dt.deployment_case_id = dc.id
+) as total_tasks,
+(
+    SELECT COUNT(*) FROM deployment_tasks dt WHERE dt.deployment_case_id = dc.id AND dt.status = 'Hoàn thành'
+) as completed_tasks
+FROM deployment_cases dc
+LEFT JOIN staffs s ON dc.assigned_to = s.id
+WHERE dc.deployment_request_id = ?
+ORDER BY dc.id DESC";
 $stmt = $pdo->prepare($sql);
 $stmt->execute([$deployment_request_id]);
 $cases = $stmt->fetchAll(PDO::FETCH_ASSOC);
