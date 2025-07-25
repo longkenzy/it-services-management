@@ -19,7 +19,6 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 $input = json_decode(file_get_contents('php://input'), true);
 
 // Debug logging
-error_log("Update deployment request input: " . json_encode($input));
 
 if (!$input) {
     http_response_code(400);

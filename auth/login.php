@@ -123,7 +123,7 @@ try {
     }
     
     // Ghi log thành công
-    logUserActivity('login', 'Đăng nhập thành công từ IP: ' . ($_SERVER['REMOTE_ADDR'] ?? 'unknown'));
+    // logUserActivity('login', 'Đăng nhập thành công từ IP: ' . ($_SERVER['REMOTE_ADDR'] ?? 'unknown'));
     
     // Cập nhật thời gian đăng nhập cuối vào database (optional)
     try {

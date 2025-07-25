@@ -43,8 +43,6 @@ try {
     }
     
     // Log hoạt động trước khi xóa
-    $log_message = "Xóa yêu cầu triển khai: " . $request['request_code'] . " (ID: " . $request_id . ")";
-    error_log($log_message);
     
     // Xóa tất cả deployment cases liên quan trước
     $stmt = $pdo->prepare("DELETE FROM deployment_cases WHERE deployment_request_id = ?");
@@ -66,8 +64,6 @@ try {
     $pdo->commit();
     
     // Log thành công
-    $success_log = "Đã xóa thành công yêu cầu triển khai ID: " . $request_id . " và " . $deleted_cases . " case liên quan";
-    error_log($success_log);
     
     echo json_encode([
         'success' => true, 

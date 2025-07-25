@@ -1,3 +1,7 @@
-# Bảo vệ thư mục backups
-Order Deny,Allow
-Deny from all 
+# Prevent directory listing
+Options -Indexes
+
+# Deny access to all files
+<Files *>
+    Deny from all
+</Files> 

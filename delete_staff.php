@@ -89,8 +89,7 @@ try {
         $avatar_path = 'assets/uploads/avatars/' . $avatar;
         if (file_exists($avatar_path)) {
             if (!unlink($avatar_path)) {
-                // Log lỗi nhưng không dừng quá trình xóa
-                error_log("Không thể xóa file avatar: " . $avatar_path);
+                // Không cần log lỗi xóa file avatar
             }
         }
     }
@@ -123,8 +122,6 @@ try {
     $pdo->commit();
     
     // Log hoạt động
-    $log_message = "Admin {$current_user['username']} đã xóa nhân sự: {$fullname} (ID: {$staff_id})";
-    error_log($log_message);
     
     // Trả về kết quả thành công
     header('Content-Type: application/json');
