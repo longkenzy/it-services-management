@@ -196,12 +196,12 @@ $(document).ready(function() {
     }
     
     function loadDashboard() {
-        showNotification('Đang tải dashboard...', 'info');
+        showNotification('Đang chuyển về trang chủ...', 'info');
         
-        // Simulate loading
+        // Redirect to dashboard page
         setTimeout(function() {
-            showNotification('Dashboard đã được tải', 'success');
-        }, 1000);
+            window.location.href = 'dashboard.php';
+        }, 500);
     }
     
     function loadStaffPage() {
@@ -291,14 +291,14 @@ $(document).ready(function() {
     }
     
     // Đã xóa đoạn logic logout trùng lặp. Chỉ giữ lại một nơi duy nhất xử lý logout.
-    // function performLogout() {
-    //     showNotification('Đang đăng xuất...', 'info');
+    function performLogout() {
+        showNotification('Đang đăng xuất...', 'info');
         
-    //     setTimeout(function() {
-    //         // Redirect to logout handler
-    //         window.location.href = 'auth/logout.php';
-    //     }, 1000);
-    // }
+        setTimeout(function() {
+            // Redirect to logout handler
+            window.location.href = 'auth/logout.php';
+        }, 1000);
+    }
     
     // ===== BREADCRUMB FUNCTIONALITY ===== //
     

@@ -35,12 +35,20 @@ try {
     $assignee_id = $input['assignee_id'] ?? null;
     $status = $input['status'] ?? null;
     
+    // Xử lý các trường ngày tháng - chuyển chuỗi rỗng thành NULL
+    if (empty($start_date)) {
+        $start_date = null;
+    }
+    if (empty($end_date)) {
+        $end_date = null;
+    }
+    
     // Validate dữ liệu
     if (!$task_id) {
         throw new Exception('Thiếu ID task');
     }
     
-    if (!$task_type || !$task_description || !$start_date || !$end_date) {
+    if (!$task_type || !$task_description) {
         throw new Exception('Thiếu thông tin bắt buộc');
     }
     

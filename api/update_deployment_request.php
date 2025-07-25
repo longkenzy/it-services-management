@@ -36,7 +36,13 @@ $fields = [
 
 $data = [];
 foreach ($fields as $field) {
-    $data[$field] = trim($input[$field] ?? '');
+    $value = trim($input[$field] ?? '');
+    // Handle date fields - convert empty string to null
+    if (in_array($field, ['expected_start', 'expected_end']) && empty($value)) {
+        $data[$field] = null;
+    } else {
+        $data[$field] = $value;
+    }
 }
 
 // Validation

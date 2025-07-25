@@ -1,0 +1,27 @@
+/* Workspace custom styles - kế thừa dashboard.css */
+
+.page-title {
+  color: #1cb5e0;
+}
+
+#workspace-tasks-table tr td {
+  vertical-align: middle;
+}
+
+#btn-filter-processing.active,
+#btn-filter-done-last-month.active,
+#btn-filter-done-this-month.active {
+  background: #1cb5e0;
+  color: #fff;
+  border-color: #1cb5e0;
+}
+
+/* Thêm đường kẻ giữa các cột bảng workspace */
+#workspace-tasks-table td, #workspace-tasks-table th {
+  border-right: 1px solid #e3e6f0;
+}
+#workspace-tasks-table td:last-child, #workspace-tasks-table th:last-child {
+  border-right: none;
+}
+
+/* Thêm style tuỳ chỉnh khác cho workspace ở đây */ 

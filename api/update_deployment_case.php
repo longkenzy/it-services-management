@@ -70,8 +70,13 @@ try {
     
     foreach ($updatable_fields as $field) {
         if (isset($input[$field])) {
+            $value = $input[$field];
+            // Xử lý các trường ngày tháng - chuyển chuỗi rỗng thành NULL
+            if (in_array($field, ['start_date', 'end_date']) && empty($value)) {
+                $value = null;
+            }
             $updates[] = "$field = ?";
-            $params[] = $input[$field];
+            $params[] = $value;
         }
     }
     

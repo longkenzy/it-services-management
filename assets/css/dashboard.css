@@ -589,15 +589,20 @@ button:focus-visible,
 }
 
 #changePasswordModal .modal-header {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
+    background: #1976d2; /* Màu xanh dương đậm, có thể thay đổi mã màu nếu muốn xanh khác */
+    color: #fff;
     border-bottom: none;
     padding: 1.5rem;
+}
+
+#changePasswordModal .modal-header i {
+    color: #fff;
 }
 
 #changePasswordModal .modal-title {
     font-weight: 600;
     font-size: 1.25rem;
+    color: #fff;
 }
 
 #changePasswordModal .modal-body {
@@ -710,13 +715,14 @@ button:focus-visible,
 }
 
 #changePasswordModal .btn-primary {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: #1976d2;
     border: none;
 }
 
 #changePasswordModal .btn-primary:hover {
+    background: #1565c0;
+    box-shadow: 0 5px 15px rgba(25, 118, 210, 0.4);
     transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
 }
 
 #changePasswordModal .btn-secondary {

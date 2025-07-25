@@ -4,6 +4,9 @@ require_once 'includes/session.php';
 requireLogin();
 require_once 'config/db.php';
 
+// Lấy role user hiện tại
+$current_role = isset($_SESSION['role']) ? $_SESSION['role'] : (function_exists('getCurrentUserRole') ? getCurrentUserRole() : null);
+
 // Lấy danh sách yêu cầu triển khai từ database với thông tin chi tiết
 $requests = [];
 try {
@@ -608,10 +611,12 @@ if (isset($_SESSION['user_id'])) {
                     <p class="text-muted mb-0">Quản lý các yêu cầu triển khai dự án và hệ thống</p>
                 </div>
                 <div class="col-auto">
+                    <?php if ($current_role !== 'user'): ?>
                     <button class="btn btn-primary" id="createRequestBtn" data-bs-toggle="modal" data-bs-target="#addDeploymentRequestModal">
                         <i class="fas fa-plus me-2"></i>
                         Tạo yêu cầu triển khai
                     </button>
+                    <?php endif; ?>
                 </div>
             </div>
         </div>
@@ -677,12 +682,12 @@ if (isset($_SESSION['user_id'])) {
                                         <span class="text-dark"><?php echo htmlspecialchars($request['sale_name'] ?? 'N/A');?></span>
                                     </td>
                                     <td>
-                                        <?php if ($request['expected_start'] && $request['expected_end']): ?>
+                                        <?php if ($request['expected_start']): ?>
                                             <div class="text-wrap" style="white-space: pre-line;">
                                                 <strong>Từ</strong><br>
                                                 <?php echo date('d/m/Y', strtotime($request['expected_start'])); ?><br>
                                                 <strong>Đến</strong><br>
-                                                <?php echo date('d/m/Y', strtotime($request['expected_end'])); ?>
+                                                <?php echo $request['expected_end'] ? date('d/m/Y', strtotime($request['expected_end'])) : '(Chưa xác định)'; ?>
                                             </div>
                                         <?php else: ?>
                                             <span class="text-muted">Chưa có</span>
@@ -735,9 +740,11 @@ if (isset($_SESSION['user_id'])) {
                                             <button class="btn btn-sm btn-outline-warning" onclick="editRequest(<?php echo $request['id']; ?>)" title="Chỉnh sửa">
                                                 <i class="fas fa-edit"></i>
                                             </button>
+                                            <?php if ($current_role !== 'user'): ?>
                                             <button class="btn btn-sm btn-outline-danger" onclick="deleteRequest(<?php echo $request['id']; ?>)" title="Xóa">
                                                 <i class="fas fa-trash"></i>
                                             </button>
+                                            <?php endif; ?>
                                         </div>
                                     </td>
                                 </tr>
@@ -772,16 +779,16 @@ if (isset($_SESSION['user_id'])) {
               
               <div class="mb-3">
                 <label class="form-label">Số hợp đồng PO:</label>
-                <input type="text" class="form-control" name="po_number" id="po_number" placeholder="Nhập số hợp đồng PO">
+                <input type="text" class="form-control" name="po_number" id="po_number" placeholder="Nhập số hợp đồng PO" <?php echo ($current_role === 'user') ? 'disabled' : ''; ?>>
                 <div class="form-check mt-1">
-                  <input class="form-check-input" type="checkbox" value="1" id="no_contract_po" name="no_contract_po">
+                  <input class="form-check-input" type="checkbox" value="1" id="no_contract_po" name="no_contract_po" <?php echo ($current_role === 'user') ? 'disabled' : ''; ?>>
                   <label class="form-check-label" for="no_contract_po">Không có HĐ/PO</label>
                 </div>
               </div>
               
               <div class="mb-3">
                 <label class="form-label">Loại hợp đồng:</label>
-                <select class="form-select" name="contract_type" id="contract_type">
+                <select class="form-select" name="contract_type" id="contract_type" <?php echo ($current_role === 'user') ? 'disabled' : ''; ?>>
                   <option value="">-- Chọn loại hợp đồng --</option>
                   <option value="Hợp đồng cung cấp dịch vụ">Hợp đồng cung cấp dịch vụ</option>
                   <option value="Hợp đồng bảo trì hệ thống">Hợp đồng bảo trì hệ thống</option>
@@ -798,7 +805,7 @@ if (isset($_SESSION['user_id'])) {
               
               <div class="mb-3">
                 <label class="form-label">Loại yêu cầu chi tiết:</label>
-                <select class="form-select" name="request_detail_type" id="request_detail_type">
+                <select class="form-select" name="request_detail_type" id="request_detail_type" <?php echo ($current_role === 'user') ? 'disabled' : ''; ?>>
                   <option value="">-- Chọn loại yêu cầu chi tiết --</option>
                   <option value="Triển khai hệ thống mới">Triển khai hệ thống mới</option>
                   <option value="Nâng cấp hệ thống hiện có">Nâng cấp hệ thống hiện có</option>
@@ -817,22 +824,22 @@ if (isset($_SESSION['user_id'])) {
               
               <div class="mb-3">
                 <label class="form-label">Email subject (Khách hàng):</label>
-                <input type="text" class="form-control" name="email_subject_customer" id="email_subject_customer" placeholder="Nhập email subject cho khách hàng">
+                <input type="text" class="form-control" name="email_subject_customer" id="email_subject_customer" placeholder="Nhập email subject cho khách hàng" <?php echo ($current_role === 'user') ? 'disabled' : ''; ?>>
               </div>
               
               <div class="mb-3">
                 <label class="form-label">Email subject (Nội bộ):</label>
-                <input type="text" class="form-control" name="email_subject_internal" id="email_subject_internal" placeholder="Nhập email subject cho nội bộ">
+                <input type="text" class="form-control" name="email_subject_internal" id="email_subject_internal" placeholder="Nhập email subject cho nội bộ" <?php echo ($current_role === 'user') ? 'disabled' : ''; ?>>
               </div>
               
               <div class="mb-3">
                 <label class="form-label">Bắt đầu dự kiến:</label>
-                <input type="date" class="form-control" name="expected_start" id="expected_start">
+                <input type="date" class="form-control" name="expected_start" id="expected_start" <?php echo ($current_role === 'user') ? 'disabled' : ''; ?>>
               </div>
               
               <div class="mb-3">
                 <label class="form-label">Kết thúc dự kiến:</label>
-                <input type="date" class="form-control" name="expected_end" id="expected_end">
+                <input type="date" class="form-control" name="expected_end" id="expected_end" <?php echo ($current_role === 'user') ? 'disabled' : ''; ?>>
               </div>
             </div>
             
@@ -841,7 +848,7 @@ if (isset($_SESSION['user_id'])) {
               <h6 class="text-success mb-3"><i class="fas fa-users me-2"></i>KHÁCH HÀNG</h6>
               <div class="mb-3">
                 <label class="form-label">Khách hàng:</label>
-                <select class="form-select" name="customer_id" id="customer_id">
+                <select class="form-select" name="customer_id" id="customer_id" <?php echo ($current_role === 'user') ? 'disabled' : ''; ?>>
                   <option value="">-- Chọn khách hàng --</option>
                   <?php
                   $partners = $pdo->query("SELECT id, name, contact_person, contact_phone FROM partner_companies ORDER BY name ASC")->fetchAll();
@@ -1468,9 +1475,11 @@ function loadDeploymentCases(requestId) {
                         <button type="button" class="btn btn-sm btn-outline-warning" onclick="editDeploymentCase(${item.id}); return false;" title="Chỉnh sửa">
                           <i class="fas fa-edit"></i>
                         </button>
+                        <?php if ($current_role !== 'user'): ?>
                         <button type="button" class="btn btn-sm btn-outline-danger" onclick="deleteDeploymentCase(${item.id}, ${requestId}); return false;" title="Xóa">
                           <i class="fas fa-trash"></i>
                         </button>
+                        <?php endif; ?>
                       </div>
                     </td>
                   </tr>
@@ -2094,9 +2103,11 @@ function loadDeploymentTasks(caseId) {
                         <button type="button" class="btn btn-sm btn-outline-warning" onclick="editDeploymentTask(${item.id}); return false;" title="Chỉnh sửa">
                           <i class="fas fa-edit"></i>
                         </button>
+                        <?php if ($current_role !== 'user'): ?>
                         <button type="button" class="btn btn-sm btn-outline-danger" onclick="deleteDeploymentTask(${item.id}, ${caseId}); return false;" title="Xóa">
                           <i class="fas fa-trash"></i>
                         </button>
+                        <?php endif; ?>
                       </div>
                     </td>
                   </tr>
@@ -2139,6 +2150,10 @@ function editDeploymentTask(taskId) {
                 document.getElementById('edit_task_name').value = taskData.task_description || '';
                 document.getElementById('edit_task_note').value = taskData.notes || taskData.task_note || '';
                 document.getElementById('edit_task_assignee_id').value = taskData.assignee_id || '';
+                
+                // Lưu case ID và request ID để reload sau khi update
+                document.getElementById('edit_task_case_id').value = taskData.deployment_case_id || '';
+                document.getElementById('edit_task_request_id').value = taskData.deployment_request_id || '';
                 
                 // Load danh sách nhân viên IT Dept trước
                 fetch('api/get_it_staffs.php')
@@ -2289,21 +2304,23 @@ function reloadDeploymentRequestsTable() {
             const tbody = document.getElementById('deployment-requests-table');
             if (!tbody) return;
             tbody.innerHTML = '';
+            const currentRole = '<?php echo $current_role; ?>';
             data.data.forEach(request => {
+                const deleteButton = currentRole !== 'user' ? `<button class="btn btn-sm btn-outline-danger" onclick="deleteRequest(${request.id})" title="Xóa"><i class="fas fa-trash"></i></button>` : '';
                 tbody.innerHTML += `
                 <tr>
                     <td><strong class="text-primary">${request.request_code || ''}</strong></td>
                     <td><div class="contract-info"><div class="fw-bold">${request.contract_type || 'N/A'}</div><small class="text-muted">${request.request_detail_type || 'N/A'}</small></div></td>
                     <td><div class="customer-info"><div class="fw-bold">${request.customer_name || 'N/A'}</div><small class="text-muted"><i class='fas fa-user me-1'></i>${request.contact_person || 'N/A'}</small><br><small class="text-muted"><i class='fas fa-phone me-1'></i>${request.contact_phone || 'N/A'}</small></div></td>
                     <td><span class="text-dark">${request.sale_name || 'N/A'}</span></td>
-                    <td>${request.expected_start && request.expected_end ? `<div class='text-wrap' style='white-space: pre-line;'><strong>Từ</strong><br>${formatDateForDisplay(request.expected_start)}<br><strong>Đến</strong><br>${formatDateForDisplay(request.expected_end)}</div>` : '<span class="text-muted">Chưa có</span>'}</td>
+                    <td>${request.expected_start ? `<div class='text-wrap' style='white-space: pre-line;'><strong>Từ</strong><br>${formatDateForDisplay(request.expected_start)}<br><strong>Đến</strong><br>${request.expected_end ? formatDateForDisplay(request.expected_end) : '(Chưa xác định)'}</div>` : '<span class="text-muted">Chưa có</span>'}</td>
                     <td>${request.requester_notes ? `<div class='text-wrap' style='max-width: 200px; white-space: pre-wrap; word-wrap: break-word;'>${request.requester_notes}</div>` : '<span class="text-muted">-</span>'}</td>
                     <td><span class="text-dark">${request.deployment_status || ''}</span></td>
                     <td><span class="text-dark">${request.total_cases || 0}</span></td>
                     <td><span class="text-dark">${request.total_tasks || 0}</span></td>
                     <td><div class="progress" style="width: 80px; height: 20px;"><div class="progress-bar bg-warning" style="width: ${request.progress_percentage || 0}%" title="${request.progress_percentage || 0}%"><small>${request.progress_percentage || 0}%</small></div></div></td>
                     <td><span class="badge bg-${(request.deployment_status === 'Hoàn thành' ? 'success' : (request.deployment_status === 'Đang xử lý' ? 'warning' : (request.deployment_status === 'Huỷ' ? 'danger' : 'secondary')))}">${request.deployment_status || ''}</span></td>
-                    <td><div class="btn-group" role="group"><button class="btn btn-sm btn-outline-warning" onclick="editRequest(${request.id})" title="Chỉnh sửa"><i class="fas fa-edit"></i></button><button class="btn btn-sm btn-outline-danger" onclick="deleteRequest(${request.id})" title="Xóa"><i class="fas fa-trash"></i></button></div></td>
+                    <td><div class="btn-group" role="group"><button class="btn btn-sm btn-outline-warning" onclick="editRequest(${request.id})" title="Chỉnh sửa"><i class="fas fa-edit"></i></button>${deleteButton}</div></td>
                 </tr>
                 `;
             });
@@ -2348,6 +2365,12 @@ document.addEventListener('DOMContentLoaded', function() {
                     
                     // Reload tasks table
                     loadDeploymentTasks(data.deployment_case_id);
+                    
+                    // Reload deployment cases table để cập nhật cột tổng số task
+                    const requestId = data.request_id;
+                    if (requestId) {
+                        loadDeploymentCases(requestId);
+                    }
                     
                     // Reload deployment requests table để cập nhật cột tổng số task
                     reloadDeploymentRequestsTable();
@@ -2411,9 +2434,15 @@ document.addEventListener('DOMContentLoaded', function() {
                     modal.hide();
                     
                     // Reload tasks table
-                    const caseId = document.getElementById('edit_case_id').value;
+                    const caseId = document.getElementById('edit_task_case_id').value;
                     if (caseId) {
                         loadDeploymentTasks(caseId);
+                    }
+                    
+                    // Reload deployment cases table để cập nhật cột tổng số task
+                    const requestId = document.getElementById('edit_task_request_id').value;
+                    if (requestId) {
+                        loadDeploymentCases(requestId);
                     }
                     
                     // Reload deployment requests table để cập nhật cột tổng số task
@@ -2457,16 +2486,16 @@ document.addEventListener('DOMContentLoaded', function() {
               
               <div class="mb-3">
                 <label class="form-label">Số hợp đồng PO:</label>
-                <input type="text" class="form-control" name="po_number" id="edit_po_number" placeholder="Nhập số hợp đồng PO">
+                <input type="text" class="form-control" name="po_number" id="edit_po_number" placeholder="Nhập số hợp đồng PO" <?php echo ($current_role === 'user') ? 'disabled' : ''; ?>>
                 <div class="form-check mt-1">
-                  <input class="form-check-input" type="checkbox" value="1" id="edit_no_contract_po" name="no_contract_po">
+                  <input class="form-check-input" type="checkbox" value="1" id="edit_no_contract_po" name="no_contract_po" <?php echo ($current_role === 'user') ? 'disabled' : ''; ?>>
                   <label class="form-check-label" for="edit_no_contract_po">Không có HĐ/PO</label>
                 </div>
               </div>
               
               <div class="mb-3">
                 <label class="form-label">Loại hợp đồng:</label>
-                <select class="form-select" name="contract_type" id="edit_contract_type">
+                <select class="form-select" name="contract_type" id="edit_contract_type" <?php echo ($current_role === 'user') ? 'disabled' : ''; ?>>
                   <option value="">-- Chọn loại hợp đồng --</option>
                   <option value="Hợp đồng cung cấp dịch vụ">Hợp đồng cung cấp dịch vụ</option>
                   <option value="Hợp đồng bảo trì hệ thống">Hợp đồng bảo trì hệ thống</option>
@@ -2483,7 +2512,7 @@ document.addEventListener('DOMContentLoaded', function() {
               
               <div class="mb-3">
                 <label class="form-label">Loại yêu cầu chi tiết:</label>
-                <select class="form-select" name="request_detail_type" id="edit_request_detail_type">
+                <select class="form-select" name="request_detail_type" id="edit_request_detail_type" <?php echo ($current_role === 'user') ? 'disabled' : ''; ?>>
                   <option value="">-- Chọn loại yêu cầu chi tiết --</option>
                   <option value="Triển khai mới">Triển khai mới</option>
                   <option value="Nâng cấp hệ thống">Nâng cấp hệ thống</option>
@@ -2501,12 +2530,12 @@ document.addEventListener('DOMContentLoaded', function() {
               
               <div class="mb-3">
                 <label class="form-label">Tiêu đề email gửi khách hàng:</label>
-                <input type="text" class="form-control" name="email_subject_customer" id="edit_email_subject_customer" placeholder="Nhập tiêu đề email">
+                <input type="text" class="form-control" name="email_subject_customer" id="edit_email_subject_customer" placeholder="Nhập tiêu đề email" <?php echo ($current_role === 'user') ? 'disabled' : ''; ?>>
               </div>
               
               <div class="mb-3">
                 <label class="form-label">Tiêu đề email nội bộ:</label>
-                <input type="text" class="form-control" name="email_subject_internal" id="edit_email_subject_internal" placeholder="Nhập tiêu đề email">
+                <input type="text" class="form-control" name="email_subject_internal" id="edit_email_subject_internal" placeholder="Nhập tiêu đề email" <?php echo ($current_role === 'user') ? 'disabled' : ''; ?>>
               </div>
             </div>
             
@@ -2518,20 +2547,20 @@ document.addEventListener('DOMContentLoaded', function() {
                 <div class="col-md-6">
                   <div class="mb-3">
                     <label class="form-label">Ngày bắt đầu dự kiến:</label>
-                    <input type="date" class="form-control" name="expected_start" id="edit_expected_start">
+                    <input type="date" class="form-control" name="expected_start" id="edit_expected_start" <?php echo ($current_role === 'user') ? 'disabled' : ''; ?>>
                   </div>
                 </div>
                 <div class="col-md-6">
                   <div class="mb-3">
                     <label class="form-label">Ngày kết thúc dự kiến:</label>
-                    <input type="date" class="form-control" name="expected_end" id="edit_expected_end">
+                    <input type="date" class="form-control" name="expected_end" id="edit_expected_end" <?php echo ($current_role === 'user') ? 'disabled' : ''; ?>>
                   </div>
                 </div>
               </div>
               
               <div class="mb-3">
                 <label class="form-label">Khách hàng: <span class="text-danger">*</span></label>
-                <select class="form-select" name="customer_id" id="edit_customer_id" required>
+                <select class="form-select" name="customer_id" id="edit_customer_id" required <?php echo ($current_role === 'user') ? 'disabled' : ''; ?>>
                   <option value="">-- Chọn khách hàng --</option>
                   <?php
                   $partners = $pdo->query("SELECT id, name, contact_person, contact_phone FROM partner_companies ORDER BY name ASC")->fetchAll();
@@ -2546,20 +2575,20 @@ document.addEventListener('DOMContentLoaded', function() {
                 <div class="col-md-6">
                   <div class="mb-3">
                     <label class="form-label">Người liên hệ:</label>
-                    <input type="text" class="form-control" name="contact_person" id="edit_contact_person" placeholder="Nhập tên người liên hệ">
+                    <input type="text" class="form-control" name="contact_person" id="edit_contact_person" placeholder="Nhập tên người liên hệ" <?php echo ($current_role === 'user') ? 'disabled' : ''; ?>>
                   </div>
                 </div>
                 <div class="col-md-6">
                   <div class="mb-3">
                     <label class="form-label">Số điện thoại:</label>
-                    <input type="text" class="form-control" name="contact_phone" id="edit_contact_phone" placeholder="Nhập số điện thoại">
+                    <input type="text" class="form-control" name="contact_phone" id="edit_contact_phone" placeholder="Nhập số điện thoại" <?php echo ($current_role === 'user') ? 'disabled' : ''; ?>>
                   </div>
                 </div>
               </div>
               
               <div class="mb-3">
                 <label class="form-label">Sale phụ trách: <span class="text-danger">*</span></label>
-                <select class="form-select" name="sale_id" id="edit_sale_id" required>
+                <select class="form-select" name="sale_id" id="edit_sale_id" required <?php echo ($current_role === 'user') ? 'disabled' : ''; ?>>
                   <option value="">-- Chọn sale phụ trách --</option>
                   <?php
                   $sales = $pdo->query("SELECT id, fullname FROM staffs WHERE department = 'SALE Dept.' AND status = 'active' ORDER BY fullname ASC")->fetchAll();
@@ -2577,7 +2606,7 @@ document.addEventListener('DOMContentLoaded', function() {
               
               <div class="mb-3">
                 <label class="form-label">Ghi chú yêu cầu:</label>
-                <textarea class="form-control" name="requester_notes" id="edit_requester_notes" rows="3" placeholder="Nhập ghi chú yêu cầu"></textarea>
+                <textarea class="form-control" name="requester_notes" id="edit_requester_notes" rows="3" placeholder="Nhập ghi chú yêu cầu" <?php echo ($current_role === 'user') ? 'disabled' : ''; ?>></textarea>
               </div>
               
               <div class="mb-3">
@@ -2587,7 +2616,7 @@ document.addEventListener('DOMContentLoaded', function() {
               
               <div class="mb-3">
                 <label class="form-label">Trạng thái triển khai: <span class="text-danger">*</span></label>
-                <select class="form-select" name="deployment_status" id="edit_deployment_status" required>
+                <select class="form-select" name="deployment_status" id="edit_deployment_status" required <?php echo ($current_role === 'user') ? 'disabled' : ''; ?>>
                   <option value="">-- Chọn trạng thái --</option>
                   <option value="Tiếp nhận">Tiếp nhận</option>
                   <option value="Đang xử lý">Đang xử lý</option>
@@ -2644,7 +2673,9 @@ document.addEventListener('DOMContentLoaded', function() {
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+          <?php if ($current_role !== 'user'): ?>
           <button type="submit" class="btn btn-primary">Cập nhật yêu cầu</button>
+          <?php endif; ?>
         </div>
       </form>
     </div>
@@ -2718,12 +2749,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 </select>
               </div>
               <div class="mb-3">
-                <label for="task_start_date" class="form-label">Thời gian bắt đầu <span class="text-danger">*</span></label>
-                <input type="datetime-local" class="form-control" name="start_date" id="task_start_date" required>
+                <label for="task_start_date" class="form-label">Thời gian bắt đầu:</label>
+                <input type="datetime-local" class="form-control" name="start_date" id="task_start_date">
               </div>
               <div class="mb-3">
-                <label for="task_end_date" class="form-label">Thời gian kết thúc <span class="text-danger">*</span></label>
-                <input type="datetime-local" class="form-control" name="end_date" id="task_end_date" required>
+                <label for="task_end_date" class="form-label">Thời gian kết thúc:</label>
+                <input type="datetime-local" class="form-control" name="end_date" id="task_end_date">
               </div>
               <div class="mb-3">
                 <label for="task_status" class="form-label">Trạng thái</label>
@@ -3083,7 +3114,7 @@ document.addEventListener('DOMContentLoaded', function() {
               </div>
               <div class="mb-3">
                 <label for="edit_task_type" class="form-label">Loại Task <span class="text-danger">*</span></label>
-                <select class="form-select" name="task_type" id="edit_task_type" required>
+                <select class="form-select" name="task_type" id="edit_task_type" required <?php echo ($current_role === 'user') ? 'readonly' : ''; ?>>
                   <option value="">-- Chọn loại task --</option>
                   <option value="onsite">Onsite</option>
                   <option value="offsite">Offsite</option>
@@ -3092,7 +3123,7 @@ document.addEventListener('DOMContentLoaded', function() {
               </div>
               <div class="mb-3">
                 <label for="edit_task_template" class="form-label">Task mẫu</label>
-                <select class="form-select" name="task_template" id="edit_task_template">
+                <select class="form-select" name="task_template" id="edit_task_template" <?php echo ($current_role === 'user') ? 'readonly' : ''; ?>>
                   <option value="">-- Chọn task mẫu --</option>
                   <option value="Cài đặt thiết bị">Cài đặt thiết bị</option>
                   <option value="Cấu hình phần mềm">Cấu hình phần mềm</option>
@@ -3105,28 +3136,28 @@ document.addEventListener('DOMContentLoaded', function() {
               </div>
               <div class="mb-3">
                 <label for="edit_task_name" class="form-label">Task <span class="text-danger">*</span></label>
-                <input type="text" class="form-control" name="task_name" id="edit_task_name" required placeholder="Nhập tên task cụ thể">
+                <input type="text" class="form-control" name="task_name" id="edit_task_name" required placeholder="Nhập tên task cụ thể" <?php echo ($current_role === 'user') ? 'readonly' : ''; ?>>
               </div>
               <div class="mb-3">
                 <label for="edit_task_note" class="form-label">Ghi chú</label>
-                <textarea class="form-control" name="task_note" id="edit_task_note" rows="2" placeholder="Nhập ghi chú"></textarea>
+                <textarea class="form-control" name="task_note" id="edit_task_note" rows="2" placeholder="Nhập ghi chú" <?php echo ($current_role === 'user') ? 'readonly' : ''; ?>></textarea>
               </div>
             </div>
             <!-- Cột phải -->
             <div class="col-md-6">
               <div class="mb-3">
                 <label for="edit_task_assignee_id" class="form-label">Người thực hiện</label>
-                <select class="form-select" name="assignee_id" id="edit_task_assignee_id">
+                <select class="form-select" name="assignee_id" id="edit_task_assignee_id" <?php echo ($current_role === 'user') ? 'readonly' : ''; ?>>
                   <option value="">-- Chọn người thực hiện --</option>
                 </select>
               </div>
               <div class="mb-3">
-                <label for="edit_task_start_date" class="form-label">Thời gian bắt đầu <span class="text-danger">*</span></label>
-                <input type="datetime-local" class="form-control" name="start_date" id="edit_task_start_date" required>
+                <label for="edit_task_start_date" class="form-label">Thời gian bắt đầu:</label>
+                <input type="datetime-local" class="form-control" name="start_date" id="edit_task_start_date" <?php echo ($current_role === 'user') ? 'readonly' : ''; ?>>
               </div>
               <div class="mb-3">
-                <label for="edit_task_end_date" class="form-label">Thời gian kết thúc <span class="text-danger">*</span></label>
-                <input type="datetime-local" class="form-control" name="end_date" id="edit_task_end_date" required>
+                <label for="edit_task_end_date" class="form-label">Thời gian kết thúc:</label>
+                <input type="datetime-local" class="form-control" name="end_date" id="edit_task_end_date">
               </div>
               <div class="mb-3">
                 <label for="edit_task_status" class="form-label">Trạng thái</label>
@@ -3140,6 +3171,8 @@ document.addEventListener('DOMContentLoaded', function() {
             </div>
           </div>
           <input type="hidden" name="id" id="edit_task_id">
+          <input type="hidden" id="edit_task_case_id">
+          <input type="hidden" id="edit_task_request_id">
         </form>
       </div>
       <div class="modal-footer">
@@ -3160,5 +3193,97 @@ document.addEventListener('DOMContentLoaded', function() {
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     reloadDeploymentRequestsTable();
+    
+    // Disable form fields for user role
+    const currentRole = '<?php echo $current_role; ?>';
+    if (currentRole === 'user') {
+        // Disable all form fields in create modal
+        const createModalFields = [
+            'po_number', 'no_contract_po', 'contract_type', 'request_detail_type',
+            'email_subject_customer', 'email_subject_internal', 'expected_start', 'expected_end',
+            'customer_id', 'sale_id', 'requester_notes', 'deployment_status'
+        ];
+        
+        createModalFields.forEach(fieldId => {
+            const field = document.getElementById(fieldId);
+            if (field) {
+                field.disabled = true;
+                field.setAttribute('readonly', true);
+            }
+        });
+        
+        // Disable all form fields in edit modal
+        const editModalFields = [
+            'edit_po_number', 'edit_no_contract_po', 'edit_contract_type', 'edit_request_detail_type',
+            'edit_email_subject_customer', 'edit_email_subject_internal', 'edit_expected_start', 'edit_expected_end',
+            'edit_customer_id', 'edit_contact_person', 'edit_contact_phone', 'edit_sale_id', 
+            'edit_requester_notes', 'edit_deployment_status'
+        ];
+        
+        editModalFields.forEach(fieldId => {
+            const field = document.getElementById(fieldId);
+            if (field) {
+                field.disabled = true;
+                field.setAttribute('readonly', true);
+            }
+        });
+    }
+});
+
+// Disable fields when modals are shown
+document.addEventListener('DOMContentLoaded', function() {
+    const currentRole = '<?php echo $current_role; ?>';
+    if (currentRole === 'user') {
+        // Disable fields when create modal is shown
+        const createModal = document.getElementById('addDeploymentRequestModal');
+        if (createModal) {
+            createModal.addEventListener('shown.bs.modal', function() {
+                const fields = this.querySelectorAll('input, select, textarea');
+                fields.forEach(field => {
+                    if (field.id !== 'request_code') { // Keep request_code readonly but not disabled
+                        field.disabled = true;
+                        field.setAttribute('readonly', true);
+                    }
+                });
+            });
+        }
+        
+        // Disable fields when edit modal is shown
+        const editModal = document.getElementById('editDeploymentRequestModal');
+        if (editModal) {
+            editModal.addEventListener('shown.bs.modal', function() {
+                const fields = this.querySelectorAll('input, select, textarea');
+                fields.forEach(field => {
+                    if (field.id !== 'edit_request_code') { // Keep edit_request_code readonly but not disabled
+                        field.disabled = true;
+                        field.setAttribute('readonly', true);
+                    }
+                });
+            });
+        }
+    }
+});
+
+// Disable fields when edit task modal is shown
+document.addEventListener('DOMContentLoaded', function() {
+    const currentRole = '<?php echo $current_role; ?>';
+    const editTaskModal = document.getElementById('editDeploymentTaskModal');
+    if (editTaskModal) {
+        editTaskModal.addEventListener('shown.bs.modal', function() {
+            const fields = this.querySelectorAll('input, select, textarea');
+            fields.forEach(field => {
+                // Keep end_date and status enabled for user role
+                if (currentRole === 'user' && field.id !== 'edit_task_end_date' && field.id !== 'edit_task_status' && field.id !== 'edit_task_number') {
+                    // Use readonly instead of disabled to allow form submission
+                    field.setAttribute('readonly', true);
+                    field.style.backgroundColor = '#f8f9fa';
+                    field.style.cursor = 'not-allowed';
+                }
+            });
+        });
+    }
 });
 </script>
+<script src="assets/js/dashboard.js?v=<?php echo filemtime('assets/js/dashboard.js'); ?>"></script>
+</body>
+</html>
