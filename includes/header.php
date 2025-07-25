@@ -20,7 +20,6 @@ if (!function_exists('str_contains')) {
 if (!isset($current_user) || !$current_user) {
     $current_user = getCurrentUser();
 }
-
 // Lấy avatar từ bảng staffs dựa trên username
 require_once 'config/db.php';
 $avatar_url = null;
@@ -36,7 +35,6 @@ if ($row && !empty($row['avatar'])) {
         $avatar_url = $avatar_path;
     }
 }
-
 // Tạo avatar từ chữ cái đầu của tên
 $initials = '';
 $name_parts = explode(' ', $current_user['fullname']);

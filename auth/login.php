@@ -108,7 +108,16 @@ try {
     }
     
     // ===== ĐĂNG NHẬP THÀNH CÔNG ===== //
-    
+    // Lấy id từ bảng staffs
+    $staff_stmt = $pdo->prepare('SELECT id, fullname FROM staffs WHERE username = ? LIMIT 1');
+    $staff_stmt->execute([$user['username']]);
+    $staff = $staff_stmt->fetch();
+    if ($staff) {
+        $user['id'] = $staff['id'];
+        $user['fullname'] = $staff['fullname'];
+    }
+    // Debug: ghi id staff vào file
+    file_put_contents(__DIR__ . '/../debug_login.txt', 'Login as staff id: ' . $user['id'] . ' (username: ' . $user['username'] . ")\n", FILE_APPEND);
     // Lưu thông tin vào session
     setUserSession($user);
     
