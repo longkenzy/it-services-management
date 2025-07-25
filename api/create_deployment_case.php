@@ -56,12 +56,6 @@ try {
     $completed_tasks = 0; // Set default value
     $progress_percentage = 0; // Set default value
     $created_by = 11; // Luôn dùng id 11 cho created_by để tránh lỗi khóa ngoại
-    file_put_contents(__DIR__ . '/debug_created_by.txt',
-        'SESSION_user_id: ' . print_r($_SESSION['user_id'], true) .
-        '\ncreated_by: ' . $created_by .
-        '\n',
-        FILE_APPEND
-    );
     // Check foreign keys
     $stmt = $pdo->prepare('SELECT id FROM deployment_requests WHERE id = ?');
     $stmt->execute([$deployment_request_id]);

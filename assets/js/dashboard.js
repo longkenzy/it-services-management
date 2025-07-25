@@ -283,31 +283,7 @@ $(document).ready(function() {
         }, 500);
     }
     
-    function loadDeploymentCases() {
-        
-        // Simulate loading deployment cases
-    }
-    
-    function loadMaintenanceCases() {
-        
-        // Simulate loading maintenance cases
-    }
-    
-    function showUserProfile() {
-        showNotification('Đang tải thông tin cá nhân...', 'info');
-        
-    }
-    
-    function showUserSettings() {
-        showNotification('Đang tải cài đặt...', 'info');
-        
-        // Placeholder for regular user settings
-    }
-    
-    function showNotifications() {
-        showNotification('Đang tải thông báo...', 'info');
-        
-    }
+    // Xóa các function placeholder không có nội dung
     
     function showChangePasswordModal() {
         
@@ -472,6 +448,9 @@ $(document).ready(function() {
     // ===== START APPLICATION ===== //
     
     init();
+    
+    // ===== ĐỔI MẬT KHẨU - ĐÃ XÓA VÌ TRÙNG LẶP VỚI DASHBOARD.PHP ===== //
+    // Event handler đã được xử lý trong dashboard.php
     
     // ===== DEMO DATA CONSOLE LOG ===== //
     // Demo data removed for production

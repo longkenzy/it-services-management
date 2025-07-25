@@ -29,15 +29,14 @@ try {
     $requests = $stmt->fetchAll();
     
     // Debug: Log số lượng records tìm thấy
-    error_log("Found " . count($requests) . " deployment requests");
-    
+    // error_log("Found " . count($requests) . " deployment requests");
     // Debug: Hiển thị thông tin nếu có debug parameter
-    if (isset($_GET['debug'])) {
-        echo "<!-- Debug: Found " . count($requests) . " records -->\n";
-        foreach ($requests as $req) {
-            echo "<!-- Record: " . $req['request_code'] . " -->\n";
-        }
-    }
+    // if (isset($_GET['debug'])) {
+    //     echo "<!-- Debug: Found " . count($requests) . " records -->\n";
+    //     foreach ($requests as $req) {
+    //         echo "<!-- Record: " . $req['request_code'] . " -->\n";
+    //     }
+    // }
 } catch (PDOException $e) {
     error_log("Database error in deployment_requests.php: " . $e->getMessage());
     $requests = [];
@@ -1095,8 +1094,6 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Submit form
         const formData = new FormData(this);
-        
-        console.log(formData);
         
         fetch('api/create_deployment_request.php', {
             method: 'POST',
@@ -2333,8 +2330,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 status: formData.get('status')
             };
             
-            console.log('Creating deployment task with data:', data);
-            
             fetch('api/create_deployment_task.php', {
                 method: 'POST',
                 headers: {
@@ -2395,8 +2390,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 assignee_id: formData.get('assignee_id') || null,
                 status: formData.get('status')
             };
-            
-            console.log('Updating deployment task with data:', data);
             
             fetch('api/update_deployment_task.php', {
                 method: 'POST',

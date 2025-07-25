@@ -287,42 +287,6 @@ function validateCSRFToken($token) {
 }
 
 /**
- * Ghi log hoạt động user
- * @param string $action Hành động
- * @param string $details Chi tiết (optional)
- */
-function logUserActivity($action, $details = '') {
-    if (!isLoggedIn()) {
-        return;
-    }
-    
-    $log_entry = [
-        'timestamp' => date('Y-m-d H:i:s'),
-        'user_id' => getCurrentUserId(),
-        'username' => getCurrentUsername(),
-        'action' => $action,
-        'details' => $details,
-        'ip_address' => $_SERVER['REMOTE_ADDR'] ?? 'unknown'
-    ];
-    
-    // Ghi vào file log (có thể thay bằng database sau)
-    $log_file = 'logs/user_activity.log';
-    
-    try {
-        if (!file_exists('logs')) {
-            mkdir('logs', 0755, true);
-        }
-        
-        if (is_writable('logs') || is_writable($log_file)) {
-            file_put_contents($log_file, json_encode($log_entry) . "\n", FILE_APPEND | LOCK_EX);
-        }
-    } catch (Exception $e) {
-        // Silently fail - không làm gián đoạn response chính
-        error_log("Failed to write user activity log: " . $e->getMessage());
-    }
-}
-
-/**
  * Hiển thị thông báo flash message
  * @param string $type Loại thông báo (success, error, warning, info)
  * @param string $message Nội dung thông báo

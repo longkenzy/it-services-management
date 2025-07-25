@@ -15,7 +15,7 @@ header('Content-Type: application/json; charset=utf-8');
 try {
     // Ghi log hoạt động trước khi đăng xuất
     if (isLoggedIn()) {
-        logUserActivity('logout', 'Đăng xuất từ IP: ' . ($_SERVER['REMOTE_ADDR'] ?? 'unknown'));
+        // logUserActivity('logout', 'Đăng xuất từ IP: ' . ($_SERVER['REMOTE_ADDR'] ?? 'unknown'));
     }
     
     // Xóa remember me cookies nếu có

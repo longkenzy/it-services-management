@@ -54,9 +54,6 @@ try {
     $pdo->exec("SET time_zone = '+07:00'");
     
     // Log kết nối thành công (chỉ trong môi trường development)
-    if (defined('DEBUG') && DEBUG === true) {
-        error_log("Database connection successful at " . date('Y-m-d H:i:s'));
-    }
     
 } catch (PDOException $e) {
     // Xử lý lỗi kết nối
@@ -71,29 +68,6 @@ try {
     } else {
         die($error_message);
     }
-}
-
-/**
- * Hàm kiểm tra kết nối database
- * @return bool True nếu kết nối thành công, False nếu thất bại
- */
-function testDatabaseConnection() {
-    global $pdo;
-    
-    try {
-        $stmt = $pdo->query("SELECT 1");
-        return $stmt !== false;
-    } catch (PDOException $e) {
-        return false;
-    }
-}
-
-/**
- * Hàm đóng kết nối database
- */
-function closeDatabaseConnection() {
-    global $pdo;
-    $pdo = null;
 }
 
 /**
@@ -143,8 +117,5 @@ function getConnection() {
 }
 
 // ===== THÔNG BÁO KẾT NỐI THÀNH CÔNG ===== //
-if (defined('DEBUG') && DEBUG === true) {
-    echo "<!-- Database connection established successfully -->\n";
-}
 
 ?> 

@@ -332,11 +332,11 @@ $flash_messages = getFlashMessages();
                 dataType: 'json',
                 success: function(response) {
                     if (response.success) {
-                        showChangePasswordSuccess(response.message);
+                        // Chỉ hiển thị 1 thông báo thành công
+                        showSuccess('Đổi mật khẩu thành công!');
                         // Đóng modal sau 2 giây
                         setTimeout(function() {
                             $('#changePasswordModal').modal('hide');
-                            showSuccess('Đổi mật khẩu thành công!');
                         }, 2000);
                     } else {
                         showChangePasswordError(response.message);
