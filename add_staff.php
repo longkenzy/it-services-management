@@ -42,23 +42,13 @@ try {
         exit;
     }
     
-    // Kiểm tra username đã tồn tại trong bảng staffs
-    $check_staff_username_sql = "SELECT id FROM staffs WHERE username = ?";
-    $check_staff_username_stmt = $pdo->prepare($check_staff_username_sql);
-    $check_staff_username_stmt->execute([$_POST['username']]);
-    
-    if ($check_staff_username_stmt->rowCount() > 0) {
-        echo json_encode(['success' => false, 'message' => 'Username đã tồn tại trong hệ thống nhân sự']);
-        exit;
-    }
-    
-    // Kiểm tra username đã tồn tại trong bảng users
-    $check_user_sql = "SELECT id FROM users WHERE username = ?";
+    // Kiểm tra username đã tồn tại trong bảng staffs chưa
+    $check_user_sql = "SELECT id FROM staffs WHERE username = ?";
     $check_user_stmt = $pdo->prepare($check_user_sql);
     $check_user_stmt->execute([$_POST['username']]);
     
     if ($check_user_stmt->rowCount() > 0) {
-        echo json_encode(['success' => false, 'message' => 'Username đã tồn tại trong hệ thống đăng nhập']);
+        echo json_encode(['success' => false, 'message' => 'Username đã tồn tại trong hệ thống nhân sự']);
         exit;
     }
 
@@ -163,29 +153,21 @@ try {
     if ($result) {
         $staff_id = $pdo->lastInsertId();
         
-        // Tự động tạo tài khoản đăng nhập trong bảng users
+        // Tự động tạo tài khoản đăng nhập trong bảng staffs
         try {
-            // Kiểm tra username đã tồn tại trong bảng users chưa
-            $check_user_sql = "SELECT id FROM users WHERE username = ?";
-            $check_user_stmt = $pdo->prepare($check_user_sql);
-            $check_user_stmt->execute([$_POST['username']]);
+            // Thêm nhân viên mới vào bảng staffs
+            $user_sql = "INSERT INTO staffs (username, password, fullname, role, created_at, updated_at) VALUES (?, ?, ?, ?, NOW(), NOW())";
+            $user_stmt = $pdo->prepare($user_sql);
+            $user_result = $user_stmt->execute([
+                $_POST['username'],
+                $hashed_password,  // Sử dụng cùng password đã mã hóa
+                $_POST['fullname'],
+                $_POST['role'] ?? 'user'
+            ]);
             
-            if ($check_user_stmt->rowCount() == 0) {
-                // Tạo tài khoản đăng nhập mới với role từ form hoặc mặc định 'user'
-                $role = $_POST['role'] ?? 'user';
-                $user_sql = "INSERT INTO users (username, password, fullname, role, created_at, updated_at) VALUES (?, ?, ?, ?, NOW(), NOW())";
-                $user_stmt = $pdo->prepare($user_sql);
-                $user_result = $user_stmt->execute([
-                    $_POST['username'],
-                    $hashed_password,  // Sử dụng cùng password đã mã hóa
-                    $_POST['fullname'],
-                    $role
-                ]);
-                
-                if ($user_result) {
-                    $user_id = $pdo->lastInsertId();
-                    logUserActivity("Tạo tài khoản đăng nhập", "Username: {$_POST['username']} cho nhân sự {$_POST['fullname']}");
-                }
+            if ($user_result) {
+                $user_id = $pdo->lastInsertId();
+                logUserActivity("Tạo tài khoản đăng nhập", "Username: {$_POST['username']} cho nhân sự {$_POST['fullname']}");
             }
         } catch (PDOException $e) {
             // Log lỗi nhưng không làm fail toàn bộ quá trình

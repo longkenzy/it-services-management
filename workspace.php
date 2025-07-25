@@ -3,7 +3,7 @@ session_start();
 require_once 'includes/session.php';
 $user_fullname = $_SESSION['fullname'] ?? 'User';
 $user_id = $_SESSION['user_id'] ?? 0;
-file_put_contents(__DIR__ . '/debug_workspace_php.txt', 'workspace.php user_id: ' . $user_id . PHP_EOL, FILE_APPEND);
+file_put_contents(__DIR__ . '/debug_workspace_php.txt', 'workspace.php user_id: ' . $user_id . ', username: ' . ($_SESSION['username'] ?? 'null') . ', role: ' . ($_SESSION['role'] ?? 'null') . PHP_EOL, FILE_APPEND);
 ?>
 <!DOCTYPE html>
 <html lang="vi">
@@ -44,12 +44,12 @@ file_put_contents(__DIR__ . '/debug_workspace_php.txt', 'workspace.php user_id: 
               <button class="btn btn-outline-success" id="btn-filter-done-this-month">Hoàn thành tháng này</button>
             </div>
             <div class="table-responsive">
-              <table class="table table-hover align-middle mb-0">
+              <table id="workspace-table" class="table table-hover align-middle mb-0">
                 <thead class="table-light">
                   <tr>
                     <th>LINK</th>
                     <th>STT</th>
-                    <th>MÃ TCM</th>
+                    <th>MÃ ITSM</th>
                     <th>LEVEL</th>
                     <th>LOẠI CASE</th>
                     <th>LOẠI DV</th>
@@ -79,6 +79,12 @@ file_put_contents(__DIR__ . '/debug_workspace_php.txt', 'workspace.php user_id: 
 <!-- Custom JavaScript -->
 <script src="assets/js/dashboard.js?v=<?php echo filemtime('assets/js/dashboard.js'); ?>"></script>
 <script>
+function formatDateForDisplay(dateStr) {
+    if (!dateStr) return '';
+    const d = new Date(dateStr);
+    if (isNaN(d)) return dateStr;
+    return d.toLocaleDateString('vi-VN') + ' ' + d.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+}
 function loadWorkspaceTasks(statusFilter = 'processing') {
     const tbody = document.getElementById('workspace-tasks-table');
     tbody.innerHTML = '<tr><td colspan="10" class="text-center text-muted py-4"><i class="fas fa-spinner fa-spin"></i> Đang tải dữ liệu...</td></tr>';

@@ -109,9 +109,9 @@ try {
         exit();
     }
     
-    // 4. Xóa tài khoản đăng nhập từ bảng users (nếu có)
+    // 4. Xóa tài khoản đăng nhập từ bảng staffs (nếu có)
     if ($username) {
-        $delete_user_query = "DELETE FROM users WHERE username = ?";
+        $delete_user_query = "DELETE FROM staffs WHERE username = ?";
         $delete_user_stmt = $pdo->prepare($delete_user_query);
         $delete_user_stmt->execute([$username]);
         

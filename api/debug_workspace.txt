@@ -79,3 +79,129 @@ Data returned: []
 Current user_id: 31
 Cases found: 0
 Data returned: []
+Current user_id: 31
+Cases found: 0
+Data returned: []
+Current user_id: 31
+Cases found: 0
+Data returned: []
+Current user_id: 31
+Cases found: 0
+Data returned: []
+Current user_id: 11
+Cases found: 1
+Data returned: [{"case_code":"CTK2507001","level":"Case","case_type":"N\u00e2ng c\u1ea5p h\u1ec7 th\u1ed1ng","service_type":"","customer_name":"","start_date":"2025-07-12","end_date":"","status":"Ho\u00e0n th\u00e0nh","assigned_to":11}]
+Current user_id: 23
+Cases found: 1
+Data returned: [{"case_code":"CTK2507003","level":"Case","case_type":"N\u00e2ng c\u1ea5p h\u1ec7 th\u1ed1ng","service_type":"f\u00e1df\u00e1df","customer_name":"","start_date":"2025-07-02","end_date":"2025-07-26","status":"Ti\u1ebfp nh\u1eadn","assigned_to":23}]
+Current user_id: 23
+Cases found: 1
+Data returned: [{"case_code":"CTK2507003","level":"Case","case_type":"N\u00e2ng c\u1ea5p h\u1ec7 th\u1ed1ng","service_type":"f\u00e1df\u00e1df","customer_name":"","start_date":"2025-07-02","end_date":"2025-07-26","status":"Ti\u1ebfp nh\u1eadn","assigned_to":23}]
+Current user_id: 23
+Cases found: 1
+Data returned: [{"case_code":"CTK2507003","level":"Case","case_type":"N\u00e2ng c\u1ea5p h\u1ec7 th\u1ed1ng","service_type":"f\u00e1df\u00e1df","customer_name":"","start_date":"2025-07-02","end_date":"2025-07-26","status":"Ti\u1ebfp nh\u1eadn","assigned_to":23}]
+Current user_id: 23
+Cases found: 1
+Data returned: [{"case_code":"CTK2507003","level":"Case","case_type":"N\u00e2ng c\u1ea5p h\u1ec7 th\u1ed1ng","service_type":"f\u00e1df\u00e1df","customer_name":"","start_date":"2025-07-02","end_date":"2025-07-26","status":"Ti\u1ebfp nh\u1eadn","assigned_to":23}]
+Current user_id: 23
+Cases found: 1
+Data returned: [{"case_code":"CTK2507003","level":"Case","case_type":"N\u00e2ng c\u1ea5p h\u1ec7 th\u1ed1ng","service_type":"f\u00e1df\u00e1df","customer_name":"","start_date":"2025-07-02","end_date":"2025-07-26","status":"Ti\u1ebfp nh\u1eadn","assigned_to":23}]
+Current user_id: 11
+Cases found: 1
+Data returned: [{"case_code":"CTK2507001","level":"Case","case_type":"N\u00e2ng c\u1ea5p h\u1ec7 th\u1ed1ng","service_type":"","customer_name":"","start_date":"2025-07-12","end_date":"","status":"Ho\u00e0n th\u00e0nh","assigned_to":11}]
+Current user_id: 11
+Cases found: 1
+Data returned: [{"case_code":"CTK2507001","level":"Case","case_type":"N\u00e2ng c\u1ea5p h\u1ec7 th\u1ed1ng","service_type":"","customer_name":"","start_date":"2025-07-12","end_date":"","status":"Ho\u00e0n th\u00e0nh","assigned_to":11}]
+Current user_id: 23
+Cases found: 1
+Data returned: [{"case_code":"CTK2507003","level":"Case","case_type":"N\u00e2ng c\u1ea5p h\u1ec7 th\u1ed1ng","service_type":"f\u00e1df\u00e1df","customer_name":"","start_date":"2025-07-02","end_date":"2025-07-26","status":"Ti\u1ebfp nh\u1eadn","assigned_to":23}]
+Current user_id: 23
+Cases found: 1
+Data returned: [{"case_code":"CTK2507003","level":"Case","case_type":"N\u00e2ng c\u1ea5p h\u1ec7 th\u1ed1ng","service_type":"f\u00e1df\u00e1df","customer_name":"","start_date":"2025-07-02","end_date":"2025-07-26","status":"Ti\u1ebfp nh\u1eadn","assigned_to":23}]
+Current user_id: 23
+Cases found: 1
+Data returned: [{"case_code":"CTK2507003","level":"Case","case_type":"N\u00e2ng c\u1ea5p h\u1ec7 th\u1ed1ng","service_type":"f\u00e1df\u00e1df","customer_name":"","start_date":"2025-07-02","end_date":"2025-07-26","status":"Ti\u1ebfp nh\u1eadn","assigned_to":23}]
+Current user_id: 23
+Cases found: 1
+Data returned: [{"case_code":"CTK2507003","level":"Case","case_type":"N\u00e2ng c\u1ea5p h\u1ec7 th\u1ed1ng","service_type":"f\u00e1df\u00e1df","customer_name":"","start_date":"2025-07-02","end_date":"2025-07-26","status":"Ti\u1ebfp nh\u1eadn","assigned_to":23}]
+Current user_id: 23
+Cases found: 1
+Data returned: [{"case_code":"CTK2507003","level":"Case","case_type":"N\u00e2ng c\u1ea5p h\u1ec7 th\u1ed1ng","service_type":"f\u00e1df\u00e1df","customer_name":"","start_date":"2025-07-02","end_date":"2025-07-26","status":"Ti\u1ebfp nh\u1eadn","assigned_to":23}]
+Current user_id: 23
+Cases found: 1
+Data returned: [{"case_code":"CTK2507003","level":"Case","case_type":"N\u00e2ng c\u1ea5p h\u1ec7 th\u1ed1ng","service_type":"f\u00e1df\u00e1df","customer_name":"","start_date":"2025-07-02","end_date":"2025-07-26","status":"Ti\u1ebfp nh\u1eadn","assigned_to":23}]
+Current user_id: 23
+Cases found: 1
+Data returned: [{"case_code":"CTK2507003","level":"Case","case_type":"N\u00e2ng c\u1ea5p h\u1ec7 th\u1ed1ng","service_type":"f\u00e1df\u00e1df","customer_name":"","start_date":"2025-07-02","end_date":"2025-07-26","status":"Ti\u1ebfp nh\u1eadn","assigned_to":23}]
+Current user_id: 23
+Cases found: 1
+Data returned: [{"case_code":"CTK2507003","level":"Case","case_type":"N\u00e2ng c\u1ea5p h\u1ec7 th\u1ed1ng","service_type":"f\u00e1df\u00e1df","customer_name":"","start_date":"2025-07-02","end_date":"2025-07-26","status":"Ti\u1ebfp nh\u1eadn","assigned_to":23}]
+Current user_id: 23
+Cases found: 1
+Data returned: [{"case_code":"CTK2507003","level":"Case","case_type":"N\u00e2ng c\u1ea5p h\u1ec7 th\u1ed1ng","service_type":"f\u00e1df\u00e1df","customer_name":"","start_date":"2025-07-02","end_date":"2025-07-26","status":"Ti\u1ebfp nh\u1eadn","assigned_to":23}]
+Current user_id: 23
+Cases found: 1
+Data returned: [{"case_code":"CTK2507003","level":"Case","case_type":"N\u00e2ng c\u1ea5p h\u1ec7 th\u1ed1ng","service_type":"f\u00e1df\u00e1df","customer_name":"C\u00d4NG TY C\u1ed4 PH\u1ea6N D\u01af\u1ee2C PH\u1ea8M PHARMACITY","start_date":"2025-07-02","end_date":"2025-07-26","status":"Ti\u1ebfp nh\u1eadn","assigned_to":23}]
+Current user_id: 23
+Cases found: 1
+Data returned: [{"case_code":"CTK2507003","level":"Case","case_type":"N\u00e2ng c\u1ea5p h\u1ec7 th\u1ed1ng","service_type":"f\u00e1df\u00e1df","customer_name":"C\u00d4NG TY C\u1ed4 PH\u1ea6N D\u01af\u1ee2C PH\u1ea8M PHARMACITY","start_date":"2025-07-02","end_date":"2025-07-26","status":"Ti\u1ebfp nh\u1eadn","assigned_to":23}]
+Current user_id: 23
+Cases found: 1
+Data returned: [{"case_code":"CTK2507003","level":"Case","case_type":"N\u00e2ng c\u1ea5p h\u1ec7 th\u1ed1ng","service_type":"f\u00e1df\u00e1df","customer_name":"C\u00d4NG TY C\u1ed4 PH\u1ea6N D\u01af\u1ee2C PH\u1ea8M PHARMACITY","start_date":"2025-07-02","end_date":"2025-07-26","status":"Ti\u1ebfp nh\u1eadn","assigned_to":23}]
+Current user_id: 23
+Cases found: 1
+Data returned: [{"case_code":"CTK2507003","level":"Case","case_type":"N\u00e2ng c\u1ea5p h\u1ec7 th\u1ed1ng","service_type":"f\u00e1df\u00e1df","customer_name":"C\u00d4NG TY C\u1ed4 PH\u1ea6N D\u01af\u1ee2C PH\u1ea8M PHARMACITY","start_date":"2025-07-02","end_date":"2025-07-26","status":"Ti\u1ebfp nh\u1eadn","assigned_to":23}]
+Current user_id: 23
+Cases found: 1
+Data returned: [{"case_code":"CTK2507003","level":"Case","case_type":"N\u00e2ng c\u1ea5p h\u1ec7 th\u1ed1ng","service_type":"f\u00e1df\u00e1df","customer_name":"C\u00d4NG TY C\u1ed4 PH\u1ea6N D\u01af\u1ee2C PH\u1ea8M PHARMACITY","start_date":"2025-07-02","end_date":"2025-07-26","status":"Ti\u1ebfp nh\u1eadn","assigned_to":23}]
+Current user_id: 23
+Cases found: 1
+Data returned: [{"case_code":"CTK2507003","level":"Case","case_type":"N\u00e2ng c\u1ea5p h\u1ec7 th\u1ed1ng","service_type":"f\u00e1df\u00e1df","customer_name":"C\u00d4NG TY C\u1ed4 PH\u1ea6N D\u01af\u1ee2C PH\u1ea8M PHARMACITY","start_date":"2025-07-02","end_date":"2025-07-26","status":"Ti\u1ebfp nh\u1eadn","assigned_to":23}]
+Current user_id: 11
+Cases found: 1
+Data returned: [{"case_code":"CTK2507001","level":"Case","case_type":"N\u00e2ng c\u1ea5p h\u1ec7 th\u1ed1ng","service_type":"","customer_name":"C\u00d4NG TY C\u1ed4 PH\u1ea6N D\u01af\u1ee2C PH\u1ea8M PHARMACITY","start_date":"2025-07-12","end_date":"","status":"Ho\u00e0n th\u00e0nh","assigned_to":11}]
+Current user_id: 11, username: longht, role: admin
+Cases found: 1
+Data returned: [{"case_code":"CTK2507001","level":"Case","case_type":"N\u00e2ng c\u1ea5p h\u1ec7 th\u1ed1ng","service_type":"","customer_name":"C\u00d4NG TY C\u1ed4 PH\u1ea6N D\u01af\u1ee2C PH\u1ea8M PHARMACITY","start_date":"2025-07-12","end_date":"","status":"Ho\u00e0n th\u00e0nh","assigned_to":11}]
+Current user_id: 11, username: longht, role: admin
+Cases found: 1
+Data returned: [{"case_code":"CTK2507001","level":"Case","case_type":"N\u00e2ng c\u1ea5p h\u1ec7 th\u1ed1ng","service_type":"","customer_name":"C\u00d4NG TY C\u1ed4 PH\u1ea6N D\u01af\u1ee2C PH\u1ea8M PHARMACITY","start_date":"2025-07-12","end_date":"","status":"Ho\u00e0n th\u00e0nh","assigned_to":11}]
+Current user_id: 11, username: longht, role: admin
+Cases found: 1
+Data returned: [{"case_code":"CTK2507001","level":"Case","case_type":"N\u00e2ng c\u1ea5p h\u1ec7 th\u1ed1ng","service_type":"","customer_name":"C\u00d4NG TY C\u1ed4 PH\u1ea6N D\u01af\u1ee2C PH\u1ea8M PHARMACITY","start_date":"2025-07-12","end_date":"","status":"Ho\u00e0n th\u00e0nh","assigned_to":11}]
+Current user_id: 11, username: longht, role: admin
+Cases found: 1
+Data returned: [{"case_code":"CTK2507001","level":"Case","case_type":"N\u00e2ng c\u1ea5p h\u1ec7 th\u1ed1ng","service_type":"","customer_name":"C\u00d4NG TY C\u1ed4 PH\u1ea6N D\u01af\u1ee2C PH\u1ea8M PHARMACITY","start_date":"2025-07-12","end_date":"","status":"Ho\u00e0n th\u00e0nh","assigned_to":11}]
+Current user_id: 11, username: longht, role: admin
+Cases found: 1
+Data returned: [{"case_code":"CTK2507001","level":"Case","case_type":"N\u00e2ng c\u1ea5p h\u1ec7 th\u1ed1ng","service_type":"","customer_name":"C\u00d4NG TY C\u1ed4 PH\u1ea6N D\u01af\u1ee2C PH\u1ea8M PHARMACITY","start_date":"2025-07-12","end_date":"","status":"Ho\u00e0n th\u00e0nh","assigned_to":11}]
+Current user_id: 11, username: longht, role: admin
+Cases found: 1
+Data returned: [{"case_code":"CTK2507001","level":"Case","case_type":"N\u00e2ng c\u1ea5p h\u1ec7 th\u1ed1ng","service_type":"","customer_name":"C\u00d4NG TY C\u1ed4 PH\u1ea6N D\u01af\u1ee2C PH\u1ea8M PHARMACITY","start_date":"2025-07-12","end_date":"","status":"Ho\u00e0n th\u00e0nh","assigned_to":11}]
+Current user_id: 11, username: longht, role: admin
+Cases found: 1
+Data returned: [{"case_code":"CTK2507001","level":"Case","case_type":"N\u00e2ng c\u1ea5p h\u1ec7 th\u1ed1ng","service_type":"","customer_name":"C\u00d4NG TY C\u1ed4 PH\u1ea6N D\u01af\u1ee2C PH\u1ea8M PHARMACITY","start_date":"2025-07-12","end_date":"","status":"Ho\u00e0n th\u00e0nh","assigned_to":11}]
+Current user_id: 11, username: longht, role: admin
+Cases found: 1
+Data returned: [{"case_code":"CTK2507001","level":"Case","case_type":"N\u00e2ng c\u1ea5p h\u1ec7 th\u1ed1ng","service_type":"","customer_name":"C\u00d4NG TY C\u1ed4 PH\u1ea6N D\u01af\u1ee2C PH\u1ea8M PHARMACITY","start_date":"2025-07-12","end_date":"","status":"Ho\u00e0n th\u00e0nh","assigned_to":11}]
+Current user_id: 11, username: longht, role: admin
+Cases found: 1
+Data returned: [{"case_code":"CTK2507001","level":"Case","case_type":"N\u00e2ng c\u1ea5p h\u1ec7 th\u1ed1ng","service_type":"","customer_name":"C\u00d4NG TY C\u1ed4 PH\u1ea6N D\u01af\u1ee2C PH\u1ea8M PHARMACITY","start_date":"2025-07-12","end_date":"","status":"Ho\u00e0n th\u00e0nh","assigned_to":11}]
+Current user_id: 11, username: longht, role: admin
+Cases found: 2
+Data returned: [{"case_code":"CTK2507004","level":"Case","case_type":"T\u01b0 v\u1ea5n k\u1ef9 thu\u1eadt","service_type":"fadsfadf","customer_name":"C\u00d4NG TY C\u1ed4 PH\u1ea6N D\u01af\u1ee2C PH\u1ea8M PHARMACITY","start_date":"2025-07-10","end_date":"2025-07-23","status":"Ti\u1ebfp nh\u1eadn","assigned_to":11},{"case_code":"CTK2507001","level":"Case","case_type":"N\u00e2ng c\u1ea5p h\u1ec7 th\u1ed1ng","service_type":"","customer_name":"C\u00d4NG TY C\u1ed4 PH\u1ea6N D\u01af\u1ee2C PH\u1ea8M PHARMACITY","start_date":"2025-07-12","end_date":"","status":"Ho\u00e0n th\u00e0nh","assigned_to":11}]
+Current user_id: 23, username: vutc, role: user
+Cases found: 1
+Data returned: [{"case_code":"CTK2507003","level":"Case","case_type":"N\u00e2ng c\u1ea5p h\u1ec7 th\u1ed1ng","service_type":"f\u00e1df\u00e1df","customer_name":"C\u00d4NG TY C\u1ed4 PH\u1ea6N D\u01af\u1ee2C PH\u1ea8M PHARMACITY","start_date":"2025-07-02","end_date":"2025-07-26","status":"Ti\u1ebfp nh\u1eadn","assigned_to":23}]
+Current user_id: 23, username: vutc, role: user
+Cases found: 1
+Data returned: [{"case_code":"CTK2507003","level":"Case","case_type":"N\u00e2ng c\u1ea5p h\u1ec7 th\u1ed1ng","service_type":"f\u00e1df\u00e1df","customer_name":"C\u00d4NG TY C\u1ed4 PH\u1ea6N D\u01af\u1ee2C PH\u1ea8M PHARMACITY","start_date":"2025-07-02","end_date":"2025-07-26","status":"Ti\u1ebfp nh\u1eadn","assigned_to":23}]
+Current user_id: 23, username: vutc, role: user
+Cases found: 1
+Data returned: [{"case_code":"CTK2507003","level":"Case","case_type":"N\u00e2ng c\u1ea5p h\u1ec7 th\u1ed1ng","service_type":"f\u00e1df\u00e1df","customer_name":"C\u00d4NG TY C\u1ed4 PH\u1ea6N D\u01af\u1ee2C PH\u1ea8M PHARMACITY","start_date":"2025-07-02","end_date":"2025-07-26","status":"Ti\u1ebfp nh\u1eadn","assigned_to":23}]
+Current user_id: 23, username: vutc, role: user
+Cases found: 1
+Data returned: [{"case_code":"CTK2507003","level":"Case","case_type":"N\u00e2ng c\u1ea5p h\u1ec7 th\u1ed1ng","service_type":"f\u00e1df\u00e1df","customer_name":"C\u00d4NG TY C\u1ed4 PH\u1ea6N D\u01af\u1ee2C PH\u1ea8M PHARMACITY","start_date":"2025-07-02","end_date":"2025-07-26","status":"Ti\u1ebfp nh\u1eadn","assigned_to":23}]
+Current user_id: 23, username: vutc, role: user
+Cases found: 1
+Data returned: [{"case_code":"CTK2507003","level":"Case","case_type":"N\u00e2ng c\u1ea5p h\u1ec7 th\u1ed1ng","service_type":"f\u00e1df\u00e1df","customer_name":"C\u00d4NG TY C\u1ed4 PH\u1ea6N D\u01af\u1ee2C PH\u1ea8M PHARMACITY","start_date":"2025-07-02","end_date":"2025-07-26","status":"Ti\u1ebfp nh\u1eadn","assigned_to":23}]
