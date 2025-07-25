@@ -44,7 +44,14 @@ try {
     
     // Log hoạt động trước khi xóa
     
-    // Xóa tất cả deployment cases liên quan trước
+    // Xóa tất cả deployment tasks liên quan trước (cascade từ cases)
+    $stmt = $pdo->prepare("DELETE dt FROM deployment_tasks dt 
+                          INNER JOIN deployment_cases dc ON dt.deployment_case_id = dc.id 
+                          WHERE dc.deployment_request_id = ?");
+    $stmt->execute([$request_id]);
+    $deleted_tasks = $stmt->rowCount();
+    
+    // Xóa tất cả deployment cases liên quan
     $stmt = $pdo->prepare("DELETE FROM deployment_cases WHERE deployment_request_id = ?");
     $stmt->execute([$request_id]);
     $deleted_cases = $stmt->rowCount();
@@ -68,7 +75,8 @@ try {
     echo json_encode([
         'success' => true, 
         'message' => 'Xóa yêu cầu triển khai thành công!',
-        'deleted_cases' => $deleted_cases
+        'deleted_cases' => $deleted_cases,
+        'deleted_tasks' => $deleted_tasks
     ]);
     
 } catch (PDOException $e) {
