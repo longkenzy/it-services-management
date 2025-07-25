@@ -2349,6 +2349,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     // Reload tasks table
                     loadDeploymentTasks(data.deployment_case_id);
                     
+                    // Reload deployment requests table để cập nhật cột tổng số task
+                    reloadDeploymentRequestsTable();
+                    
                     // Reset form
                     e.target.reset();
                 } else {
@@ -2412,6 +2415,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     if (caseId) {
                         loadDeploymentTasks(caseId);
                     }
+                    
+                    // Reload deployment requests table để cập nhật cột tổng số task
+                    reloadDeploymentRequestsTable();
                     
                     // Reset form
                     e.target.reset();
