@@ -129,17 +129,9 @@ try {
 
 // Kiểm tra username trùng lặp (trừ chính nó)
 try {
-    // Kiểm tra trong bảng users
-    $stmt = $pdo->prepare("SELECT username FROM users WHERE username = ? AND username != ?");
-    $stmt->execute([$data['username'], $current_staff['username'] ?? '']);
-    if ($stmt->fetch()) {
-        echo json_encode(['success' => false, 'message' => 'Username đã tồn tại trong hệ thống']);
-        exit();
-    }
-    
     // Kiểm tra trong bảng staffs (trừ chính nó)
-    $stmt = $pdo->prepare("SELECT username FROM staffs WHERE username = ? AND id != ?");
-    $stmt->execute([$data['username'], $staff_id]);
+    $stmt = $pdo->prepare("SELECT username FROM staffs WHERE username = ? AND username != ?");
+    $stmt->execute([$data['username'], $current_staff['username'] ?? '']);
     if ($stmt->fetch()) {
         echo json_encode(['success' => false, 'message' => 'Username đã tồn tại trong danh sách nhân sự']);
         exit();
@@ -238,17 +230,17 @@ try {
         $stmt->execute([password_hash($data['password'], PASSWORD_DEFAULT), $staff_id]);
     }
     
-    // ===== ĐỒNG BỘ THÔNG TIN VÀO BẢNG USERS ===== //
+    // ===== ĐỒNG BỘ THÔNG TIN VÀO BẢNG STAFFS ===== //
     
-    // Kiểm tra xem user đã tồn tại trong bảng users chưa
-    $check_user_sql = "SELECT id FROM users WHERE username = ?";
+    // Kiểm tra xem user đã tồn tại trong bảng staffs chưa
+    $check_user_sql = "SELECT id FROM staffs WHERE username = ?";
     $stmt = $pdo->prepare($check_user_sql);
     $stmt->execute([$current_staff['username'] ?? '']);
     $existing_user = $stmt->fetch();
     
     if ($existing_user) {
         // Cập nhật thông tin user đã tồn tại
-        $update_user_sql = "UPDATE users SET username = ?, fullname = ?, role = ?";
+        $update_user_sql = "UPDATE staffs SET username = ?, fullname = ?, role = ?";
         $update_params = [$data['username'], $data['fullname'], $data['role']];
         
         // Cập nhật password nếu có
@@ -263,10 +255,10 @@ try {
         $stmt = $pdo->prepare($update_user_sql);
         $stmt->execute($update_params);
     } else {
-        // Tạo user mới trong bảng users
+        // Tạo user mới trong bảng staffs
         $password_hash = !empty($data['password']) ? password_hash($data['password'], PASSWORD_DEFAULT) : password_hash('123456', PASSWORD_DEFAULT);
         
-        $insert_user_sql = "INSERT INTO users (username, password, fullname, role, created_at, updated_at) VALUES (?, ?, ?, ?, NOW(), NOW())";
+        $insert_user_sql = "INSERT INTO staffs (username, password, fullname, role, created_at, updated_at) VALUES (?, ?, ?, ?, NOW(), NOW())";
         $stmt = $pdo->prepare($insert_user_sql);
         $stmt->execute([$data['username'], $password_hash, $data['fullname'], $data['role']]);
     }

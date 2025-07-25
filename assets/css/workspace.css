@@ -6,6 +6,11 @@
 
 #workspace-tasks-table tr td {
   vertical-align: middle;
+  text-align: center;
+}
+#workspace-tasks-table th {
+  text-align: center !important;
+  vertical-align: middle;
 }
 
 #btn-filter-processing.active,
@@ -25,3 +30,7 @@
 }
 
 /* Thêm style tuỳ chỉnh khác cho workspace ở đây */ 
+#workspace-table th, #workspace-table thead th {
+  text-align: center !important;
+  vertical-align: middle !important;
+} 

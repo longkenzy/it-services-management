@@ -10,7 +10,7 @@ if (!isset($_SESSION['user_id'])) {
 }
 
 $user_id = $_SESSION['user_id'];
-file_put_contents(__DIR__ . '/debug_workspace.txt', "Current user_id: $user_id\n", FILE_APPEND);
+file_put_contents(__DIR__ . '/debug_workspace.txt', "Current user_id: $user_id, username: " . ($_SESSION['username'] ?? 'null') . ", role: " . ($_SESSION['role'] ?? 'null') . "\n", FILE_APPEND);
 
 try {
     $stmt = $pdo->prepare('SELECT * FROM deployment_cases WHERE assigned_to = ? ORDER BY created_at DESC');
@@ -19,14 +19,14 @@ try {
     file_put_contents(__DIR__ . '/debug_workspace.txt', "Cases found: " . count($cases) . "\n", FILE_APPEND);
     $data = [];
     foreach ($cases as $row) {
-        // Lấy customer_id từ deployment_requests
+        // Lấy customer_id từ deployment_requests, rồi lấy tên từ partner_companies
         $customer_name = '';
         if (!empty($row['deployment_request_id'])) {
             $stmt2 = $pdo->prepare('SELECT customer_id FROM deployment_requests WHERE id = ? LIMIT 1');
             $stmt2->execute([$row['deployment_request_id']]);
             $req = $stmt2->fetch(PDO::FETCH_ASSOC);
             if ($req && !empty($req['customer_id'])) {
-                $stmt3 = $pdo->prepare('SELECT name FROM eu_companies WHERE id = ? LIMIT 1');
+                $stmt3 = $pdo->prepare('SELECT name FROM partner_companies WHERE id = ? LIMIT 1');
                 $stmt3->execute([$req['customer_id']]);
                 $company = $stmt3->fetch(PDO::FETCH_ASSOC);
                 if ($company && !empty($company['name'])) {

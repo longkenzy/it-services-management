@@ -19,8 +19,8 @@ if ($new !== $confirm) {
     exit;
 }
 
-// Lấy mật khẩu cũ từ bảng users (nơi user đăng nhập)
-$stmt = $pdo->prepare('SELECT password FROM users WHERE id = ? AND username = ?');
+// Lấy mật khẩu cũ từ bảng staffs (nơi user đăng nhập)
+$stmt = $pdo->prepare('SELECT password FROM staffs WHERE id = ? AND username = ?');
 $stmt->execute([$user_id, $username]);
 $row = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -29,20 +29,12 @@ if (!$row || !password_verify($old, $row['password'])) {
     exit;
 }
 
-// Update mật khẩu mới trong bảng users
+// Update mật khẩu mới trong bảng staffs
 $new_hash = password_hash($new, PASSWORD_DEFAULT);
-$stmt = $pdo->prepare('UPDATE users SET password = ? WHERE id = ? AND username = ?');
+$stmt = $pdo->prepare('UPDATE staffs SET password = ? WHERE id = ? AND username = ?');
 $stmt->execute([$new_hash, $user_id, $username]);
 
 if ($stmt->rowCount() > 0) {
-    // Đồng bộ mật khẩu vào bảng staffs nếu có
-    try {
-        $stmt = $pdo->prepare('UPDATE staffs SET password = ? WHERE username = ?');
-        $stmt->execute([$new_hash, $username]);
-    } catch (Exception $e) {
-        // Không quan trọng nếu update staffs thất bại
-    }
-    
     echo json_encode(['success' => true, 'message' => 'Đổi mật khẩu thành công!']);
 } else {
     echo json_encode(['success' => false, 'message' => 'Không thể cập nhật mật khẩu!']);
