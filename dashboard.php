@@ -760,6 +760,9 @@ $flash_messages = getFlashMessages();
             
             // Initialize slider
             initSlider();
+            
+            // Setup header event listeners
+            setupHeaderEventListeners();
         });
         
         function initSlider() {
@@ -1022,6 +1025,51 @@ $flash_messages = getFlashMessages();
         }
         
         // Auto-slide runs continuously without pause on hover
+        
+        // ===== HEADER EVENT LISTENERS ===== //
+        function setupHeaderEventListeners() {
+            // User dropdown actions
+            $('[data-action="logout"]').on('click', function(e) {
+                e.preventDefault();
+                handleLogout();
+            });
+            
+            $('[data-action="profile"]').on('click', function(e) {
+                e.preventDefault();
+                showNotification('Chức năng thông tin cá nhân đang được phát triển', 'info');
+            });
+            
+            $('[data-action="change-password"]').on('click', function(e) {
+                e.preventDefault();
+                showNotification('Chức năng đổi mật khẩu đang được phát triển', 'info');
+            });
+        }
+        
+        // ===== HANDLE LOGOUT ===== //
+        function handleLogout() {
+            showLoadingMessage('Đang đăng xuất...');
+            
+            // Redirect to logout
+            window.location.href = 'auth/logout.php';
+        }
+        
+        // ===== SHOW NOTIFICATION ===== //
+        function showNotification(message, type = 'info') {
+            if (type === 'info') {
+                showInfo(message);
+            } else if (type === 'success') {
+                showSuccess(message);
+            } else if (type === 'warning') {
+                showWarning(message);
+            } else if (type === 'error') {
+                showError(message);
+            }
+        }
+        
+        // ===== SHOW LOADING MESSAGE ===== //
+        function showLoadingMessage(message) {
+            showInfo(message);
+        }
     </script>
 </body>
 </html> 
