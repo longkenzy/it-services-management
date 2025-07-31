@@ -117,8 +117,8 @@ try {
         staff_code, fullname, username, password, birth_date, gender, hometown, 
         religion, ethnicity, position, job_type, department, office, office_address, 
         start_date, seniority, phone_main, phone_alt, email_personal, email_work, 
-        place_of_birth, address_perm, address_temp, avatar, role, created_at, updated_at
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())";
+        place_of_birth, address_perm, address_temp, avatar, role, resigned, created_at, updated_at
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())";
 
     $insert_stmt = $pdo->prepare($insert_sql);
     
@@ -147,39 +147,19 @@ try {
         $_POST['address_perm'] ?? null,
         $_POST['address_temp'] ?? null,
         $avatar_path,
-        $_POST['role'] ?? 'user'
+        $_POST['role'] ?? 'user',
+        isset($_POST['resigned']) ? 1 : 0
     ]);
 
     if ($result) {
         $staff_id = $pdo->lastInsertId();
-        
-        // Tự động tạo tài khoản đăng nhập trong bảng staffs
-        try {
-            // Thêm nhân viên mới vào bảng staffs
-            $user_sql = "INSERT INTO staffs (username, password, fullname, role, created_at, updated_at) VALUES (?, ?, ?, ?, NOW(), NOW())";
-            $user_stmt = $pdo->prepare($user_sql);
-            $user_result = $user_stmt->execute([
-                $_POST['username'],
-                $hashed_password,  // Sử dụng cùng password đã mã hóa
-                $_POST['fullname'],
-                $_POST['role'] ?? 'user'
-            ]);
-            
-            if ($user_result) {
-                $user_id = $pdo->lastInsertId();
-                logUserActivity("Tạo tài khoản đăng nhập", "Username: {$_POST['username']} cho nhân sự {$_POST['fullname']}");
-            }
-        } catch (PDOException $e) {
-            // Log lỗi nhưng không làm fail toàn bộ quá trình
-            error_log("Failed to create user account: " . $e->getMessage());
-        }
         
         // Log hoạt động
         logUserActivity("Thêm nhân sự mới", "{$_POST['fullname']} ({$_POST['staff_code']})");
         
         echo json_encode([
             'success' => true, 
-            'message' => 'Thêm nhân sự và tạo tài khoản đăng nhập thành công!',
+            'message' => 'Thêm nhân sự thành công!',
             'staff_id' => $staff_id,
             'staff_code' => $_POST['staff_code'],
             'fullname' => $_POST['fullname'],

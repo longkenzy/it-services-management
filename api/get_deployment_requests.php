@@ -5,7 +5,7 @@ header('Content-Type: application/json');
 header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
 header('Pragma: no-cache');
 
-if (!isset($_SESSION['user_id'])) {
+if (!isset(getCurrentUserId())) {
     http_response_code(401);
     echo json_encode(['success' => false, 'message' => 'Chưa đăng nhập']);
     exit;

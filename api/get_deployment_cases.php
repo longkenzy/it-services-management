@@ -2,8 +2,8 @@
 // API lấy danh sách case triển khai theo deployment_request_id
 header('Content-Type: application/json; charset=utf-8');
 require_once '../config/db.php';
-session_start();
-if (!isset($_SESSION['user_id'])) {
+require_once '../includes/session.php';
+if (!isLoggedIn()) {
     http_response_code(401);
     echo json_encode(['success' => false, 'error' => 'Unauthorized']);
     exit;

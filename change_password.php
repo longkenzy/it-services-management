@@ -1,10 +1,22 @@
 <?php
-session_start();
-header('Content-Type: application/json');
+/**
+ * IT CRM - Change Password Handler
+ * File: change_password.php
+ * Mục đích: Xử lý đổi mật khẩu người dùng
+ */
+
+// Include các file cần thiết
+require_once 'includes/session.php';
 require_once 'config/db.php';
 
-$user_id = $_SESSION['user_id'] ?? null;
-$username = $_SESSION['username'] ?? null;
+// Bảo vệ trang - yêu cầu đăng nhập
+requireLogin();
+
+// Lấy thông tin user hiện tại
+$current_user = getCurrentUser();
+
+$user_id = $current_user['id'];
+$username = $current_user['username'];
 $old = $_POST['old_password'] ?? '';
 $new = $_POST['new_password'] ?? '';
 $confirm = $_POST['confirm_password'] ?? '';

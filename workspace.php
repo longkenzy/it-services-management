@@ -1,9 +1,26 @@
 <?php
-session_start();
+/**
+ * IT CRM - Workspace Page
+ * File: workspace.php
+ * Mục đích: Trang workspace với bảo vệ authentication
+ */
+
+// Include các file cần thiết
 require_once 'includes/session.php';
-$user_fullname = $_SESSION['fullname'] ?? 'User';
-$user_id = $_SESSION['user_id'] ?? 0;
-file_put_contents(__DIR__ . '/debug_workspace_php.txt', 'workspace.php user_id: ' . $user_id . ', username: ' . ($_SESSION['username'] ?? 'null') . ', role: ' . ($_SESSION['role'] ?? 'null') . PHP_EOL, FILE_APPEND);
+
+// Bảo vệ trang - yêu cầu đăng nhập
+requireLogin();
+
+// Lấy thông tin user hiện tại
+$current_user = getCurrentUser();
+
+// Kiểm tra nếu không có thông tin user
+if (!$current_user) {
+    redirectToLogin('Phiên đăng nhập không hợp lệ.');
+}
+
+$user_fullname = $current_user['fullname'];
+$user_id = $current_user['id'];
 ?>
 <!DOCTYPE html>
 <html lang="vi">
@@ -108,7 +125,7 @@ function loadWorkspaceTasks(statusFilter = 'processing') {
                         <td>${item.customer_name || ''}</td>
                         <td>${item.start_date ? formatDateForDisplay(item.start_date) : ''}</td>
                         <td>${item.end_date ? formatDateForDisplay(item.end_date) : ''}</td>
-                        <td><span class="badge bg-${item.status === 'Hoàn thành' ? 'success' : (item.status === 'Đang xử lý' ? 'warning' : 'secondary')}">${item.status}</span></td>
+                        <td><span class="badge ${item.status === 'Tiếp nhận' ? 'status-received' : (item.status === 'Đang xử lý' ? 'status-processing' : (item.status === 'Hoàn thành' ? 'status-completed' : (item.status === 'Huỷ' ? 'status-cancelled' : 'bg-secondary')))}">${item.status}</span></td>
                     </tr>
                 `;
             });

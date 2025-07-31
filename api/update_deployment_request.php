@@ -4,7 +4,7 @@ require_once '../includes/session.php';
 
 header('Content-Type: application/json');
 
-if (!isset($_SESSION['user_id'])) {
+if (!isset(getCurrentUserId())) {
     http_response_code(401);
     echo json_encode(['error' => 'Unauthorized']);
     exit;
@@ -111,7 +111,7 @@ try {
                      VALUES (?, ?, ?, NOW())";
     $activity_stmt = $pdo->prepare($activity_sql);
     $activity_stmt->execute([
-        $_SESSION['user_id'],
+        getCurrentUserId(),
         'UPDATE deployment_requests',
         'Updated deployment request: ' . $data['request_code'] . ' (ID: ' . $request_id . ')'
     ]);

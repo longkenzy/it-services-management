@@ -1,32 +1,19 @@
 <?php
 /**
- * IT CRM - Update Staff
+ * IT CRM - Update Staff Page
  * File: update_staff.php
- * Mục đích: Xử lý cập nhật thông tin nhân sự
+ * Mục đích: Trang cập nhật thông tin nhân viên
  */
 
-// Bắt đầu session
-session_start();
-
-// Set content type
-header('Content-Type: application/json');
-
-// Kiểm tra đăng nhập
-if (!isset($_SESSION['user_id'])) {
-    http_response_code(401);
-    echo json_encode(['success' => false, 'message' => 'Chưa đăng nhập']);
-    exit();
-}
-
-// Kiểm tra quyền admin
-if ($_SESSION['role'] !== 'admin') {
-    http_response_code(403);
-    echo json_encode(['success' => false, 'message' => 'Không có quyền truy cập']);
-    exit();
-}
-
-// Include database connection
+// Include các file cần thiết
+require_once 'includes/session.php';
 require_once 'config/db.php';
+
+// Bảo vệ trang - chỉ admin mới được truy cập
+requireAdmin();
+
+// Lấy thông tin user hiện tại
+$current_user = getCurrentUser();
 
 // Kiểm tra method POST
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
@@ -104,7 +91,8 @@ $data = [
     'seniority' => floatval($_POST['seniority'] ?? 0),
     'username' => trim($_POST['username'] ?? ''),
     'password' => trim($_POST['password'] ?? ''),
-    'role' => $_POST['role'] ?? 'user'
+    'role' => $_POST['role'] ?? 'user',
+    'resigned' => isset($_POST['resigned']) ? 1 : 0
 ];
 
 // Validate required fields
@@ -206,7 +194,7 @@ try {
         phone_alt = ?, email_work = ?, email_personal = ?, place_of_birth = ?, 
         address_perm = ?, address_temp = ?, position = ?, department = ?, 
         office = ?, office_address = ?, job_type = ?, start_date = ?, 
-        seniority = ?, username = ?, role = ?, avatar = ?, updated_at = NOW() 
+        seniority = ?, username = ?, role = ?, resigned = ?, avatar = ?, updated_at = NOW() 
         WHERE id = ?";
     
     $stmt = $pdo->prepare($update_staff_sql);
@@ -216,7 +204,7 @@ try {
         $data['phone_alt'], $data['email_work'], $data['email_personal'], $data['place_of_birth'],
         $data['address_perm'], $data['address_temp'], $data['position'], $data['department'],
         $data['office'], $data['office_address'], $data['job_type'], $data['start_date'],
-        $data['seniority'], $data['username'], $data['role'], $new_avatar, $staff_id
+        $data['seniority'], $data['username'], $data['role'], $data['resigned'], $new_avatar, $staff_id
     ]);
     
     if (!$result) {
@@ -230,37 +218,11 @@ try {
         $stmt->execute([password_hash($data['password'], PASSWORD_DEFAULT), $staff_id]);
     }
     
-    // ===== ĐỒNG BỘ THÔNG TIN VÀO BẢNG STAFFS ===== //
-    
-    // Kiểm tra xem user đã tồn tại trong bảng staffs chưa
-    $check_user_sql = "SELECT id FROM staffs WHERE username = ?";
-    $stmt = $pdo->prepare($check_user_sql);
-    $stmt->execute([$current_staff['username'] ?? '']);
-    $existing_user = $stmt->fetch();
-    
-    if ($existing_user) {
-        // Cập nhật thông tin user đã tồn tại
-        $update_user_sql = "UPDATE staffs SET username = ?, fullname = ?, role = ?";
-        $update_params = [$data['username'], $data['fullname'], $data['role']];
-        
-        // Cập nhật password nếu có
-        if (!empty($data['password'])) {
-            $update_user_sql .= ", password = ?";
-            $update_params[] = password_hash($data['password'], PASSWORD_DEFAULT);
-        }
-        
-        $update_user_sql .= ", updated_at = NOW() WHERE id = ?";
-        $update_params[] = $existing_user['id'];
-        
-        $stmt = $pdo->prepare($update_user_sql);
-        $stmt->execute($update_params);
-    } else {
-        // Tạo user mới trong bảng staffs
-        $password_hash = !empty($data['password']) ? password_hash($data['password'], PASSWORD_DEFAULT) : password_hash('123456', PASSWORD_DEFAULT);
-        
-        $insert_user_sql = "INSERT INTO staffs (username, password, fullname, role, created_at, updated_at) VALUES (?, ?, ?, ?, NOW(), NOW())";
-        $stmt = $pdo->prepare($insert_user_sql);
-        $stmt->execute([$data['username'], $password_hash, $data['fullname'], $data['role']]);
+    // Cập nhật password nếu có
+    if (!empty($data['password'])) {
+        $update_password_sql = "UPDATE staffs SET password = ? WHERE id = ?";
+        $stmt = $pdo->prepare($update_password_sql);
+        $stmt->execute([password_hash($data['password'], PASSWORD_DEFAULT), $staff_id]);
     }
     
     // Commit transaction

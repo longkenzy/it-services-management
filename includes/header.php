@@ -124,7 +124,7 @@ $current_page = basename($_SERVER['PHP_SELF']);
                                         </a>
                                     </li>
                                     <li>
-                                        <a class="dropdown-item" href="#" data-section="maintenance-case">
+                                        <a class="dropdown-item" href="maintenance_requests.php">
                                             <i class="fas fa-wrench me-2 text-warning"></i>
                                             BẢO TRÌ
                                         </a>

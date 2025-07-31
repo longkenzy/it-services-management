@@ -82,6 +82,8 @@ try {
     }
 
     // Đăng nhập thành công, lưu vào session
+    // Trim role để loại bỏ khoảng trắng
+    $staff['role'] = trim($staff['role']);
     setUserSession($staff);
 
     if ($remember_me) {

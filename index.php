@@ -1,3 +1,26 @@
+<?php
+/**
+ * IT CRM - Index Page
+ * File: index.php
+ * Mục đích: Trang chủ với kiểm tra session - redirect người dùng đã đăng nhập
+ */
+
+// Prevent caching
+header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
+header("Cache-Control: post-check=0, pre-check=0", false);
+header("Pragma: no-cache");
+
+// Include session management
+require_once 'includes/session.php';
+
+// Nếu đã đăng nhập, chuyển hướng đến dashboard
+if (isLoggedIn()) {
+    header('Location: dashboard.php');
+    exit();
+}
+
+// Nếu chưa đăng nhập, hiển thị trang đăng nhập
+?>
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -83,7 +106,7 @@
                                         Remember me
                                     </label>
                                 </div>
-                                <a href="#" class="text-decoration-none forgot-password">Forgot Password?</a>
+                                <a href="forgot.php" class="text-decoration-none forgot-password">Forgot Password?</a>
                             </div>
                             
                             <!-- Login Button -->
