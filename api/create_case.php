@@ -12,10 +12,10 @@ header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: POST');
 header('Access-Control-Allow-Headers: Content-Type');
 
-session_start();
+require_once '../includes/session.php';
 
 // Kiểm tra đăng nhập
-if (!isset($_SESSION['user_id'])) {
+if (!isLoggedIn()) {
     http_response_code(401);
     echo json_encode(['success' => false, 'error' => 'Unauthorized - Please login first']);
     exit;
@@ -50,7 +50,7 @@ try {
     $case_number = generateCaseNumber($pdo);
     
     // Chuẩn bị dữ liệu
-    $current_user_id = $_SESSION['user_id'];
+    $current_user_id = getCurrentUserId();
     $requester_id = $input['requester_id'];
     $handler_id = $input['handler_id'];
     $case_type = $input['case_type'];

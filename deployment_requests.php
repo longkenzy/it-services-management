@@ -1274,12 +1274,10 @@ function editRequest(requestId) {
 // Xử lý submit form edit
 document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('editDeploymentRequestForm').addEventListener('submit', function(e) {
-        console.log('=== Edit deployment request form submit triggered ===');
         e.preventDefault();
         
         // Kiểm tra xem form có bị disable tạm thời không
         if (this.getAttribute('data-submit-disabled') === 'true') {
-            console.log('Edit deployment request form temporarily disabled, ignoring submit');
             return;
         }
         
@@ -1428,8 +1426,6 @@ function generateCaseCode() {
 function loadDeploymentCases(requestId) {
     if (!requestId) return;
 
-    console.log('Loading deployment cases for request ID:', requestId);
-
     // Fetch cases filtered by deployment_request_id
     fetch('api/get_deployment_cases.php?deployment_request_id=' + requestId)
         .then(response => response.json())
@@ -1448,8 +1444,6 @@ function loadDeploymentCases(requestId) {
                 </td></tr>`;
                 return;
             }
-
-            console.log('Found', data.data.length, 'deployment cases');
 
             // Populate table with filtered cases
             data.data.forEach((item, idx) => {
@@ -1618,7 +1612,6 @@ document.addEventListener('DOMContentLoaded', function() {
         let isSubmitting = false; // Flag để tránh submit nhầm
         
         editCaseForm.addEventListener('submit', function(e) {
-            console.log('Edit case form submit event triggered');
             e.preventDefault();
             
             // Kiểm tra xem có phải là submit thực sự không
@@ -1627,12 +1620,10 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Kiểm tra xem form có bị disable tạm thời không
             if (form.getAttribute('data-submit-disabled') === 'true') {
-                console.log('Form submit temporarily disabled, ignoring');
                 return;
             }
             
             if (!submitButton || submitButton.textContent.trim() !== 'Cập nhật case' || isSubmitting) {
-                console.log('Not a real submit or already submitting, ignoring');
                 return;
             }
             
@@ -1676,8 +1667,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 end_date: document.getElementById('edit_end_date').value,
                 status: document.getElementById('edit_status').value
             };
-            
-            console.log('Submitting edit case form with data:', formData);
             
             // Submit form
             fetch('api/update_deployment_case.php', {
@@ -1762,8 +1751,6 @@ function formatDateForDisplay(dateString) {
 
 // Function chỉnh sửa case triển khai
 function editDeploymentCase(caseId) {
-    console.log('=== editDeploymentCase called with ID:', caseId, '===');
-    
     // Ngăn chặn event bubbling
     event.preventDefault();
     event.stopPropagation();
@@ -1865,8 +1852,6 @@ function deleteDeploymentCase(caseId, requestId) {
         return;
     }
     
-    console.log('Deleting deployment case ID:', caseId);
-    
     fetch('api/delete_deployment_case.php', {
         method: 'POST',
         headers: {
@@ -1912,7 +1897,6 @@ function loadTaskTemplates() {
         return;
     }
     
-    console.log('Loading task templates...');
     fetch('api/get_task_templates.php')
         .then(response => {
             if (!response.ok) {
@@ -1921,7 +1905,6 @@ function loadTaskTemplates() {
             return response.json();
         })
         .then(data => {
-            console.log('Task templates response:', data);
             if (data.success) {
                 select.innerHTML = '<option value="">-- Chọn task mẫu --</option>';
                 
@@ -1933,7 +1916,7 @@ function loadTaskTemplates() {
                     option.dataset.type = template.task_type;
                     select.appendChild(option);
                 });
-                console.log('Task templates loaded successfully');
+                // Task templates loaded successfully
             } else {
                 console.error('Error loading task templates:', data.message);
             }
@@ -2058,8 +2041,6 @@ function createDeploymentTask() {
 function loadDeploymentTasks(caseId) {
     if (!caseId) return;
     
-    console.log('Loading deployment tasks for case ID:', caseId);
-    
     // Fetch tasks filtered by deployment_case_id
     fetch('api/get_deployment_tasks.php?deployment_case_id=' + caseId)
         .then(response => response.json())
@@ -2078,8 +2059,6 @@ function loadDeploymentTasks(caseId) {
                 </td></tr>`;
                 return;
             }
-            
-            console.log('Found', data.data.length, 'deployment tasks');
             
             // Populate table with filtered tasks
             data.data.forEach((item, idx) => {
@@ -2127,8 +2106,6 @@ function loadDeploymentTasks(caseId) {
 
 // Function chỉnh sửa task triển khai
 function editDeploymentTask(taskId) {
-    console.log('=== editDeploymentTask called with ID:', taskId, '===');
-    
     // Ngăn chặn event bubbling
     event.preventDefault();
     event.stopPropagation();
@@ -2137,10 +2114,8 @@ function editDeploymentTask(taskId) {
     fetch('api/get_task_details.php?id=' + taskId)
         .then(response => response.json())
         .then(data => {
-            console.log('=== Task Details API Response ===', data);
             if (data.success && data.data) {
                 const taskData = data.data;
-                console.log('=== Task Data ===', taskData);
                 
                 // Điền dữ liệu vào form edit task
                 document.getElementById('edit_task_id').value = taskData.id;
@@ -2212,8 +2187,6 @@ function deleteDeploymentTask(taskId, caseId) {
         return;
     }
     
-    console.log('Deleting deployment task ID:', taskId);
-    
     fetch('api/delete_deployment_task.php', {
         method: 'POST',
         headers: {
@@ -2257,8 +2230,6 @@ function deleteRequest(requestId) {
     if (!confirm('Bạn có chắc chắn muốn xóa yêu cầu triển khai này?\n\nLưu ý: Tất cả các case triển khai liên quan cũng sẽ bị xóa!')) {
         return;
     }
-    
-    console.log('Deleting deployment request ID:', requestId);
     
     fetch('api/delete_deployment_request.php', {
         method: 'POST',

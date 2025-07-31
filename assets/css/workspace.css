@@ -7,10 +7,14 @@
 #workspace-tasks-table tr td {
   vertical-align: middle;
   text-align: center;
+  font-size: 0.875rem; /* Giảm font size xuống */
+  padding: 12px 8px; /* Tăng padding để tăng chiều cao hàng */
 }
 #workspace-tasks-table th {
   text-align: center !important;
   vertical-align: middle;
+  font-size: 0.875rem; /* Giảm font size xuống */
+  padding: 12px 8px; /* Tăng padding để tăng chiều cao hàng */
 }
 
 #btn-filter-processing.active,
@@ -33,4 +37,48 @@
 #workspace-table th, #workspace-table thead th {
   text-align: center !important;
   vertical-align: middle !important;
+  font-size: 0.875rem; /* Giảm font size xuống */
+}
+
+/* Giảm font size cho tất cả các bảng trong workspace */
+.workspace-container table {
+  font-size: 0.875rem;
+}
+
+.workspace-container table td,
+.workspace-container table th {
+  font-size: 0.875rem;
+}
+
+/* Màu sắc cho các trạng thái */
+.status-received {
+  color: #007bff !important; /* Màu xanh cho "Tiếp nhận" */
+  font-weight: 600;
+  background-color: #b3d9ff !important;
+  padding: 8px 16px !important;
+  border-radius: 6px !important;
+}
+
+.status-processing {
+  color: #ffc107 !important; /* Màu vàng cho "Đang xử lý" */
+  font-weight: 600;
+  background-color: #ffe066 !important;
+  padding: 8px 16px !important;
+  border-radius: 6px !important;
+}
+
+.status-completed {
+  color: #28a745 !important; /* Màu xanh lá cho "Hoàn thành" */
+  font-weight: 600;
+  background-color: #90ee90 !important;
+  padding: 8px 16px !important;
+  border-radius: 6px !important;
+}
+
+.status-cancelled {
+  color: #dc3545 !important; /* Màu đỏ cho "Huỷ" */
+  font-weight: 600;
+  background-color: #ffb3b3 !important;
+  padding: 8px 16px !important;
+  border-radius: 6px !important;
 } 

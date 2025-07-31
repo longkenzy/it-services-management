@@ -43,11 +43,11 @@ try {
     ];
 
     // Kiểm tra xem user hiện tại có tồn tại trong bảng staffs không
-    if (isset($_SESSION['user_id']) && !empty($_SESSION['user_id'])) {
+    if (isset(getCurrentUserId()) && !empty(getCurrentUserId())) {
         $stmt = $pdo->prepare("SELECT id FROM staffs WHERE id = ?");
-        $stmt->execute([$_SESSION['user_id']]);
+        $stmt->execute([getCurrentUserId()]);
         if ($stmt->fetch()) {
-            $data['created_by'] = $_SESSION['user_id'];
+            $data['created_by'] = getCurrentUserId();
         }
     }
 
@@ -144,7 +144,7 @@ try {
         // Log hoạt động (chỉ log nếu có user_id hợp lệ)
         if ($data['created_by']) {
             $log_message = "Tạo yêu cầu triển khai mới: {$data['request_code']}";
-            $log_sql = "INSERT INTO activity_logs (user_id, action, details, ip_address) VALUES (?, ?, ?, ?)";
+            $log_sql = "INSERT INTO user_activity_logs (user_id, activity, details, ip_address) VALUES (?, ?, ?, ?)";
             $log_stmt = $pdo->prepare($log_sql);
             $log_stmt->execute([
                 $data['created_by'],

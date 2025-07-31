@@ -121,7 +121,7 @@ try {
     $sql = "SELECT 
                 id, staff_code, fullname, username, birth_date, gender, 
                 avatar, position, department, office, phone_main, email_work, 
-                job_type, seniority, status, role, start_date, created_at, updated_at
+                job_type, seniority, status, role, start_date, resigned, created_at, updated_at
             FROM staffs 
             $where_clause 
             ORDER BY start_date IS NULL, start_date ASC";
@@ -175,6 +175,7 @@ try {
             'status' => $staff['status'],
             'role' => $staff['role'],
             'start_date' => $staff['start_date'],
+            'resigned' => $staff['resigned'],
             'created_at' => $staff['created_at'],
             'updated_at' => $staff['updated_at']
         ];

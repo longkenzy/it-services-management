@@ -12,10 +12,10 @@ header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: POST, DELETE');
 header('Access-Control-Allow-Headers: Content-Type');
 
-session_start();
+require_once '../includes/session.php';
 
 // Kiểm tra đăng nhập
-if (!isset($_SESSION['user_id'])) {
+if (!isLoggedIn()) {
     http_response_code(401);
     echo json_encode(['error' => 'Unauthorized']);
     exit;
@@ -39,7 +39,7 @@ try {
     }
     
     $case_id = $input['case_id'];
-    $current_user_id = $_SESSION['user_id'];
+    $current_user_id = getCurrentUserId();
     
     // Lấy thông tin case trước khi xóa
     $stmt = $pdo->prepare("SELECT * FROM internal_cases WHERE id = ?");

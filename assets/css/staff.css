@@ -215,8 +215,9 @@
 .staff-table th:nth-child(8) { width: 10%; }  /* Phòng ban */
 .staff-table th:nth-child(9) { width: 10%; }  /* Số điện thoại */
 .staff-table th:nth-child(10) { width: 15%; } /* Email */
-.staff-table th:nth-child(11) { width: 8%; }  /* Loại hợp đồng */
-.staff-table th:nth-child(12) { width: 5%; }  /* Thao tác */
+.staff-table th:nth-child(11) { width: 8%; }  /* Trạng thái */
+.staff-table th:nth-child(12) { width: 8%; }  /* Loại hợp đồng */
+.staff-table th:nth-child(13) { width: 5%; }  /* Thao tác */
 
 .staff-table tbody tr {
     transition: all 0.3s ease;
@@ -839,11 +840,35 @@
     border-color: #007bff;
 } 
 
-.staff-table .badge {
+/* General badge styles for staff table */
+.staff-table .badge:not(.bg-danger):not(.bg-success) {
     background: #A3DC9A !important;
     color: #2c3e50 !important;
     font-size: 11px !important;
     padding: 2px 6px !important;
+    border-radius: 5px !important;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    border: none;
+}
+
+/* Status badge specific styles */
+.staff-table .badge.bg-danger {
+    background: #dc3545 !important;
+    color: white !important;
+    font-size: 11px !important;
+    padding: 6px 8px !important;
+    border-radius: 5px !important;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    border: none;
+}
+
+.staff-table .badge.bg-success {
+    background: #28a745 !important;
+    color: white !important;
+    font-size: 11px !important;
+    padding: 6px 8px !important;
     border-radius: 5px !important;
     font-weight: 600;
     letter-spacing: 0.5px;

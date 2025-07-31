@@ -11,8 +11,8 @@ function log_error($msg) {
     file_put_contents(__DIR__ . '/error_log.txt', date('[Y-m-d H:i:s] ') . $msg . PHP_EOL, FILE_APPEND);
 }
 
-session_start();
-if (!isset($_SESSION['user_id'])) {
+require_once '../includes/session.php';
+if (!isLoggedIn()) {
     http_response_code(401);
     echo json_encode(['success' => false, 'error' => 'Unauthorized']);
     exit;

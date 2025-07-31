@@ -228,7 +228,7 @@ $(document).ready(function() {
                     <span class="fw-semibold text-dark">${staff.position || ''}</span>
                 </td>
                 <td>
-                    <span class="badge bg-secondary">${staff.department || ''}</span>
+                    <span>${staff.department || ''}</span>
                 </td>
                 <td>
                     ${staff.phone ? `<a href="tel:${staff.phone}" class="text-decoration-none">
@@ -239,6 +239,11 @@ $(document).ready(function() {
                     ${staff.email ? `<a href="mailto:${staff.email}" class="text-decoration-none">
                         ${staff.email}
                     </a>` : ''}
+                </td>
+                <td>
+                    <span class="badge ${staff.resigned == 1 ? 'bg-danger' : 'bg-success'}">
+                        ${staff.resigned == 1 ? 'Đã nghỉ' : 'Hoạt động'}
+                    </span>
                 </td>
                 <td>
                     <span class="contract-badge ${contractClass}">${staff.job_type || ''}</span>
@@ -485,6 +490,9 @@ $(document).ready(function() {
             $('#job_type').val(staff.job_type || '');
             $('#office').val(staff.office || staff.office_location || '');
             $('#office_address').val(staff.office_address || '');
+            
+            // Đã nghỉ việc
+            $('#resigned').prop('checked', staff.resigned == 1);
             
             // TÀI KHOẢN ĐĂNG NHẬP
             $('#username').val(staff.username || '');
@@ -896,13 +904,113 @@ $(document).ready(function() {
     }
     
     function exportStaffData() {
-        if (selectedStaffs.length === 0) {
-            showWarning('Vui lòng chọn ít nhất một nhân sự để xuất dữ liệu!');
-            return;
+        // Show export options modal
+        showExportOptionsModal();
+    }
+    
+    function showExportOptionsModal() {
+        // Remove existing modal
+        $('.export-options-modal').remove();
+        
+        const modal = $(`
+            <div class="modal fade export-options-modal" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header bg-primary text-white">
+                            <h5 class="modal-title">
+                                <i class="fas fa-file-excel me-2"></i>
+                                Xuất dữ liệu Excel
+                            </h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Chọn loại xuất:</label>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="exportType" id="exportAll" value="all" checked>
+                                    <label class="form-check-label" for="exportAll">
+                                        <i class="fas fa-list me-2"></i>
+                                        Xuất tất cả nhân sự (theo bộ lọc hiện tại)
+                                        <small class="text-muted d-block ms-4">Sẽ xuất tất cả nhân sự phù hợp với bộ lọc đang áp dụng</small>
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="exportType" id="exportSelected" value="selected" ${selectedStaffs.length === 0 ? 'disabled' : ''}>
+                                    <label class="form-check-label" for="exportSelected">
+                                        <i class="fas fa-check-square me-2"></i>
+                                        Xuất nhân sự đã chọn (${selectedStaffs.length} nhân sự)
+                                        ${selectedStaffs.length === 0 ? '<small class="text-danger d-block ms-4">Vui lòng chọn ít nhất một nhân sự</small>' : ''}
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle me-2"></i>
+                                <strong>Thông tin:</strong> File Excel sẽ bao gồm các thông tin: Mã số, Họ tên, Năm sinh, Giới tính, Chức vụ, Phòng ban, Số điện thoại, Email, Loại hợp đồng, Ngày vào làm, Thâm niên, Trạng thái.
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                <i class="fas fa-times me-2"></i>Hủy
+                            </button>
+                            <button type="button" class="btn btn-success" onclick="performExport()">
+                                <i class="fas fa-download me-2"></i>Xuất Excel
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `);
+        
+        $('body').append(modal);
+        modal.modal('show');
+        
+        // Remove modal when hidden
+        modal.on('hidden.bs.modal', function() {
+            modal.remove();
+        });
+    }
+    
+    // Global function for Excel export
+    window.performExport = function() {
+        const exportType = $('input[name="exportType"]:checked').val();
+        
+        // Close modal
+        $('.export-options-modal').modal('hide');
+        
+        // Show loading
+        showLoadingMessage('Đang chuẩn bị file Excel...');
+        
+        // Build URL with parameters
+        const params = new URLSearchParams({
+            export_type: exportType,
+            search: currentFilters.search,
+            department: currentFilters.department,
+            position: currentFilters.position,
+            gender: currentFilters.gender
+        });
+        
+        if (exportType === 'selected' && selectedStaffs.length > 0) {
+            params.append('selected_ids', selectedStaffs.join(','));
         }
         
-        showInfo(`Chức năng xuất Excel cho ${selectedStaffs.length} nhân sự sẽ được phát triển trong phiên bản tiếp theo!`);
-    }
+        // Create download link
+        const downloadUrl = `api/export_staff_xlsx.php?${params.toString()}`;
+        
+        // Create temporary link and trigger download
+        const link = document.createElement('a');
+        link.href = downloadUrl;
+        link.download = `staff_list_${new Date().toISOString().slice(0, 19).replace(/:/g, '-')}.xls`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        // Remove loading after a short delay
+        setTimeout(() => {
+            $('.loading-overlay').remove();
+            showSuccess('Xuất Excel thành công! File đã được tải về.');
+        }, 1000);
+    };
     
 
 

@@ -3,7 +3,7 @@ require_once '../config/db.php';
 require_once '../includes/session.php';
 
 // Kiểm tra đăng nhập
-if (!isset($_SESSION['user_id'])) {
+if (!isset(getCurrentUserId())) {
     http_response_code(401);
     echo json_encode(['success' => false, 'message' => 'Chưa đăng nhập']);
     exit;

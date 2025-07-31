@@ -1,6 +1,7 @@
 <?php
 header('Content-Type: application/json');
-session_start();
+require_once '../includes/session.php';
+require_once '../config/db.php';
 
 if (!isset($_SESSION[user_id'])) {
     http_response_code(41  echo json_encode([success => false, 'error =>Unauthorized]);  exit;

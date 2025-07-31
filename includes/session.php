@@ -11,6 +11,16 @@ if (basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME'])) {
     exit('Access denied.');
 }
 
+// Cấu hình session trước khi bắt đầu
+ini_set('session.cookie_lifetime', 0); // Session cookie sẽ tồn tại cho đến khi browser đóng
+ini_set('session.gc_maxlifetime', 3600); // 1 giờ
+ini_set('session.use_strict_mode', 1);
+ini_set('session.use_cookies', 1);
+ini_set('session.use_only_cookies', 1);
+ini_set('session.cookie_httponly', 1);
+ini_set('session.cookie_samesite', 'Lax');
+ini_set('session.cookie_path', '/'); // Đảm bảo cookie có thể truy cập từ tất cả paths
+
 // Bắt đầu session nếu chưa có
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
@@ -40,7 +50,7 @@ function setUserSession($user_data) {
     $_SESSION[SESSION_USER_ID] = $user_data['id'];
     $_SESSION[SESSION_USERNAME] = $user_data['username'];
     $_SESSION[SESSION_FULLNAME] = $user_data['fullname'];
-    $_SESSION[SESSION_ROLE] = $user_data['role'];
+    $_SESSION[SESSION_ROLE] = trim($user_data['role']); // Trim để loại bỏ khoảng trắng
     $_SESSION[SESSION_LOGIN_TIME] = time();
     $_SESSION[SESSION_LAST_ACTIVITY] = time();
     
@@ -145,10 +155,10 @@ function updateLastActivity() {
 
 /**
  * Kiểm tra session có hết hạn không
- * @param int $timeout Thời gian timeout (giây), mặc định 30 phút
+ * @param int $timeout Thời gian timeout (giây), mặc định 1 giờ
  * @return bool True nếu hết hạn, False nếu còn hiệu lực
  */
-function isSessionExpired($timeout = 1800) {
+function isSessionExpired($timeout = 3600) {
     if (!isLoggedIn()) {
         return true;
     }
@@ -182,7 +192,7 @@ function logout() {
  * @param string $message Thông báo lỗi (optional)
  */
 function redirectToLogin($message = '') {
-    $redirect_url = 'index.html';
+    $redirect_url = 'index.php';
     
     if (!empty($message)) {
         $redirect_url .= '?error=' . urlencode($message);
@@ -196,7 +206,7 @@ function redirectToLogin($message = '') {
  * Chuyển hướng đến trang dashboard
  */
 function redirectToDashboard() {
-    header('Location: dashboard.html');
+    header('Location: dashboard.php');
     exit();
 }
 
@@ -221,8 +231,30 @@ function requireLogin($required_roles = null) {
     
     // Kiểm tra quyền truy cập nếu có yêu cầu
     if ($required_roles !== null && !hasRole($required_roles)) {
-        header('HTTP/1.0 403 Forbidden');
-        die('Bạn không có quyền truy cập trang này.');
+        // Log lỗi quyền truy cập
+        $user = getCurrentUser();
+        error_log("Access denied - User: " . ($user['username'] ?? 'unknown') . ", Role: " . ($user['role'] ?? 'none') . ", Required: " . (is_array($required_roles) ? json_encode($required_roles) : $required_roles));
+        
+        http_response_code(403);
+        echo '<!DOCTYPE html>
+<html>
+<head>
+    <title>403 Forbidden</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; padding: 50px; }
+        .error { color: #d32f2f; font-size: 24px; margin-bottom: 20px; }
+        .message { color: #666; margin-bottom: 30px; }
+        .back-link { color: #1976d2; text-decoration: none; }
+        .back-link:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <div class="error">403 Forbidden</div>
+    <div class="message">Bạn không có quyền truy cập trang này.</div>
+    <a href="dashboard.php" class="back-link">← Quay về Dashboard</a>
+</body>
+</html>';
+        exit();
     }
 }
 

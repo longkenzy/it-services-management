@@ -1,8 +1,8 @@
 <?php
 header('Content-Type: application/json');
-session_start();
+require_once '../includes/session.php';
 
-if (!isset($_SESSION['user_id'])) {
+if (!isLoggedIn()) {
     http_response_code(401);
     echo json_encode(['success' => false, 'error' => 'Unauthorized']);
     exit;

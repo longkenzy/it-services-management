@@ -10,7 +10,7 @@ require_once 'includes/session.php';
 
 // Kiểm tra đăng nhập
 if (!isLoggedIn()) {
-    header('Location: index.html');
+    header('Location: index.php');
     exit();
 }
 
@@ -233,6 +233,7 @@ $current_user = getCurrentUser();
                             <th>Phòng ban</th>
                             <th>SĐT Chính</th>
                                         <th>Email công việc</th>
+                                        <th>Trạng thái</th>
                                         <th>Loại hợp đồng</th>
                                         <th width="80">Option</th>
                                     </tr>
@@ -373,6 +374,21 @@ $current_user = getCurrentUser();
                                                 </div>
                                                 <div class="col-8">
                                                     <input type="date" class="form-control" name="start_date" id="start_date">
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="mb-2">
+                                            <div class="row align-items-center">
+                                                <div class="col-4">
+                                                    <label class="form-label mb-0">Đã nghỉ việc</label>
+                                                </div>
+                                                <div class="col-8">
+                                                    <div class="form-check">
+                                                        <input class="form-check-input" type="checkbox" name="resigned" id="resigned" value="1">
+                                                        <label class="form-check-label" for="resigned">
+                                                            Đánh dấu nhân viên đã nghỉ việc
+                                                        </label>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
