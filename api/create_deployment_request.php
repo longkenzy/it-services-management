@@ -21,6 +21,9 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 }
 
 try {
+    // Debug: Log dữ liệu đầu vào
+    error_log("POST data: " . print_r($_POST, true));
+    
     // Lấy dữ liệu từ form
     $data = [
         'request_code' => trim($_POST['request_code'] ?? ''),
@@ -43,11 +46,12 @@ try {
     ];
 
     // Kiểm tra xem user hiện tại có tồn tại trong bảng staffs không
-    if (isset(getCurrentUserId()) && !empty(getCurrentUserId())) {
+    $current_user_id = getCurrentUserId();
+    if ($current_user_id && !empty($current_user_id)) {
         $stmt = $pdo->prepare("SELECT id FROM staffs WHERE id = ?");
-        $stmt->execute([getCurrentUserId()]);
+        $stmt->execute([$current_user_id]);
         if ($stmt->fetch()) {
-            $data['created_by'] = getCurrentUserId();
+            $data['created_by'] = $current_user_id;
         }
     }
 
@@ -98,6 +102,11 @@ try {
         }
     }
 
+    // Debug: Log errors nếu có
+    if (!empty($errors)) {
+        error_log("Validation errors: " . print_r($errors, true));
+    }
+    
     // Nếu có lỗi validation
     if (!empty($errors)) {
         http_response_code(400);
@@ -118,6 +127,29 @@ try {
     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
     $stmt = $pdo->prepare($sql);
+    
+    // Debug: Log SQL và data
+    error_log("SQL: " . $sql);
+    error_log("Data: " . print_r([
+        $data['request_code'],
+        $data['po_number'],
+        $data['no_contract_po'],
+        $data['contract_type'],
+        $data['request_detail_type'],
+        $data['email_subject_customer'],
+        $data['email_subject_internal'],
+        $expected_start,
+        $expected_end,
+        $data['customer_id'],
+        $data['contact_person'],
+        $data['contact_phone'],
+        $data['sale_id'],
+        $data['requester_notes'],
+        $data['deployment_manager'],
+        $data['deployment_status'],
+        $data['created_by']
+    ], true));
+    
     $result = $stmt->execute([
         $data['request_code'],
         $data['po_number'],

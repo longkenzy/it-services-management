@@ -522,7 +522,7 @@ $flash_messages = getFlashMessages();
     
     <!-- Flash messages will be shown via JavaScript alert system -->
     
-        <!-- ===== MAIN CONTENT ===== -->
+    <!-- ===== MAIN CONTENT ===== -->
     <main class="main-content">
         <!-- Hero Slider -->
         <div class="hero-slider">
@@ -550,7 +550,7 @@ $flash_messages = getFlashMessages();
             <div class="row mb-5">
                 <div class="col-12">
                     <div class="modern-card">
-                        <div class="row align-items-center">
+                <div class="row align-items-center">
                             <div class="col-lg-8">
                                 <div class="intro-content">
                                     <h2 class="section-title-white mb-4">CÔNG TY TNHH CÔNG NGHỆ DỊCH VỤ SMART SERVICES</h2>
@@ -672,7 +672,7 @@ $flash_messages = getFlashMessages();
                     <div class="service-card">
                         <div class="service-icon">
                             <i class="fas fa-cloud"></i>
-                        </div>
+                            </div>
                         <h5>Cloud Services</h5>
                         <p>IaaS, DaaS và các dịch vụ đám mây chuyên nghiệp, bảo mật cao</p>
                         <div class="service-features">
