@@ -173,6 +173,9 @@ try {
     if ($result) {
         $request_id = $pdo->lastInsertId();
         
+        // Debug: Log request_id
+        error_log("Created request_id: " . $request_id);
+        
         // Log hoạt động (chỉ log nếu có user_id hợp lệ)
         if ($data['created_by']) {
             $log_message = "Tạo yêu cầu triển khai mới: {$data['request_code']}";

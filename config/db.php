@@ -31,7 +31,7 @@ $db_config = [
 $pdo_options = [
     PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,    // Báo lỗi dạng Exception
     PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,          // Trả về dạng mảng kết hợp
-    PDO::ATTR_EMULATE_PREPARES   => false,                     // Tắt giả lập prepared statements
+    PDO::ATTR_EMULATE_PREPARES   => true,                      // Bật giả lập prepared statements cho hosting
     PDO::ATTR_PERSISTENT         => false                      // Tắt kết nối liên tục
 ];
 
