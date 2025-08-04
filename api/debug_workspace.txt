@@ -184,3 +184,13 @@ Current user_id: 11, username: longht, role: admin, status_filter: processing
 Data returned: [{"case_code":"CTK2508004","level":"Case","case_type":"N\u00e2ng c\u1ea5p h\u1ec7 th\u1ed1ng","service_type":"fsdfsdfg","customer_name":"C\u00d4NG TY C\u1ed4 PH\u1ea6N D\u01af\u1ee2C PH\u1ea8M PHARMACITY","start_date":"2025-08-01","end_date":"2025-08-14","status":"Ti\u1ebfp nh\u1eadn","assigned_to":11},{"case_code":"CTK2508006","level":"Case","case_type":"B\u1ea3o tr\u00ec h\u1ec7 th\u1ed1ng","service_type":"fsadf","customer_name":"C\u00d4NG TY C\u1ed4 PH\u1ea6N \u0110\u1ea6U T\u01af T\u1ed4NG H\u1ee2P LI\u00caN VI\u1ec6T","start_date":"2025-07-31","end_date":"2025-08-21","status":"Ti\u1ebfp nh\u1eadn","assigned_to":11}]
 Current user_id: 11, username: longht, role: admin, status_filter: processing
 Data returned: [{"case_code":"CTK2508004","level":"Case","case_type":"N\u00e2ng c\u1ea5p h\u1ec7 th\u1ed1ng","service_type":"fsdfsdfg","customer_name":"C\u00d4NG TY C\u1ed4 PH\u1ea6N D\u01af\u1ee2C PH\u1ea8M PHARMACITY","start_date":"2025-08-01","end_date":"2025-08-14","status":"Ti\u1ebfp nh\u1eadn","assigned_to":11},{"case_code":"CTK2508006","level":"Case","case_type":"B\u1ea3o tr\u00ec h\u1ec7 th\u1ed1ng","service_type":"fsadf","customer_name":"C\u00d4NG TY C\u1ed4 PH\u1ea6N \u0110\u1ea6U T\u01af T\u1ed4NG H\u1ee2P LI\u00caN VI\u1ec6T","start_date":"2025-07-31","end_date":"2025-08-21","status":"Ti\u1ebfp nh\u1eadn","assigned_to":11}]
+Current user_id: 11, username: longht, role: admin, status_filter: processing
+Data returned: []
+Current user_id: 11, username: longht, role: admin, status_filter: processing
+Data returned: []
+Current user_id: 11, username: longht, role: admin, status_filter: processing
+Data returned: []
+Current user_id: 11, username: longht, role: admin, status_filter: processing
+Data returned: []
+Current user_id: 11, username: longht, role: admin, status_filter: processing
+Data returned: []

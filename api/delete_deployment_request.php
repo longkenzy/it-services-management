@@ -1,5 +1,8 @@
 <?php
 header('Content-Type: application/json');
+header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
+header('Pragma: no-cache');
+header('Expires: 0');
 require_once '../config/db.php';
 require_once '../includes/session.php';
 
@@ -28,6 +31,9 @@ if (!$request_id) {
 }
 
 try {
+    // Debug: Log request
+    error_log("Attempting to delete deployment request ID: " . $request_id);
+    
     // Bắt đầu transaction
     $pdo->beginTransaction();
     
@@ -38,10 +44,13 @@ try {
     
     if (!$request) {
         $pdo->rollBack();
+        error_log("Deployment request not found: " . $request_id);
         http_response_code(404);
         echo json_encode(['success' => false, 'message' => 'Không tìm thấy yêu cầu triển khai']);
         exit;
     }
+    
+    error_log("Found deployment request: " . $request['request_code']);
     
     // Log hoạt động trước khi xóa
     
@@ -72,12 +81,15 @@ try {
     $pdo->commit();
     
     // Log thành công
+    error_log("Successfully deleted deployment request: " . $request['request_code'] . 
+              " (Cases: $deleted_cases, Tasks: $deleted_tasks)");
     
     echo json_encode([
         'success' => true, 
         'message' => 'Xóa yêu cầu triển khai thành công!',
         'deleted_cases' => $deleted_cases,
-        'deleted_tasks' => $deleted_tasks
+        'deleted_tasks' => $deleted_tasks,
+        'request_code' => $request['request_code']
     ]);
     
 } catch (PDOException $e) {

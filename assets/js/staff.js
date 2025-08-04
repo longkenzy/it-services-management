@@ -1336,39 +1336,7 @@ $(document).ready(function() {
             // Chỉ để mặc định, không can thiệp
         });
         
-        // Search form
-        $('.search-form').on('submit', function(e) {
-            e.preventDefault();
-            const searchValue = $('#globalSearchInput').val().trim();
-            if (searchValue) {
-                currentFilters.search = searchValue;
-                currentPage = 1;
-                loadStaffData();
-            }
-        });
-        
-        // Global search input
-        $('#globalSearchInput').on('input', debounce(function() {
-            const searchValue = $(this).val().trim();
-            if (searchValue) {
-                currentFilters.search = searchValue;
-                currentPage = 1;
-                loadStaffData();
-            } else if (searchValue === '') {
-                currentFilters.search = '';
-                currentPage = 1;
-                loadStaffData();
-            }
-        }, 500));
-        
-        // Keyboard shortcuts
-        $(document).on('keydown', function(e) {
-            // Ctrl+K for search
-            if (e.ctrlKey && e.key === 'k') {
-                e.preventDefault();
-                $('#globalSearchInput').focus();
-            }
-        });
+
     }
     
     // ===== HANDLE LOGOUT ===== //

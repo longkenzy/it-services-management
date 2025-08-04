@@ -6,152 +6,11 @@
 $(document).ready(function() {
     
     // ===== KHỞI TẠO CÁC BIẾN ===== //
-    const searchInput = $('#searchInput');
-    const searchForm = $('.search-form');
     const navLinks = $('.navbar-nav .nav-link');
     const userDropdown = $('#userDropdown');
     const workDropdown = $('#workDropdown');
-    
-    // ===== SEARCH FUNCTIONALITY ===== //
-    
-    // Xử lý tìm kiếm
-    searchForm.on('submit', function(e) {
-        e.preventDefault();
-        performSearch();
-    });
-    
-    // Tìm kiếm real-time (debounced)
-    let searchTimeout;
-    searchInput.on('input', function() {
-        clearTimeout(searchTimeout);
-        const query = $(this).val().trim();
-        
-        if (query.length >= 2) {
-            searchTimeout = setTimeout(function() {
-                performLiveSearch(query);
-            }, 300);
-        } else {
-            hideLiveSearchResults();
-        }
-    });
-    
-    function performSearch() {
-        const query = searchInput.val().trim();
-        
-        if (query === '') {
-            showNotification('Vui lòng nhập từ khóa tìm kiếm', 'warning');
-            return;
-        }
-        
-        // Hiển thị loading
-        showSearchLoading();
-        
-        // Simulate API call
-        setTimeout(function() {
-            hideSearchLoading();
-            
-            // Demo kết quả tìm kiếm
-            const results = simulateSearchResults(query);
-            displaySearchResults(results);
             
 
-        }, 1000);
-    }
-    
-    function performLiveSearch(query) {
-        // Tìm kiếm live không hiển thị loading
-        const results = simulateSearchResults(query);
-        showLiveSearchResults(results);
-    }
-    
-    function simulateSearchResults(query) {
-        const mockData = [
-            { type: 'case', title: 'Case #001 - Lỗi máy in phòng kế toán', status: 'open' },
-            { type: 'case', title: 'Case #002 - Cài đặt phần mềm Office', status: 'in-progress' },
-            { type: 'case', title: 'Case #003 - Bảo trì server', status: 'closed' },
-            { type: 'staff', title: 'Nguyễn Văn A - IT Support', department: 'IT' },
-            { type: 'staff', title: 'Trần Thị B - IT Manager', department: 'IT' },
-        ];
-        
-        return mockData.filter(item => 
-            item.title.toLowerCase().includes(query.toLowerCase())
-        );
-    }
-    
-    function showSearchLoading() {
-        const searchBtn = searchForm.find('.btn');
-        searchBtn.html('<i class="fas fa-spinner fa-spin"></i>');
-        searchBtn.prop('disabled', true);
-    }
-    
-    function hideSearchLoading() {
-        const searchBtn = searchForm.find('.btn');
-        searchBtn.html('<i class="fas fa-search"></i>');
-        searchBtn.prop('disabled', false);
-    }
-    
-    function showLiveSearchResults(results) {
-        hideLiveSearchResults();
-        
-        if (results.length === 0) return;
-        
-        const resultsHtml = results.map(item => {
-            const icon = item.type === 'case' ? 'fas fa-ticket-alt' : 'fas fa-user';
-            const badge = item.status ? `<span class="badge bg-${getStatusColor(item.status)} ms-2">${item.status}</span>` : '';
-            
-            return `
-                <div class="live-search-item" data-type="${item.type}">
-                    <i class="${icon} me-2"></i>
-                    ${item.title}
-                    ${badge}
-                </div>
-            `;
-        }).join('');
-        
-        const searchResults = $(`
-            <div class="live-search-results">
-                ${resultsHtml}
-            </div>
-        `);
-        
-        searchForm.append(searchResults);
-        
-        // Xử lý click vào kết quả
-        searchResults.find('.live-search-item').on('click', function() {
-            const type = $(this).data('type');
-            const title = $(this).text().trim();
-            
-            searchInput.val(title);
-            hideLiveSearchResults();
-            
-            showNotification(`Đã chọn: ${title}`, 'success');
-        });
-    }
-    
-    function hideLiveSearchResults() {
-        $('.live-search-results').remove();
-    }
-    
-    function displaySearchResults(results) {
-        if (results.length === 0) {
-            showNotification('Không tìm thấy kết quả nào', 'info');
-            return;
-        }
-        
-        showNotification(`Tìm thấy ${results.length} kết quả`, 'success');
-        
-        // Có thể hiển thị kết quả trong modal hoặc trang riêng
-
-    }
-    
-    function getStatusColor(status) {
-        const colors = {
-            'open': 'danger',
-            'in-progress': 'warning',
-            'closed': 'success'
-        };
-        return colors[status] || 'secondary';
-    }
     
     // ===== NAVIGATION FUNCTIONALITY ===== //
     
@@ -322,11 +181,10 @@ $(document).ready(function() {
     
     // Xử lý responsive navbar
     const navbarToggler = $('.navbar-toggler');
-    const navbarCollapse = $('.navbar-collapse');
     
     navbarToggler.on('click', function() {
         setTimeout(function() {
-            if (navbarCollapse.hasClass('show')) {
+            if ($('.navbar-collapse').hasClass('show')) {
                 $('body').addClass('navbar-open');
             } else {
                 $('body').removeClass('navbar-open');
@@ -338,7 +196,7 @@ $(document).ready(function() {
     $(document).on('click', function(e) {
         if ($(window).width() <= 991 && 
             !$(e.target).closest('.navbar').length && 
-            navbarCollapse.hasClass('show')) {
+            $('.navbar-collapse').hasClass('show')) {
             navbarToggler.click();
         }
     });
@@ -346,15 +204,8 @@ $(document).ready(function() {
     // ===== KEYBOARD SHORTCUTS ===== //
     
     $(document).on('keydown', function(e) {
-        // Ctrl + K để focus vào search
-        if (e.ctrlKey && e.key === 'k') {
-            e.preventDefault();
-            searchInput.focus();
-        }
-        
-        // Escape để đóng dropdown và clear search
+        // Escape để đóng dropdown
         if (e.key === 'Escape') {
-            hideLiveSearchResults();
             $('.dropdown-menu').removeClass('show');
         }
     });
@@ -409,12 +260,7 @@ $(document).ready(function() {
     function init() {
         addSmoothAnimations();
         
-        // Set focus to search input on desktop
-        if (!isMobile()) {
-            setTimeout(function() {
-                searchInput.focus();
-            }, 500);
-        }
+
         
         // Initialize tooltips
         const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
@@ -431,7 +277,7 @@ $(document).ready(function() {
         // Handle responsive changes
         if ($(window).width() > 991) {
             $('body').removeClass('navbar-open');
-            navbarCollapse.removeClass('show');
+            $('.navbar-collapse').removeClass('show');
         }
     }, 250));
     
@@ -447,71 +293,4 @@ $(document).ready(function() {
     
 });
 
-// ===== ADDITIONAL CSS FOR LIVE SEARCH ===== //
-
-// Inject CSS for live search results
-const liveSearchCSS = `
-<style>
-.live-search-results {
-    position: absolute;
-    top: 100%;
-    left: 0;
-    right: 0;
-    background: white;
-    border: 1px solid #e9ecef;
-    border-top: none;
-    border-radius: 0 0 8px 8px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-    z-index: 1000;
-    max-height: 300px;
-    overflow-y: auto;
-}
-
-.live-search-item {
-    padding: 0.75rem 1rem;
-    border-bottom: 1px solid #f8f9fa;
-    cursor: pointer;
-    transition: all 0.2s ease;
-}
-
-.live-search-item:hover {
-    background-color: #f8f9fa;
-    color: #007bff;
-}
-
-.live-search-item:last-child {
-    border-bottom: none;
-}
-
-.search-wrapper {
-    position: relative;
-}
-
-@keyframes fadeInUp {
-    from {
-        opacity: 0;
-        transform: translateY(10px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-.nav-link-hover {
-    transform: translateY(-2px);
-}
-
-.navbar-open {
-    overflow: hidden;
-}
-
-.navbar-open .navbar-collapse {
-    max-height: calc(100vh - 60px);
-    overflow-y: auto;
-}
-</style>
-`;
-
-// Inject CSS into head
-$('head').append(liveSearchCSS); 
+ 

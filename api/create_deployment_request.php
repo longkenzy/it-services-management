@@ -93,9 +93,9 @@ try {
         }
     }
 
-    // Kiểm tra sale có tồn tại không
+    // Kiểm tra sale có tồn tại không (theo logic mới: tất cả nhân viên trừ IT Dept và chưa nghỉ việc)
     if (!empty($data['sale_id'])) {
-        $stmt = $pdo->prepare("SELECT id FROM staffs WHERE id = ? AND department = 'SALE Dept.' AND status = 'active'");
+        $stmt = $pdo->prepare("SELECT id FROM staffs WHERE id = ? AND (department != 'IT Dept.' OR department IS NULL) AND (resigned != 1 OR resigned IS NULL)");
         $stmt->execute([$data['sale_id']]);
         if (!$stmt->fetch()) {
             $errors[] = 'Sale phụ trách không tồn tại hoặc không hoạt động';

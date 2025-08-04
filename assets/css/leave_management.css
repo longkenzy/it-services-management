@@ -319,11 +319,7 @@
     opacity: 0.5;
 }
 
-/* ===== SEARCH INPUT STYLING ===== */
-#searchInput:focus {
-    border-color: #007bff;
-    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
-}
+
 
 /* ===== CARD STYLING ===== */
 .card {

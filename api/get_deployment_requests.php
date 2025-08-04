@@ -4,6 +4,8 @@ require_once '../includes/session.php';
 header('Content-Type: application/json');
 header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
 header('Pragma: no-cache');
+header('Expires: 0');
+header('Last-Modified: ' . gmdate('D, d M Y H:i:s') . ' GMT');
 
 if (null === getCurrentUserId()) {
     http_response_code(401);
@@ -32,7 +34,7 @@ FROM deployment_requests dr
 LEFT JOIN partner_companies pc ON dr.customer_id = pc.id
 LEFT JOIN staffs sale ON dr.sale_id = sale.id
 LEFT JOIN staffs creator ON dr.created_by = creator.id
-ORDER BY dr.created_at ASC";
+ORDER BY dr.created_at DESC";
     $stmt = $pdo->prepare($sql);
     $stmt->execute();
     $requests = $stmt->fetchAll(PDO::FETCH_ASSOC);

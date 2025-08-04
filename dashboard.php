@@ -512,6 +512,89 @@ $flash_messages = getFlashMessages();
             padding-left: 0;
             padding-right: 0;
         }
+        
+        /* Blog Posts Styles */
+        .blog-post-card {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+        
+        .blog-post-card:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+        
+        .blog-post-title {
+            color: #fff;
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            line-height: 1.4;
+        }
+        
+        .blog-post-summary {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.95rem;
+            line-height: 1.6;
+            margin-bottom: 1rem;
+        }
+        
+        .blog-post-meta {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            font-size: 0.85rem;
+            color: rgba(255, 255, 255, 0.7);
+        }
+        
+        .blog-post-author {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .blog-post-date {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .blog-post-status {
+            padding: 0.2rem 0.6rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+        
+        .blog-post-status.published {
+            background: rgba(40, 167, 69, 0.2);
+            color: #28a745;
+            border: 1px solid rgba(40, 167, 69, 0.3);
+        }
+        
+        .blog-post-status.draft {
+            background: rgba(255, 193, 7, 0.2);
+            color: #ffc107;
+            border: 1px solid rgba(255, 193, 7, 0.3);
+        }
+        
+        .blog-empty-state {
+            text-align: center;
+            padding: 3rem 1rem;
+            color: rgba(255, 255, 255, 0.7);
+        }
+        
+        .blog-empty-state i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
     </style>
 </head>
 <body>
@@ -545,6 +628,28 @@ $flash_messages = getFlashMessages();
         </div>
         
         <div class="container-fluid px-0 py-5 pb-0">
+            
+            <!-- Blog Posts Section -->
+            <div class="row mb-5 px-4">
+                <div class="col-12">
+                    <div class="modern-card">
+                        <div class="row">
+                            <div class="col-12">
+                                <h3 class="section-title-white mb-4">
+                                    <i class="fas fa-blog me-2"></i>
+                                    Bài viết mới nhất
+                                </h3>
+                                <div id="blogPostsContainer">
+                                    <div class="text-center py-5">
+                                        <i class="fas fa-spinner fa-spin fa-2x text-muted mb-3"></i>
+                                        <p class="text-muted">Đang tải bài viết...</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
             
             <!-- Company Introduction -->
             <div class="row mb-5">
@@ -760,6 +865,9 @@ $flash_messages = getFlashMessages();
             
             // Initialize slider
             initSlider();
+            
+            // Load blog posts
+            loadBlogPosts();
             
             // Setup header event listeners
             setupHeaderEventListeners();
@@ -1062,6 +1170,85 @@ $flash_messages = getFlashMessages();
         // ===== SHOW LOADING MESSAGE ===== //
         function showLoadingMessage(message) {
             showInfo(message);
+        }
+        
+        // ===== BLOG POSTS FUNCTIONALITY ===== //
+        function loadBlogPosts() {
+            const container = $('#blogPostsContainer');
+            
+            fetch('api/get_blog_posts.php?status=published&limit=5')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success && data.data.length > 0) {
+                        displayBlogPosts(data.data);
+                    } else {
+                        showEmptyBlogState();
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading blog posts:', error);
+                    showEmptyBlogState();
+                });
+        }
+        
+        function displayBlogPosts(posts) {
+            const container = $('#blogPostsContainer');
+            let html = '';
+            
+            posts.forEach(post => {
+                const statusText = post.status === 'published' ? 'Đã xuất bản' : 'Bản nháp';
+                const statusClass = post.status === 'published' ? 'published' : 'draft';
+                
+                html += `
+                    <div class="blog-post-card" style="cursor: pointer;" onclick="window.location.href='view_blog_post.php?id=${post.id}'">
+                        ${post.featured_image ? `<div class="blog-post-image mb-3"><img src="${escapeHtml(post.featured_image)}" alt="Featured Image" class="img-fluid rounded" style="width: 100%; height: 150px; object-fit: cover;"></div>` : ''}
+                        <h4 class="blog-post-title">${escapeHtml(post.title)}</h4>
+                        ${post.summary ? `<p class="blog-post-summary">${escapeHtml(post.summary)}</p>` : ''}
+                        <div class="blog-post-meta">
+                            <div class="blog-post-author">
+                                <i class="fas fa-user"></i>
+                                <span>${escapeHtml(post.author_name)}</span>
+                            </div>
+                            <div class="blog-post-date">
+                                <i class="fas fa-calendar"></i>
+                                <span>${post.created_at_formatted}</span>
+                            </div>
+                            <span class="blog-post-status ${statusClass}">${statusText}</span>
+                            ${post.additional_images && post.additional_images.length > 0 ? `<div class="blog-post-images-count"><i class="fas fa-images"></i> <span>${post.additional_images.length} hình ảnh</span></div>` : ''}
+                        </div>
+                        <div class="blog-post-read-more mt-3">
+                            <small class="text-primary">
+                                <i class="fas fa-eye me-1"></i>
+                                Click để đọc chi tiết
+                            </small>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            container.html(html);
+        }
+        
+        function showEmptyBlogState() {
+            const container = $('#blogPostsContainer');
+            container.html(`
+                <div class="blog-empty-state">
+                    <i class="fas fa-newspaper"></i>
+                    <h5>Chưa có bài viết nào</h5>
+                    <p>Hiện tại chưa có bài viết nào được xuất bản.</p>
+                </div>
+            `);
+        }
+        
+        function escapeHtml(text) {
+            const map = {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#039;'
+            };
+            return text.replace(/[&<>"']/g, function(m) { return map[m]; });
         }
     </script>
 </body>
