@@ -9,6 +9,10 @@ try {
     $maintenance_case_id = isset($_GET['maintenance_case_id']) ? $_GET['maintenance_case_id'] : null;
     $maintenance_request_id = isset($_GET['maintenance_request_id']) ? $_GET['maintenance_request_id'] : null;
     
+    // Debug logs
+    error_log("get_maintenance_tasks.php - maintenance_case_id: " . $maintenance_case_id);
+    error_log("get_maintenance_tasks.php - maintenance_request_id: " . $maintenance_request_id);
+    
     // Xây dựng câu query
     $sql = "SELECT 
                 mt.*,
@@ -32,9 +36,14 @@ try {
     
     $sql .= " ORDER BY mt.created_at DESC";
     
+    error_log("get_maintenance_tasks.php - SQL: " . $sql);
+    error_log("get_maintenance_tasks.php - Params: " . print_r($params, true));
+    
     $stmt = $pdo->prepare($sql);
     $stmt->execute($params);
     $tasks = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    
+    error_log("get_maintenance_tasks.php - Found " . count($tasks) . " tasks");
     
     echo json_encode([
         'success' => true,

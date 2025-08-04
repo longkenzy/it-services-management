@@ -134,13 +134,28 @@ $current_page = basename($_SERVER['PHP_SELF']);
                         </ul>
                     </li>
                     
-                    <!-- Menu Nhân sự -->
-                    <li class="nav-item">
-                        <a class="nav-link fw-semibold <?php echo $current_page === 'staff.php' ? 'active' : ''; ?>" 
-                           href="staff.php" id="staffLink">
+                    <!-- Dropdown Nhân sự -->
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle fw-semibold <?php echo in_array($current_page, ['staff.php', 'leave_management.php']) ? 'active' : ''; ?>" 
+                           href="#" id="staffDropdown" role="button" data-bs-toggle="dropdown" 
+                           aria-expanded="false">
                             <i class="fas fa-users me-2"></i>
                             Nhân sự
                         </a>
+                        <ul class="dropdown-menu dropdown-menu-custom" aria-labelledby="staffDropdown">
+                            <li>
+                                <a class="dropdown-item" href="staff.php">
+                                    <i class="fas fa-users me-2 text-primary"></i>
+                                    Nhân sự
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="leave_management.php">
+                                    <i class="fas fa-calendar-alt me-2 text-success"></i>
+                                    Nghỉ phép
+                                </a>
+                            </li>
+                        </ul>
                     </li>
                     
                     <!-- Cấu hình - Chỉ hiển thị cho admin và leader -->
@@ -170,12 +185,9 @@ $current_page = basename($_SERVER['PHP_SELF']);
                 </div>
                 
                 <!-- Thông báo ngoài header -->
-                <div class="header-notification ms-auto me-3 d-flex align-items-center">
-                    <a class="nav-link position-relative" href="#" data-action="notifications" title="Thông báo">
-                        <i class="fas fa-bell fa-lg"></i>
-                        <span class="badge bg-danger position-absolute top-0 start-100 translate-middle ms-2">3</span>
-                    </a>
-                </div>
+                <?php if (hasRole('admin')): ?>
+                    <?php include 'notifications.php'; ?>
+                <?php endif; ?>
                 
                 <!-- User Profile -->
                 <div class="user-profile-wrapper">

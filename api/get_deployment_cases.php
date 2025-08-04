@@ -22,7 +22,7 @@ $sql = "SELECT dc.*, s.fullname as assigned_to_name, (
 FROM deployment_cases dc
 LEFT JOIN staffs s ON dc.assigned_to = s.id
 WHERE dc.deployment_request_id = ?
-ORDER BY dc.id DESC";
+ORDER BY dc.id ASC";
 $stmt = $pdo->prepare($sql);
 $stmt->execute([$deployment_request_id]);
 $cases = $stmt->fetchAll(PDO::FETCH_ASSOC);

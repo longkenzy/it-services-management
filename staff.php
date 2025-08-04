@@ -84,7 +84,7 @@ $current_user = getCurrentUser();
                                     <span class="input-group-text">
                                         <i class="fas fa-search"></i>
                                     </span>
-                                    <input type="text" class="form-control" placeholder="Tên, mã NV, email..." id="staffSearchInput">
+                                    <input type="text" class="form-control" placeholder="Tìm kiếm theo tên..." id="staffSearchInput">
                                 </div>
                             </div>
                             <div class="col-md-2">
@@ -147,22 +147,22 @@ $current_user = getCurrentUser();
                     <div class="col-md-4">
                         <div class="stat-card">
                             <div class="stat-icon">
-                                <i class="fas fa-building"></i>
+                                <i class="fas fa-male"></i>
                             </div>
                             <div class="stat-content">
-                                <div class="stat-number" id="totalDepartments">0</div>
-                                <div class="stat-label">Phòng ban</div>
+                                <div class="stat-number" id="totalMale">0</div>
+                                <div class="stat-label">Nam</div>
                             </div>
                         </div>
                     </div>
                     <div class="col-md-4">
                         <div class="stat-card">
                             <div class="stat-icon">
-                                <i class="fas fa-briefcase"></i>
+                                <i class="fas fa-female"></i>
                             </div>
                             <div class="stat-content">
-                                <div class="stat-number" id="totalPositions">0</div>
-                                <div class="stat-label">Chức vụ</div>
+                                <div class="stat-number" id="totalFemale">0</div>
+                                <div class="stat-label">Nữ</div>
                             </div>
                         </div>
                     </div>
@@ -182,14 +182,23 @@ $current_user = getCurrentUser();
                             </div>
                             <div class="col-md-6 text-end">
                                 <div class="table-actions">
-                                    <button class="btn btn-sm btn-outline-primary" id="btnSelectAll">
-                                        <i class="fas fa-check-square me-1"></i>
-                                        Chọn tất cả
-                                    </button>
-                                    <button class="btn btn-sm btn-outline-secondary" id="btnExport">
-                                        <i class="fas fa-download me-1"></i>
-                                        Xuất Excel
-                                    </button>
+                                    <div class="d-flex align-items-center gap-2 justify-content-end w-100">
+                                        <label class="form-label mb-0 me-2">Hiển thị:</label>
+                                        <select class="form-select form-select-sm" id="limitSelect" style="width: auto;">
+                                            <option value="10">10</option>
+                                            <option value="20" selected>20</option>
+                                            <option value="50">50</option>
+                                            <option value="100">100</option>
+                                        </select>
+                                        <button class="btn btn-sm btn-outline-primary" id="btnSelectAll">
+                                            <i class="fas fa-check-square me-1"></i>
+                                            Chọn tất cả
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-secondary" id="btnExport">
+                                            <i class="fas fa-download me-1"></i>
+                                            Xuất Excel
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -248,6 +257,9 @@ $current_user = getCurrentUser();
             </div>
 
             <!-- Pagination -->
+            <div id="paginationContainer" class="mt-4">
+                <!-- Pagination will be loaded here -->
+            </div>
             
         </div>
     </main>

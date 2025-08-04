@@ -91,7 +91,7 @@ try {
             FROM internal_cases ic
             LEFT JOIN staffs requester ON ic.requester_id = requester.id
             LEFT JOIN staffs handler ON ic.handler_id = handler.id
-            ORDER BY ic.created_at DESC";
+            ORDER BY ic.created_at ASC";
     
     $stmt = $pdo->prepare($sql);
     $stmt->execute();
@@ -199,22 +199,65 @@ $flash_messages = getFlashMessages();
         .custom-tooltip::after {
             content: '';
             position: absolute;
-            top: 50%;
             left: -6px;
+            top: 50%;
             transform: translateY(-50%);
-            border: 6px solid transparent;
-            border-right-color: #d1ecf1;
+            width: 0;
+            height: 0;
+            border-top: 6px solid transparent;
+            border-bottom: 6px solid transparent;
+            border-right: 6px solid #d1ecf1;
+        }
+        
+        /* CSS cho đường kẽ bảng case nội bộ */
+        .internal-cases-table {
+            border-collapse: collapse;
+        }
+        
+        .internal-cases-table th,
+        .internal-cases-table td {
+            border: 1px solid #dee2e6;
+            vertical-align: middle;
+            padding: 12px 8px;
+        }
+        
+        .internal-cases-table th {
+            background-color: #f8f9fa;
+            border-bottom: 2px solid #dee2e6;
+            font-weight: 600;
+            color: #495057;
+        }
+        
+        .internal-cases-table tbody tr:hover {
+            background-color: #f8f9fa;
+        }
+        
+        .internal-cases-table tbody tr:hover td {
+            border-color: #adb5bd;
         }
         
         /* Table alignment styles */
         .internal-cases-table thead th {
             text-align: center;
             vertical-align: middle;
+            border-right: 2px solid #dee2e6;
         }
         
         .internal-cases-table tbody td {
             text-align: center;
             vertical-align: middle;
+            border-right: 1px solid #dee2e6;
+        }
+        
+        /* Tăng độ dày đường kẽ cho cột đầu tiên và cuối cùng */
+        .internal-cases-table th:first-child,
+        .internal-cases-table td:first-child {
+            border-left: 2px solid #dee2e6;
+        }
+        
+        .internal-cases-table th:last-child,
+        .internal-cases-table td:last-child {
+            border-right: 2px solid #dee2e6;
         }
         
         /* Date validation styles */
@@ -330,19 +373,17 @@ $flash_messages = getFlashMessages();
                                 </div>
                                 <div class="col-auto">
                                     <div class="d-flex gap-2">
-                                        <div class="input-group input-group-sm" style="width: 300px;">
-                                            <span class="input-group-text">
-                                                <i class="fas fa-search"></i>
-                                            </span>
-                                            <input type="text" class="form-control" id="caseSearchInput" 
-                                                   placeholder="Tìm kiếm case...">
-                                        </div>
                                         <select class="form-select form-select-sm" id="statusFilter" style="width: 150px;">
                                             <option value="">Tất cả trạng thái</option>
                                             <option value="pending">Tiếp nhận</option>
                                             <option value="in_progress">Đang xử lý</option>
                                             <option value="completed">Hoàn thành</option>
                                             <option value="cancelled">Huỷ</option>
+                                        </select>
+                                        <select class="form-select form-select-sm" id="monthFilter" style="width: 150px;">
+                                            <option value="" style="font-style: normal;">Tất cả thời gian</option>
+                                            <option value="current_month" selected>Tháng này (ngày bắt đầu)</option>
+                                            <option value="last_month">Tháng trước (ngày bắt đầu)</option>
                                         </select>
                                     </div>
                                 </div>
@@ -365,14 +406,10 @@ $flash_messages = getFlashMessages();
                             <?php else: ?>
                                 <!-- Cases Table -->
                                 <div class="table-responsive">
-                                    <table class="table table-hover mb-0 internal-cases-table">
+                                    <table class="table table-hover mb-0 internal-cases-table table-bordered">
                                         <thead class="table-light">
                                             <tr>
-                                                <th scope="col">
-                                                    <div class="form-check">
-                                                        <input class="form-check-input" type="checkbox" id="selectAll">
-                                                    </div>
-                                                </th>
+                                                <th scope="col">STT</th>
                                                 <th scope="col">Số case</th>
                                                 <th scope="col">Người yêu cầu</th>
                                                 <th scope="col">Người xử lý</th>
@@ -385,13 +422,12 @@ $flash_messages = getFlashMessages();
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            <?php foreach ($cases as $case): ?>
-                                                <tr data-status="<?php echo htmlspecialchars($case['status']); ?>">
-                                                    <td>
-                                                        <div class="form-check">
-                                                            <input class="form-check-input" type="checkbox" 
-                                                                   value="<?php echo $case['id']; ?>">
-                                                        </div>
+                                            <?php foreach ($cases as $index => $case): ?>
+                                                <tr data-case-id="<?php echo $case['id']; ?>" 
+                                                    data-status="<?php echo htmlspecialchars($case['status']); ?>" 
+                                                    data-start-date="<?php echo htmlspecialchars($case['start_date']); ?>">
+                                                    <td class="text-center">
+                                                        <span class="text-muted"><?php echo $index + 1; ?></span>
                                                     </td>
                                                     <td>
                                                         <span class="case-number">
@@ -1423,6 +1459,16 @@ $flash_messages = getFlashMessages();
             loadStaffList();
             loadCaseTypes();
             generateCaseNumber();
+            
+            // Tự động điền ngày giờ hiện tại vào trường ngày bắt đầu
+            var now = new Date();
+            var year = now.getFullYear();
+            var month = String(now.getMonth() + 1).padStart(2, '0');
+            var day = String(now.getDate()).padStart(2, '0');
+            var hours = String(now.getHours()).padStart(2, '0');
+            var minutes = String(now.getMinutes()).padStart(2, '0');
+            var currentDateTime = year + '-' + month + '-' + day + 'T' + hours + ':' + minutes;
+            $('#startDate').val(currentDateTime);
         });
         
         // Handle form submission
@@ -1491,89 +1537,74 @@ $flash_messages = getFlashMessages();
             validateDateRange();
         });
         
-        // Search functionality
-        $('#caseSearchInput').on('input', function() {
-            // Search functionality will be implemented later
-        });
-        
         // Status filter
         $('#statusFilter').on('change', function() {
-            var selectedStatus = $(this).val();
+            applyFilters();
+        });
+        
+        // Month filter
+        $('#monthFilter').on('change', function() {
+            applyFilters();
+        });
+        
+        // Apply default filter on page load
+        applyFilters();
+        
+        // Combined filter function
+        function applyFilters() {
+            var selectedStatus = $('#statusFilter').val();
+            var selectedMonth = $('#monthFilter').val();
+            
             $('tbody tr').each(function() {
-                var rowStatus = $(this).data('status');
-                if (!selectedStatus || selectedStatus === "") {
-                    $(this).show();
+                var row = $(this);
+                var rowStatus = row.data('status');
+                var rowDate = row.data('start-date');
+                
+                var statusMatch = !selectedStatus || selectedStatus === "" || rowStatus === selectedStatus;
+                var monthMatch = !selectedMonth || selectedMonth === "" || isDateInRange(rowDate, selectedMonth);
+                
+                if (statusMatch && monthMatch) {
+                    row.show();
                 } else {
-                    if (rowStatus === selectedStatus) {
-                        $(this).show();
-                    } else {
-                        $(this).hide();
-                    }
+                    row.hide();
                 }
             });
-        });
-        
-        // Select all checkbox
-        $('#selectAll').on('change', function() {
-            $('tbody input[type="checkbox"]').prop('checked', this.checked);
-        });
-        
-        // Bulk delete functionality
-        function bulkDeleteCases() {
-            var selectedIds = [];
-            $('tbody input[type="checkbox"]:checked').each(function() {
-                selectedIds.push($(this).val());
-            });
             
-            if (selectedIds.length === 0) {
-                showError('Vui lòng chọn ít nhất một case để xóa');
-                return;
-            }
-            
-            if (confirm('Bạn có chắc chắn muốn xóa ' + selectedIds.length + ' case đã chọn?')) {
-                var promises = selectedIds.map(function(id) {
-                    return $.ajax({
-                        url: 'api/delete_case.php',
-                        type: 'POST',
-                        headers: {
-                            'X-Requested-With': 'XMLHttpRequest'
-                        },
-                        contentType: 'application/json',
-                        data: JSON.stringify({ case_id: id })
-                    });
-                });
-                
-                Promise.all(promises)
-                    .then(function(responses) {
-                        var successCount = responses.filter(r => r.success).length;
-                        showSuccess('Đã xóa thành công ' + successCount + ' case');
-                        setTimeout(() => location.reload(), 1500);
-                    })
-                    .catch(function(error) {
-                        showError('Có lỗi xảy ra khi xóa case');
-                    });
-            }
+            // Re-index STT column for visible rows
+            reindexSTT();
         }
         
-        // Add bulk delete button if cases are selected
-        $('tbody input[type="checkbox"]').on('change', function() {
-            var checkedCount = $('tbody input[type="checkbox"]:checked').length;
-            var existingBtn = $('#bulkDeleteBtn');
+        // Function to re-index STT column for visible rows
+        function reindexSTT() {
+            var visibleIndex = 1;
+            $('tbody tr:visible').each(function() {
+                var firstCell = $(this).find('td:first');
+                firstCell.text(visibleIndex);
+                visibleIndex++;
+            });
+        }
+        
+        // Helper function to check if date is in selected range
+        function isDateInRange(dateString, range) {
+            if (!dateString) return true;
             
-            if (checkedCount > 0) {
-                if (existingBtn.length === 0) {
-                    var bulkBtn = $('<button type="button" class="btn btn-outline-danger btn-sm me-2" id="bulkDeleteBtn">' +
-                        '<i class="fas fa-trash me-2"></i>Xóa đã chọn (' + checkedCount + ')' +
-                        '</button>');
-                    bulkBtn.on('click', bulkDeleteCases);
-                    $('.page-header .col-auto').prepend(bulkBtn);
-                } else {
-                    existingBtn.html('<i class="fas fa-trash me-2"></i>Xóa đã chọn (' + checkedCount + ')');
-                }
-            } else {
-                existingBtn.remove();
+            var date = new Date(dateString);
+            var now = new Date();
+            var currentMonth = now.getMonth();
+            var currentYear = now.getFullYear();
+            
+            if (range === 'current_month') {
+                return date.getMonth() === currentMonth && date.getFullYear() === currentYear;
+            } else if (range === 'last_month') {
+                var lastMonth = currentMonth === 0 ? 11 : currentMonth - 1;
+                var lastMonthYear = currentMonth === 0 ? currentYear - 1 : currentYear;
+                return date.getMonth() === lastMonth && date.getFullYear() === lastMonthYear;
             }
-        });
+            
+            return true;
+        }
+        
+
     });
     
     // Case management functions
@@ -1781,10 +1812,12 @@ $flash_messages = getFlashMessages();
                     modal.modal('hide');
                     if (response.success) {
                         showSuccess('Xóa case thành công: ' + response.deleted_case.case_number);
-                        // Reload page sau 1.5 giây để user thấy message
-                        setTimeout(function() {
-                            location.reload();
-                        }, 1500);
+                        // Xóa row khỏi bảng thay vì reload trang
+                        $('tr[data-case-id="' + id + '"]').fadeOut(300, function() {
+                            $(this).remove();
+                            // Re-index STT column sau khi xóa
+                            reindexSTT();
+                        });
                     } else {
                         showError(response.error || 'Có lỗi xảy ra khi xóa case');
                     }
@@ -1819,9 +1852,14 @@ $flash_messages = getFlashMessages();
                 success: function(response) {
                     if (response.success) {
                         showSuccess('Đánh dấu hoàn thành thành công!');
-                        setTimeout(function() {
-                            location.reload();
-                        }, 1000);
+                        // Cập nhật trạng thái trực tiếp trên bảng
+                        var row = $('tr[data-case-id="' + id + '"]');
+                        var statusCell = row.find('td:nth-child(9)'); // Cột trạng thái
+                        statusCell.html('<span class="case-status status-completed">Hoàn thành</span>');
+                        // Cập nhật data-status attribute
+                        row.attr('data-status', 'completed');
+                        // Ẩn nút "Đánh dấu hoàn thành"
+                        row.find('button[onclick*="markAsCompleted"]').hide();
                     } else {
                         showError(response.error || 'Có lỗi xảy ra khi cập nhật trạng thái');
                     }

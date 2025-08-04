@@ -64,7 +64,7 @@ npx http-server
 * [x] Real-time form validation
 * [x] Toggle password visibility
 * [x] "Remember me" checkbox
-* [x] "Forgot password" link
+
 * [x] Smooth animations and transitions
 * [x] Loading state on login
 * [x] Success/error messages

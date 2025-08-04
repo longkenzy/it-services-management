@@ -1,9 +1,10 @@
 <?php
+header('Content-Type: application/json');
 require_once '../config/db.php';
 require_once '../includes/session.php';
 
 // Kiểm tra đăng nhập
-if (!isset(getCurrentUserId())) {
+if (null === getCurrentUserId()) {
     http_response_code(401);
     echo json_encode(['success' => false, 'message' => 'Chưa đăng nhập']);
     exit;

@@ -197,18 +197,7 @@ body {
     cursor: pointer;
 }
 
-/* ===== FORGOT PASSWORD LINK ===== */
-.forgot-password {
-    color: #3b82f6;
-    font-size: 0.95rem;
-    font-weight: 500;
-    transition: color 0.3s ease;
-}
 
-.forgot-password:hover {
-    color: #2563eb;
-    text-decoration: underline !important;
-}
 
 /* ===== LOGIN BUTTON ===== */
 .login-btn {

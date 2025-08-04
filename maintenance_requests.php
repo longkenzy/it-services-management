@@ -190,6 +190,21 @@ if (isset($_SESSION['user_id'])) {
             width: 100%;
         }
         
+        #editMaintenanceTaskModal {
+            z-index: 1060 !important;
+        }
+        
+        #editMaintenanceTaskModal .modal-backdrop {
+            z-index: 1055 !important;
+        }
+        
+        #editMaintenanceTaskModal .modal-dialog {
+            max-width: none;
+            width: calc(100vw - 40px);
+            margin: 80px auto 20px auto;
+            height: calc(100vh - 120px);
+        }
+        
         .maintenance-request-modal .modal-header {
             background: linear-gradient(135deg, #ffc107 0%, #e0a800 100%);
             color: white;
@@ -212,6 +227,12 @@ if (isset($_SESSION['user_id'])) {
 
         /* Modal chỉnh sửa case - body cao hơn để chứa task */
         #editMaintenanceCaseModal .modal-body {
+            max-height: 70vh;
+            overflow-y: auto;
+        }
+        
+        /* Modal chỉnh sửa task - body cao hơn để chứa nội dung */
+        #editMaintenanceTaskModal .modal-body {
             max-height: 70vh;
             overflow-y: auto;
         }
@@ -560,6 +581,31 @@ if (isset($_SESSION['user_id'])) {
             border: 1px solid #dee2e6;
         }
 
+        /* ===== TRẠNG THÁI BẢO TRÌ STYLES ===== */
+        /* Trạng thái hoàn thành */
+        .badge.bg-success {
+            background-color: #5cb85c !important;
+            color: #fff !important;
+        }
+        
+        /* Trạng thái tiếp nhận */
+        .badge.bg-secondary {
+            background-color: #f0ad4e !important;
+            color: #fff !important;
+        }
+        
+        /* Trạng thái đang xử lý */
+        .badge.bg-warning {
+            background-color: #5bc0de !important;
+            color: #fff !important;
+        }
+        
+        /* Trạng thái huỷ */
+        .badge.bg-danger {
+            background-color: #d9534f !important;
+            color: #fff !important;
+        }
+
 
 
 
@@ -595,32 +641,34 @@ if (isset($_SESSION['user_id'])) {
         <!-- Table hiển thị danh sách yêu cầu bảo trì -->
         <div class="card">
             <div class="card-body">
-                <?php if (empty($requests)): ?>
-                    <div class="text-center py-5">
-                        <i class="fas fa-tools fa-3x text-muted mb-3"></i>
-                        <h5 class="text-muted">Chưa có yêu cầu bảo trì nào</h5>
-                        <p class="text-muted">Bấm nút "Tạo yêu cầu bảo trì" để bắt đầu</p>
-                    </div>
-                <?php else: ?>
-                    <div class="table-responsive">
-                        <table class="table table-hover mb-0">
-                            <thead class="table-light">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Mã YC</th>
+                                <th>Loại HĐ</th>
+                                <th>Khách hàng</th>
+                                <th>Phụ trách</th>
+                                <th>Thời hạn bảo trì</th>
+                                <th>Ghi chú</th>
+                                <th>Trạng thái YC</th>
+                                <th>Tổng số case</th>
+                                <th>Tổng số task</th>
+                                <th>Tiến độ (%)</th>
+                                <th>Trạng thái bảo trì</th>
+                                <th>Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody id="maintenance-requests-table">
+                            <?php if (empty($requests)): ?>
                                 <tr>
-                                    <th>Mã YC</th>
-                                    <th>Loại HĐ</th>
-                                    <th>Khách hàng</th>
-                                    <th>Phụ trách</th>
-                                    <th>Thời hạn bảo trì</th>
-                                    <th>Ghi chú</th>
-                                    <th>Trạng thái YC</th>
-                                    <th>Tổng số case</th>
-                                    <th>Tổng số task</th>
-                                    <th>Tiến độ (%)</th>
-                                    <th>Trạng thái bảo trì</th>
-                                    <th>Thao tác</th>
+                                    <td colspan="11" class="text-center py-5">
+                                        <i class="fas fa-tools fa-3x text-muted mb-3 d-block"></i>
+                                        <h5 class="text-muted">Chưa có yêu cầu bảo trì nào</h5>
+                                        <p class="text-muted">Bấm nút "Tạo yêu cầu bảo trì" để bắt đầu</p>
+                                    </td>
                                 </tr>
-                            </thead>
-                            <tbody id="maintenance-requests-table">
+                            <?php else: ?>
                                 <?php foreach ($requests as $request): ?>
                                 <tr>
                                     <td>
@@ -681,7 +729,7 @@ if (isset($_SESSION['user_id'])) {
                                     <td>
                                         <div class="progress" style="width: 80px; height: 20px;"><div class="progress-bar bg-warning" style="width: <?php echo $request['progress_percentage'] ?? 0; ?>%" title="<?php echo $request['progress_percentage'] ?? 0; ?>%"><small><?php echo $request['progress_percentage'] ?? 0; ?>%</small></div></div>
                                     </td>
-                                    <td>
+                                    <td class="text-center">
                                         <?php
                                         $statusClass = '';
                                         switch ($request['maintenance_status']) {
@@ -704,11 +752,11 @@ if (isset($_SESSION['user_id'])) {
                                     </td>
                                     <td>
                                         <div class="btn-group" role="group">
-                                            <button class="btn btn-sm btn-outline-warning" onclick="editRequest(<?php echo $request['id']; ?>)" title="Chỉnh sửa">
+                                            <button class="btn btn-sm btn-outline-warning" onclick="editMaintenanceRequest(<?php echo $request['id']; ?>)" title="Chỉnh sửa">
                                                 <i class="fas fa-edit"></i>
                                             </button>
                                             <?php if ($current_role !== 'user'): ?>
-                                            <button class="btn btn-sm btn-outline-danger" onclick="deleteRequest(<?php echo $request['id']; ?>)" title="Xóa">
+                                            <button class="btn btn-sm btn-outline-danger" onclick="deleteMaintenanceRequest(<?php echo $request['id']; ?>)" title="Xóa">
                                                 <i class="fas fa-trash"></i>
                                             </button>
                                             <?php endif; ?>
@@ -1143,7 +1191,7 @@ if (isset($_SESSION['user_id'])) {
           </div>
           
           <!-- Phần thứ 3: Quản lý Case bảo trì -->
-          <div class="border-top pt-4 mt-4 bg-light">
+          <div class="border-top pt-4 mt-4 bg-light" id="maintenance-cases-section" style="display: none;">
             <div class="row">
               <div class="col-12">
                 <div class="d-flex justify-content-between align-items-center mb-3">
@@ -1292,7 +1340,7 @@ if (isset($_SESSION['user_id'])) {
                   <select class="form-select" name="assigned_to" id="case_assigned_to" required>
                     <option value="">-- Chọn người phụ trách --</option>
                     <?php
-                    $staffs = $pdo->query("SELECT id, fullname FROM staffs WHERE status = 'active' AND department = 'IT Dept.' ORDER BY fullname ASC")->fetchAll();
+                    $staffs = $pdo->query("SELECT id, fullname FROM staffs WHERE status = 'active' AND department = 'IT Dept.' AND resigned = 0 ORDER BY fullname ASC")->fetchAll();
                     foreach ($staffs as $staff) {
                       echo '<option value="'.$staff['id'].'">'.htmlspecialchars($staff['fullname']).'</option>';
                     }
@@ -1466,7 +1514,7 @@ if (isset($_SESSION['user_id'])) {
                   <select class="form-select" name="assignee_id" id="task_assignee_id">
                     <option value="">-- Chọn người thực hiện --</option>
                     <?php
-                    $it_staffs = $pdo->query("SELECT id, fullname FROM staffs WHERE department = 'IT Dept.' AND status = 'active' ORDER BY fullname ASC")->fetchAll();
+                    $it_staffs = $pdo->query("SELECT id, fullname FROM staffs WHERE department = 'IT Dept.' AND status = 'active' AND resigned = 0 ORDER BY fullname ASC")->fetchAll();
                     
                     if (empty($it_staffs)) {
                       echo '<option value="">-- Không có nhân viên IT Dept --</option>';
@@ -1532,6 +1580,116 @@ if (isset($_SESSION['user_id'])) {
         </button>
         <button type="submit" form="createMaintenanceTaskForm" class="btn btn-warning">
           <i class="fas fa-save"></i> Tạo Task
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal chỉnh sửa task bảo trì -->
+<div class="modal fade" id="editMaintenanceTaskModal" tabindex="-1" aria-labelledby="editMaintenanceTaskModalLabel" aria-hidden="true" style="z-index: 1060;">
+  <div class="modal-dialog">
+    <div class="modal-content maintenance-request-modal">
+      <div class="modal-header">
+        <h5 class="modal-title" id="editMaintenanceTaskModalLabel">
+          <i class="fas fa-edit text-warning"></i> Chỉnh sửa Task Bảo Trì
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form id="editMaintenanceTaskForm">
+          <div class="row g-4">
+            <!-- Cột trái -->
+            <div class="col-md-6">
+              <div class="mb-3 row align-items-center">
+                <label class="col-md-3 form-label mb-0">Số task:</label>
+                <div class="col-md-9">
+                  <input type="text" class="form-control" name="edit_task_code" id="edit_task_code" readonly>
+                </div>
+              </div>
+              <div class="mb-3 row align-items-center">
+                <label for="edit_task_type" class="col-md-3 form-label mb-0">Loại Task <span class="text-danger">*</span></label>
+                <div class="col-md-9">
+                  <select class="form-select" name="edit_task_type" id="edit_task_type" required>
+                    <option value="">-- Chọn loại task --</option>
+                    <option value="onsite">Onsite</option>
+                    <option value="offsite">Offsite</option>
+                    <option value="remote">Remote</option>
+                  </select>
+                </div>
+              </div>
+              <div class="mb-3 row align-items-center">
+                <label for="edit_task_template" class="col-md-3 form-label mb-0">Task mẫu</label>
+                <div class="col-md-9">
+                  <select class="form-select" name="edit_task_template" id="edit_task_template">
+                    <option value="">-- Chọn task mẫu --</option>
+                    <option value="Cài đặt thiết bị">Cài đặt thiết bị</option>
+                    <option value="Cấu hình phần mềm">Cấu hình phần mềm</option>
+                    <option value="Kiểm tra hệ thống">Kiểm tra hệ thống</option>
+                    <option value="Đào tạo người dùng">Đào tạo người dùng</option>
+                    <option value="Bảo trì định kỳ">Bảo trì định kỳ</option>
+                    <option value="Khắc phục sự cố">Khắc phục sự cố</option>
+                    <option value="Nghiệm thu dự án">Nghiệm thu dự án</option>
+                  </select>
+                </div>
+              </div>
+              <div class="mb-3 row align-items-center">
+                <label for="edit_task_name" class="col-md-3 form-label mb-0">Task <span class="text-danger">*</span></label>
+                <div class="col-md-9">
+                  <input type="text" class="form-control" name="edit_task_name" id="edit_task_name" required placeholder="Nhập tên task cụ thể">
+                </div>
+              </div>
+              <div class="mb-3 row align-items-start">
+                <label for="edit_task_note" class="col-md-3 form-label mb-0">Ghi chú</label>
+                <div class="col-md-9">
+                  <textarea class="form-control" name="edit_task_note" id="edit_task_note" rows="2" placeholder="Nhập ghi chú"></textarea>
+                </div>
+              </div>
+            </div>
+            <!-- Cột phải -->
+            <div class="col-md-6">
+              <div class="mb-3 row align-items-center">
+                <label for="edit_task_assigned_to" class="col-md-3 form-label mb-0">Người thực hiện</label>
+                <div class="col-md-9">
+                  <select class="form-select" name="edit_task_assigned_to" id="edit_task_assigned_to">
+                    <option value="">-- Chọn người thực hiện --</option>
+                  </select>
+                </div>
+              </div>
+              <div class="mb-3 row align-items-center">
+                <label for="edit_task_start_date" class="col-md-3 form-label mb-0">Thời gian bắt đầu:</label>
+                <div class="col-md-9">
+                  <input type="datetime-local" class="form-control" name="edit_task_start_date" id="edit_task_start_date">
+                </div>
+              </div>
+              <div class="mb-3 row align-items-center">
+                <label for="edit_task_end_date" class="col-md-3 form-label mb-0">Thời gian kết thúc:</label>
+                <div class="col-md-9">
+                  <input type="datetime-local" class="form-control" name="edit_task_end_date" id="edit_task_end_date">
+                </div>
+              </div>
+              <div class="mb-3 row align-items-center">
+                <label for="edit_task_status" class="col-md-3 form-label mb-0">Trạng thái</label>
+                <div class="col-md-9">
+                  <select class="form-select" name="edit_task_status" id="edit_task_status">
+                    <option value="Tiếp nhận">Tiếp nhận</option>
+                    <option value="Đang xử lý">Đang xử lý</option>
+                    <option value="Hoàn thành">Hoàn thành</option>
+                    <option value="Huỷ">Huỷ</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
+          <input type="hidden" name="edit_task_id" id="edit_task_id">
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+          <i class="fas fa-times"></i> Hủy
+        </button>
+        <button type="submit" form="editMaintenanceTaskForm" class="btn btn-warning">
+          <i class="fas fa-save"></i> Cập nhật Task
         </button>
       </div>
     </div>
@@ -1636,7 +1794,7 @@ if (isset($_SESSION['user_id'])) {
                   <select class="form-select" name="edit_assigned_to" id="edit_assigned_to" required>
                     <option value="">-- Chọn người phụ trách --</option>
                     <?php
-                    $staffs = $pdo->query("SELECT id, fullname FROM staffs WHERE status = 'active' AND department = 'IT Dept.' ORDER BY fullname ASC")->fetchAll();
+                    $staffs = $pdo->query("SELECT id, fullname FROM staffs WHERE status = 'active' AND department = 'IT Dept.' AND resigned = 0 ORDER BY fullname ASC")->fetchAll();
                     foreach ($staffs as $staff) {
                       echo '<option value="'.$staff['id'].'">'.htmlspecialchars($staff['fullname']).'</option>';
                     }
@@ -1891,6 +2049,19 @@ document.addEventListener('DOMContentLoaded', function() {
     
     $('#createMaintenanceTaskModal').on('show.bs.modal', function() {
         this.removeAttribute('inert');
+        // Load mã task tiếp theo
+        loadNextTaskNumber();
+    });
+    
+    // Modal edit task accessibility
+    $('#editMaintenanceTaskModal').on('show.bs.modal', function() {
+        this.removeAttribute('inert');
+    });
+    
+    $('#editMaintenanceTaskModal').on('hidden.bs.modal', function() {
+        this.setAttribute('inert', '');
+        // Cleanup
+        window.currentEditTaskId = null;
     });
     
 
@@ -1902,6 +2073,27 @@ document.addEventListener('DOMContentLoaded', function() {
     
     $('#editMaintenanceCaseModal').on('show.bs.modal', function() {
         this.removeAttribute('inert');
+    });
+    
+    // Load danh sách tasks khi modal edit case được mở
+    $('#editMaintenanceCaseModal').on('shown.bs.modal', function() {
+        // Load danh sách tasks cho case hiện tại
+        if (typeof window.loadMaintenanceTasks === 'function') {
+            // Đợi một chút để đảm bảo các trường đã được set giá trị
+            setTimeout(() => {
+                window.loadMaintenanceTasks();
+            }, 200);
+        }
+    });
+    
+    // Thêm event handler cho khi modal edit case được mở để đảm bảo load tasks
+    $('#editMaintenanceCaseModal').on('show.bs.modal', function() {
+        // Đảm bảo load tasks sau khi modal đã hiển thị hoàn toàn
+        setTimeout(() => {
+            if (typeof window.loadMaintenanceTasks === 'function') {
+                window.loadMaintenanceTasks();
+            }
+        }, 300);
     });
     
     // Override Bootstrap modal behavior để tránh aria-hidden
@@ -2109,72 +2301,7 @@ document.addEventListener('DOMContentLoaded', function() {
         modal.addEventListener('shown.bs.modal', modalShowHandler);
     }
     
-    // Xử lý submit form tạo yêu cầu bảo trì
-    document.getElementById('addMaintenanceRequestForm').addEventListener('submit', function(e) {
-        e.preventDefault();
-        
-        // Validation
-        const requiredFields = ['customer_id', 'sale_id', 'maintenance_status'];
-        let isValid = true;
-        
-        requiredFields.forEach(function(fieldId) {
-            const field = document.getElementById(fieldId);
-            const value = field.value;
-            if (!value) {
-                isValid = false;
-                field.classList.add('is-invalid');
-            } else {
-                field.classList.remove('is-invalid');
-            }
-        });
-        
-        if (!isValid) {
-            if (typeof showAlert === 'function') {
-                showAlert('Vui lòng điền đầy đủ các trường bắt buộc', 'error');
-            } else {
-                alert('Vui lòng điền đầy đủ các trường bắt buộc');
-            }
-            return;
-        }
-        
-        // Submit form
-        const formData = new FormData(this);
-        
-        fetch('api/create_maintenance_request.php', {
-            method: 'POST',
-            body: formData
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                if (typeof showAlert === 'function') {
-                    showAlert('Tạo yêu cầu bảo trì thành công!', 'success');
-                } else {
-                    alert('Tạo yêu cầu bảo trì thành công!');
-                }
-                const modal = bootstrap.Modal.getInstance(document.getElementById('addMaintenanceRequestModal'));
-                if (modal) {
-                    modal.hide();
-                }
-                setTimeout(() => {
-                    location.reload();
-                }, 1500);
-            } else {
-                if (typeof showAlert === 'function') {
-                    showAlert(data.error || 'Có lỗi xảy ra khi tạo yêu cầu', 'error');
-                } else {
-                    alert(data.error || 'Có lỗi xảy ra khi tạo yêu cầu');
-                }
-            }
-        })
-        .catch(error => {
-            if (typeof showAlert === 'function') {
-                showAlert('Có lỗi xảy ra khi tạo yêu cầu', 'error');
-            } else {
-                alert('Có lỗi xảy ra khi tạo yêu cầu');
-            }
-        });
-    });
+
     
     // Xử lý submit form tạo case bảo trì
     document.getElementById('createMaintenanceCaseForm').addEventListener('submit', function(e) {
@@ -2212,11 +2339,26 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         // Submit form
-        const formData = new FormData(this);
+        const formData = {
+            task_number: $('#task_number').val(),
+            task_name: $('#task_name').val(),
+            task_type: $('#task_type').val(),
+            task_template: $('#task_template').val(),
+            assigned_to: $('#task_assignee_id').val(),
+            start_date: $('#task_start_date').val(),
+            end_date: $('#task_end_date').val(),
+            status: $('#task_status').val(),
+            notes: $('#task_note').val(),
+            maintenance_case_id: $('#task_maintenance_case_id').val(),
+            maintenance_request_id: $('#task_maintenance_request_id').val()
+        };
         
         fetch('api/create_maintenance_task.php', {
             method: 'POST',
-            body: formData
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(formData)
         })
         .then(response => response.json())
         .then(data => {
@@ -2226,12 +2368,29 @@ document.addEventListener('DOMContentLoaded', function() {
                 } else {
                     alert('Tạo task bảo trì thành công!');
                 }
+                
+                // Lấy case ID và request ID từ form data
+                const caseId = formData.maintenance_case_id;
+                const requestId = formData.maintenance_request_id;
+                
+                // Close modal
                 const modal = bootstrap.Modal.getInstance(document.getElementById('createMaintenanceTaskModal'));
                 if (modal) {
                     modal.hide();
                 }
+                
+                // Reload tasks table bằng cách gọi function JS
+                if (typeof window.loadMaintenanceTasks === 'function') {
+                    window.loadMaintenanceTasks();
+                }
+                
                 // Reload danh sách cases để cập nhật số lượng tasks
-                loadMaintenanceCases();
+                if (typeof window.loadMaintenanceCases === 'function') {
+                    window.loadMaintenanceCases();
+                }
+                
+                // Reset form
+                e.target.reset();
             } else {
                 if (typeof showAlert === 'function') {
                     showAlert(data.error || 'Có lỗi xảy ra khi tạo task', 'error');
@@ -2345,12 +2504,16 @@ function prepareCreateMaintenanceTask() {
     let caseCode = document.getElementById('edit_case_code')?.value;
     let requestCode = document.getElementById('edit_case_request_code')?.value;
     
+
+    
     // Nếu không có từ modal edit, thử lấy từ modal tạo case mới
     if (!caseId) {
         caseId = document.getElementById('case_code')?.value;
         requestId = document.getElementById('maintenance_request_id')?.value;
         caseCode = document.getElementById('case_code')?.value;
         requestCode = document.getElementById('case_request_code')?.value;
+        
+
     }
     
     // Kiểm tra xem có thông tin case không
@@ -2387,11 +2550,11 @@ function prepareCreateMaintenanceTask() {
     
     // Load số task tiếp theo trước khi mở modal
     $.ajax({
-        url: 'api/get_next_maintenance_task_number.php',
+        url: 'api/get_next_maintenance_task_number_simple.php',
         type: 'GET',
         success: function(response) {
             if (response.success) {
-                $('#task_number').val(response.task_number);
+                $('#task_number').val(response.task_code);
             }
         }
     });
@@ -2577,60 +2740,12 @@ function loadMaintenanceCases() {
         });
 }
 
-// Function load danh sách tasks bảo trì
+// Function load danh sách tasks bảo trì - Sử dụng function JS thay vì PHP
 function loadMaintenanceTasks() {
-    const caseId = document.getElementById('case_code')?.value;
-    if (!caseId) return;
-    
-    fetch(`api/get_maintenance_tasks.php?maintenance_case_id=${caseId}`)
-        .then(response => response.json())
-        .then(data => {
-            const tbody = document.getElementById('maintenance-tasks-table');
-            if (!tbody) return;
-            
-            tbody.innerHTML = '';
-            
-            if (!data.success || !Array.isArray(data.data) || data.data.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="10" class="text-center text-muted py-3">
-                  <i class='fas fa-inbox fa-2x mb-2'></i><br>Chưa có task bảo trì nào
-                </td></tr>`;
-                return;
-            }
-            
-            // Populate table with tasks
-            data.data.forEach((item, idx) => {
-                tbody.innerHTML += `
-                  <tr>
-                    <td class='text-center'>${idx + 1}</td>
-                    <td class='text-center'><strong class="text-primary">${item.task_number || ''}</strong></td>
-                    <td class='text-center'>${item.task_type || ''}</td>
-                    <td class='text-center'>${item.template_name || ''}</td>
-                    <td class='text-center'>${item.task_name || ''}</td>
-                    <td class='text-center'>${formatDateTimeForDisplay(item.start_date)}</td>
-                    <td class='text-center'>${formatDateTimeForDisplay(item.end_date)}</td>
-                    <td class='text-center'>${item.assignee_name || ''}</td>
-                    <td class='text-center'>
-                      <span class="badge bg-${(item.status === 'Hoàn thành' ? 'success' : (item.status === 'Đang xử lý' ? 'warning' : (item.status === 'Huỷ' ? 'danger' : 'secondary')))}">
-                        ${item.status || 'Tiếp nhận'}
-                      </span>
-                    </td>
-                    <td class='text-center'>
-                      <div class="btn-group" role="group">
-                        <button type="button" class="btn btn-sm btn-info" onclick="editMaintenanceTask(${item.id})" title="Chỉnh sửa">
-                          <i class="fas fa-edit"></i>
-                        </button>
-                        <button type="button" class="btn btn-sm btn-danger" onclick="deleteMaintenanceTask(${item.id})" title="Xóa">
-                          <i class="fas fa-trash"></i>
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                `;
-            });
-        })
-        .catch(error => {
-            console.error('Error loading maintenance tasks:', error);
-        });
+    // Gọi function JS để load tasks
+    if (typeof window.loadMaintenanceTasks === 'function') {
+        window.loadMaintenanceTasks();
+    }
 }
 
 // Function tạo task bảo trì
@@ -2663,12 +2778,12 @@ function createMaintenanceTask(caseId) {
             });
 
         // Lấy số task tự động
-        fetch('api/get_next_maintenance_task_number.php')
+        fetch('api/get_next_maintenance_task_number_simple.php')
             .then(response => response.json())
             .then(data => {
-                document.getElementById('task_number').value = data.success ? data.task_number : '';
+                document.getElementById('task_number').value = data.success ? data.task_code : '';
             })
-            .catch(() => {
+            .catch((error) => {
                 document.getElementById('task_number').value = '';
             });
 
@@ -2865,5 +2980,7 @@ function showAlert(message, type = 'info') {
 
 <!-- Include maintenance requests JavaScript -->
 <script src="assets/js/maintenance_requests.js?v=<?php echo filemtime('assets/js/maintenance_requests.js'); ?>"></script>
+</body>
+</html> 
 </body>
 </html> 

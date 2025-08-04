@@ -8,7 +8,7 @@ $(document).ready(function() {
     
     // ===== KHỞI TẠO CÁC BIẾN ===== //
     let currentPage = 1;
-    let currentLimit = 10;
+    let currentLimit = 20;
     let currentFilters = {
         search: '',
         department: '',
@@ -37,14 +37,25 @@ $(document).ready(function() {
         // Header interactions
         setupHeaderEventListeners();
         
-        // Search input
-        $('#staffSearchInput').on('input', debounce(function() {
-            currentFilters.search = $(this).val().trim();
+        // Search input (staff page specific)
+        $('#staffSearchInput').on('input', function() {
+            const searchValue = $(this).val() ? $(this).val().trim() : '';
+            currentFilters.search = searchValue;
             currentPage = 1;
             loadStaffData();
-        }, 500));
+        });
         
-        // Remove duplicate - handled in setupHeaderEventListeners
+        // Xử lý khi người dùng xóa hết text
+        $('#staffSearchInput').on('keyup', function(e) {
+            if (e.key === 'Backspace' || e.key === 'Delete') {
+                const searchValue = $(this).val() ? $(this).val().trim() : '';
+                if (searchValue === '') {
+                    currentFilters.search = '';
+                    currentPage = 1;
+                    loadStaffData();
+                }
+            }
+        });
         
         // Filter selects
         $('#departmentFilter').on('change', function() {
@@ -105,6 +116,13 @@ $(document).ready(function() {
             exportStaffData();
         });
         
+        // Limit select
+        $('#limitSelect').on('change', function() {
+            currentLimit = parseInt($(this).val());
+            currentPage = 1;
+            loadStaffData();
+        });
+        
         // Additional keyboard shortcuts (Ctrl+K handled in setupHeaderEventListeners)
         $(document).on('keydown', function(e) {
             // Ctrl+N for add new staff
@@ -151,6 +169,9 @@ $(document).ready(function() {
                     } else {
                         hideEmptyState();
                     }
+                    
+                    // Update pagination
+                    updatePagination(response.data.pagination);
                 } else {
                     showErrorMessage(response.message || 'Không thể tải dữ liệu nhân sự');
                 }
@@ -231,13 +252,13 @@ $(document).ready(function() {
                     <span>${staff.department || ''}</span>
                 </td>
                 <td>
-                    ${staff.phone ? `<a href="tel:${staff.phone}" class="text-decoration-none">
-                        ${staff.phone}
+                    ${staff.phone_main ? `<a href="tel:${staff.phone_main}" class="text-decoration-none">
+                        ${staff.phone_main}
                     </a>` : ''}
                 </td>
                 <td>
-                    ${staff.email ? `<a href="mailto:${staff.email}" class="text-decoration-none">
-                        ${staff.email}
+                    ${staff.email_work ? `<a href="mailto:${staff.email_work}" class="text-decoration-none">
+                        ${staff.email_work}
                     </a>` : ''}
                 </td>
                 <td>
@@ -288,9 +309,103 @@ $(document).ready(function() {
     
     // ===== CẬP NHẬT THỐNG KÊ ===== //
     function updateStatistics(stats) {
-        $('#totalStaff').text(stats.total_active_staff || 0);
-        $('#totalDepartments').text(stats.departments ? stats.departments.length : 0);
-        $('#totalPositions').text(stats.positions ? stats.positions.length : 0);
+        $('#totalStaff').text(stats.total || 0);
+        
+        // Sử dụng dữ liệu trực tiếp từ API
+        $('#totalMale').text(stats.male || 0);
+        $('#totalFemale').text(stats.female || 0);
+    }
+    
+    // ===== CẬP NHẬT PAGINATION ===== //
+    function updatePagination(pagination) {
+        const paginationContainer = $('#paginationContainer');
+        paginationContainer.empty();
+        
+        if (!pagination || pagination.total_pages <= 1) {
+            return;
+        }
+        
+        let paginationHtml = '<ul class="pagination justify-content-center">';
+        
+        // Previous button
+        if (pagination.has_prev) {
+            paginationHtml += `
+                <li class="page-item">
+                    <a class="page-link" href="#" onclick="goToPage(${pagination.current_page - 1})">
+                        <i class="fas fa-chevron-left"></i>
+                    </a>
+                </li>
+            `;
+        } else {
+            paginationHtml += `
+                <li class="page-item disabled">
+                    <span class="page-link">
+                        <i class="fas fa-chevron-left"></i>
+                    </span>
+                </li>
+            `;
+        }
+        
+        // Page numbers
+        const startPage = Math.max(1, pagination.current_page - 2);
+        const endPage = Math.min(pagination.total_pages, pagination.current_page + 2);
+        
+        for (let i = startPage; i <= endPage; i++) {
+            if (i === pagination.current_page) {
+                paginationHtml += `
+                    <li class="page-item active">
+                        <span class="page-link">${i}</span>
+                    </li>
+                `;
+            } else {
+                paginationHtml += `
+                    <li class="page-item">
+                        <a class="page-link" href="#" onclick="goToPage(${i})">${i}</a>
+                    </li>
+                `;
+            }
+        }
+        
+        // Next button
+        if (pagination.has_next) {
+            paginationHtml += `
+                <li class="page-item">
+                    <a class="page-link" href="#" onclick="goToPage(${pagination.current_page + 1})">
+                        <i class="fas fa-chevron-right"></i>
+                    </a>
+                </li>
+            `;
+        } else {
+            paginationHtml += `
+                <li class="page-item disabled">
+                    <span class="page-link">
+                        <i class="fas fa-chevron-right"></i>
+                    </span>
+                </li>
+            `;
+        }
+        
+        paginationHtml += '</ul>';
+        
+        // Add info text
+        const startRecord = (pagination.current_page - 1) * pagination.limit + 1;
+        const endRecord = Math.min(pagination.current_page * pagination.limit, pagination.total_records);
+        
+        paginationHtml += `
+            <div class="text-center mt-2">
+                <small class="text-muted">
+                    Hiển thị ${startRecord}-${endRecord} trong tổng số ${pagination.total_records} nhân sự
+                </small>
+            </div>
+        `;
+        
+        paginationContainer.html(paginationHtml);
+    }
+    
+    // ===== CHUYỂN TRANG ===== //
+    function goToPage(page) {
+        currentPage = page;
+        loadStaffData();
     }
     
     // ===== CẬP NHẬT TÙY CHỌN LỌC ===== //
@@ -300,9 +415,11 @@ $(document).ready(function() {
         const currentDept = deptFilter.val();
         deptFilter.find('option:not(:first)').remove();
         
-        stats.departments.forEach(dept => {
-            deptFilter.append(`<option value="${dept.department}">${dept.department} (${dept.count})</option>`);
-        });
+        if (stats.departments && Array.isArray(stats.departments)) {
+            stats.departments.forEach(dept => {
+                deptFilter.append(`<option value="${dept.department}">${dept.department} (${dept.count})</option>`);
+            });
+        }
         deptFilter.val(currentDept);
         
         // Update position filter
@@ -310,9 +427,11 @@ $(document).ready(function() {
         const currentPos = posFilter.val();
         posFilter.find('option:not(:first)').remove();
         
-        stats.positions.forEach(pos => {
-            posFilter.append(`<option value="${pos.position}">${pos.position} (${pos.count})</option>`);
-        });
+        if (stats.positions && Array.isArray(stats.positions)) {
+            stats.positions.forEach(pos => {
+                posFilter.append(`<option value="${pos.position}">${pos.position} (${pos.count})</option>`);
+            });
+        }
         posFilter.val(currentPos);
 
         // Update gender filter
@@ -320,9 +439,11 @@ $(document).ready(function() {
         const currentGender = genderFilter.val();
         genderFilter.find('option:not(:first)').remove();
 
-        stats.genders.forEach(gender => {
-            genderFilter.append(`<option value="${gender.gender}">${gender.gender} (${gender.count})</option>`);
-        });
+        if (stats.genders && Array.isArray(stats.genders)) {
+            stats.genders.forEach(gender => {
+                genderFilter.append(`<option value="${gender.gender}">${gender.gender} (${gender.count})</option>`);
+            });
+        }
         genderFilter.val(currentGender);
     }
     
@@ -365,8 +486,10 @@ $(document).ready(function() {
         $('#positionFilter').val('');
         $('#genderFilter').val('');
         $('#sortFilter').val('start_date:ASC');
+        $('#limitSelect').val('20');
         
         currentPage = 1;
+        currentLimit = 20;
         loadStaffData();
     }
     
@@ -438,10 +561,31 @@ $(document).ready(function() {
 
     // ===== SHOW ADD STAFF MODAL ===== //
     function showAddStaffModal() {
+        // Reset form first
         resetAddStaffForm();
+        
+        // Ensure all fields are enabled, except seniority_display which should remain readonly
+        $('#addStaffForm input, #addStaffForm select, #addStaffForm textarea, #addStaffForm [type="file"]')
+            .not('#seniority_display')
+            .prop('disabled', false)
+            .prop('readonly', false)
+            .removeAttr('readonly');
+        
+        // Ensure seniority_display remains readonly
+        $('#seniority_display').prop('readonly', true).attr('placeholder', 'Tự động');
+        // Ensure department luôn readonly
+        $('#department').prop('readonly', true);
+        
         populatePositions(function() {
             $('#addStaffModal').modal('show');
             $('#staff_code').focus();
+            
+            // Ensure seniority calculation works properly
+            if ($('#start_date').val()) {
+                setTimeout(function() {
+                    calculateSeniority();
+                }, 200);
+            }
         });
     }
     
@@ -522,7 +666,9 @@ $(document).ready(function() {
             
             // Tính toán và hiển thị thâm niên
             if (staff.start_date) {
-                calculateSeniority();
+                setTimeout(function() {
+                    calculateSeniority();
+                }, 200);
             } else {
                 $('#seniority_display').val((staff.seniority || 0) + ' năm');
                 $('#seniority').val(staff.seniority || 0);
@@ -574,7 +720,13 @@ $(document).ready(function() {
         // Sự kiện chuyển sang chế độ chỉnh sửa
         $('#btnViewToEdit').off('click').on('click', function() {
             // Enable lại các input
-            $('#addStaffForm input, #addStaffForm select, #addStaffForm textarea, #addStaffForm [type="file"]').removeAttr('disabled').removeAttr('readonly');
+            $('#addStaffForm input, #addStaffForm select, #addStaffForm textarea, #addStaffForm [type="file"]')
+                .prop('disabled', false)
+                .prop('readonly', false)
+                .removeAttr('disabled')
+                .removeAttr('readonly');
+            // Đảm bảo 2 trường này luôn readonly khi chỉnh sửa
+            $('#seniority_display, #department').prop('readonly', true);
             // Hiện nút Lưu/Thêm
             $('#addStaffForm button[type="submit"]').show();
             // Đổi title
@@ -628,8 +780,19 @@ $(document).ready(function() {
         });
         
         // Auto calculate seniority when start date changes
-        $('#start_date').on('change', function() {
-            calculateSeniority();
+        $('#start_date').on('change input', function() {
+            setTimeout(function() {
+                calculateSeniority();
+            }, 100);
+        });
+        
+        // Also calculate seniority when start date field is focused and has value
+        $('#start_date').on('focus', function() {
+            if ($(this).val()) {
+                setTimeout(function() {
+                    calculateSeniority();
+                }, 100);
+            }
         });
         
         // Form submission
@@ -663,6 +826,29 @@ $(document).ready(function() {
             modalBody.animate({
                 scrollTop: scrollTop + fieldOffset - modalOffset - 100
             }, 300);
+        });
+        
+        // Reset form fields when modal is hidden (fix for disabled fields issue)
+        $('#addStaffModal').on('hidden.bs.modal', function() {
+            // Enable all form fields that might have been disabled, except seniority_display
+            $('#addStaffForm input, #addStaffForm select, #addStaffForm textarea, #addStaffForm [type="file"]')
+                .not('#seniority_display')
+                .prop('disabled', false)
+                .prop('readonly', false);
+            
+            // Remove any readonly attributes that might have been added, except for seniority_display
+            $('#addStaffForm input, #addStaffForm select, #addStaffForm textarea')
+                .not('#seniority_display')
+                .removeAttr('readonly');
+            
+            // Ensure seniority_display remains readonly
+            $('#seniority_display').prop('readonly', true);
+            
+            // Show submit button if it was hidden
+            $('#addStaffForm button[type="submit"]').show();
+            
+            // Remove any edit button that might have been added
+            $('#btnViewToEdit').remove();
         });
     }
     
@@ -737,6 +923,16 @@ $(document).ready(function() {
     
     // ===== RESET ADD STAFF FORM ===== //
     function resetAddStaffForm() {
+        // Enable all form fields first, except seniority_display và department (cả 2 phải readonly)
+        $('#addStaffForm input, #addStaffForm select, #addStaffForm textarea, #addStaffForm [type="file"]')
+            .not('#seniority_display, #department')
+            .prop('disabled', false)
+            .prop('readonly', false)
+            .removeAttr('readonly');
+
+        // Ensure seniority_display và department luôn readonly
+        $('#seniority_display, #department').prop('readonly', true);
+        
         // Reset form EXCEPT position select options
         const form = $('#addStaffForm')[0];
         const elements = form.elements;
@@ -757,7 +953,7 @@ $(document).ready(function() {
         $('.react-logo-container').show();
         $('#avatarPreview').addClass('d-none').attr('src', '');
         $('#seniority').val(0);
-        $('#seniority_display').val('');
+        $('#seniority_display').val('').attr('placeholder', 'Tự động');
         $('#password').attr('type', 'password');
         $('#togglePassword i').removeClass('fa-eye-slash').addClass('fa-eye');
         $('#department').val('');
@@ -769,6 +965,12 @@ $(document).ready(function() {
         $('#addStaffForm button[type="submit"]').html('<i class="fas fa-plus me-2"></i>Thêm nhân sự');
         $('#password').attr('placeholder', '').attr('required', true);
         $('#staff_id').remove();
+        
+        // Show submit button if it was hidden
+        $('#addStaffForm button[type="submit"]').show();
+        
+        // Remove any edit button that might have been added
+        $('#btnViewToEdit').remove();
     }
     
     // ===== SUBMIT ADD STAFF FORM ===== //
@@ -848,25 +1050,47 @@ $(document).ready(function() {
             contentType: false,
             dataType: 'json',
             success: function(response) {
-                if (response.success) {
-                    showNotification(response.message, 'success');
+                // Kiểm tra nếu response là string, thử parse JSON
+                if (typeof response === 'string') {
+                    try {
+                        response = JSON.parse(response);
+                    } catch (e) {
+                        console.error('Failed to parse JSON response:', e);
+                        showNotification('Có lỗi xảy ra khi xử lý phản hồi từ server', 'error');
+                        return;
+                    }
+                }
+                
+                if (response && response.success) {
+                    showNotification(response.message || 'Thao tác thành công!', 'success');
                     $('#addStaffModal').modal('hide');
                     loadStaffData(); // Reload staff list
                 } else {
-                    showNotification(response.message, 'error');
+                    showNotification(response.message || 'Có lỗi xảy ra', 'error');
                 }
             },
             error: function(xhr, status, error) {
+                console.error('AJAX Error:', {xhr, status, error});
+                
                 let errorMessage = `Có lỗi xảy ra khi ${actionText} nhân sự`;
                 
-                if (xhr.responseJSON && xhr.responseJSON.message) {
+                // Thử parse response text nếu có
+                if (xhr.responseText) {
+                    try {
+                        const response = JSON.parse(xhr.responseText);
+                        if (response.message) {
+                            errorMessage = response.message;
+                        }
+                    } catch (e) {
+                        console.error('Failed to parse error response:', e);
+                    }
+                } else if (xhr.responseJSON && xhr.responseJSON.message) {
                     errorMessage = xhr.responseJSON.message;
                 } else if (status === 'timeout') {
                     errorMessage = 'Kết nối quá chậm. Vui lòng thử lại!';
                 }
                 
                 showNotification(errorMessage, 'error');
-                
             },
             complete: function() {
                 // Restore button
@@ -1115,7 +1339,7 @@ $(document).ready(function() {
         // Search form
         $('.search-form').on('submit', function(e) {
             e.preventDefault();
-            const searchValue = $('#staffSearchInput').val().trim();
+            const searchValue = $('#globalSearchInput').val().trim();
             if (searchValue) {
                 currentFilters.search = searchValue;
                 currentPage = 1;
@@ -1124,7 +1348,7 @@ $(document).ready(function() {
         });
         
         // Global search input
-        $('#staffSearchInput').on('input', debounce(function() {
+        $('#globalSearchInput').on('input', debounce(function() {
             const searchValue = $(this).val().trim();
             if (searchValue) {
                 currentFilters.search = searchValue;
@@ -1142,7 +1366,7 @@ $(document).ready(function() {
             // Ctrl+K for search
             if (e.ctrlKey && e.key === 'k') {
                 e.preventDefault();
-                $('#staffSearchInput').focus();
+                $('#globalSearchInput').focus();
             }
         });
     }

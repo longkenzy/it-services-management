@@ -5,6 +5,13 @@ header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type');
 
 require_once '../config/db.php';
+require_once '../includes/session.php';
+
+if (null === getCurrentUserId()) {
+    http_response_code(401);
+    echo json_encode(['success' => false, 'message' => 'Chưa đăng nhập']);
+    exit;
+}
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit(0);
@@ -17,7 +24,6 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 }
 
 try {
-    $pdo = getConnection();
     
     // Lấy dữ liệu từ request
     $input = json_decode(file_get_contents('php://input'), true);

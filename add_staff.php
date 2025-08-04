@@ -17,6 +17,9 @@ if (!isAdmin() && !isManager()) {
 
 header('Content-Type: application/json');
 
+// Debug: Log request
+error_log("Add staff request received: " . json_encode($_POST));
+
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     echo json_encode(['success' => false, 'message' => 'Phương thức không hợp lệ']);
     exit;
@@ -122,7 +125,7 @@ try {
 
     $insert_stmt = $pdo->prepare($insert_sql);
     
-    $result = $insert_stmt->execute([
+    $params = [
         $_POST['staff_code'],
         $_POST['fullname'],
         $_POST['username'],
@@ -149,24 +152,42 @@ try {
         $avatar_path,
         $_POST['role'] ?? 'user',
         isset($_POST['resigned']) ? 1 : 0
-    ]);
+    ];
+    
+    // Debug: Log parameters
+    error_log("Add staff parameters: " . json_encode($params));
+    
+    $result = $insert_stmt->execute($params);
 
     if ($result) {
         $staff_id = $pdo->lastInsertId();
         
-        // Log hoạt động
-        logUserActivity("Thêm nhân sự mới", "{$_POST['fullname']} ({$_POST['staff_code']})");
+        // Log hoạt động (nếu hàm tồn tại)
+        if (function_exists('logUserActivity')) {
+            logUserActivity("Thêm nhân sự mới", "{$_POST['fullname']} ({$_POST['staff_code']})");
+        }
         
-        echo json_encode([
+        $response = [
             'success' => true, 
             'message' => 'Thêm nhân sự thành công!',
             'staff_id' => $staff_id,
             'staff_code' => $_POST['staff_code'],
             'fullname' => $_POST['fullname'],
             'username' => $_POST['username']
-        ]);
+        ];
+        
+        // Debug: Log success response
+        error_log("Add staff success response: " . json_encode($response));
+        
+        echo json_encode($response);
     } else {
-        echo json_encode(['success' => false, 'message' => 'Có lỗi xảy ra khi thêm nhân sự']);
+        // Kiểm tra lỗi PDO nếu có
+        $errorInfo = $insert_stmt->errorInfo();
+        $errorMessage = 'Có lỗi xảy ra khi thêm nhân sự';
+        if ($errorInfo[2]) {
+            $errorMessage .= ': ' . $errorInfo[2];
+        }
+        echo json_encode(['success' => false, 'message' => $errorMessage]);
     }
 
 } catch (PDOException $e) {
@@ -175,5 +196,4 @@ try {
 } catch (Exception $e) {
     error_log("Add staff error: " . $e->getMessage());
     echo json_encode(['success' => false, 'message' => 'Có lỗi xảy ra: ' . $e->getMessage()]);
-}
-?> 
+} 

@@ -230,13 +230,7 @@ $(document).ready(function() {
         }
     }
     
-    // ===== FORGOT PASSWORD HANDLER ===== //
-    $('.forgot-password').on('click', function(e) {
-        e.preventDefault();
-        
-        // Hiển thị modal hoặc chuyển hướng đến trang forgot password
-        showInfoMessage('Chức năng quên mật khẩu sẽ được triển khai sau!');
-    });
+
     
     // ===== KEYBOARD SHORTCUTS ===== //
     $(document).on('keydown', function(e) {

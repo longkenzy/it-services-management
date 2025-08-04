@@ -20,7 +20,7 @@ try {
                 mt.*,
                 s.fullname as assigned_to_name
             FROM maintenance_tasks mt
-            LEFT JOIN staffs s ON mt.assigned_to = s.id
+            LEFT JOIN staffs s ON mt.assignee_id = s.id
             WHERE mt.id = ?";
     
     $stmt = $pdo->prepare($sql);
