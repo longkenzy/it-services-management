@@ -677,6 +677,7 @@ if (isset($_SESSION['user_id'])) {
                     <table class="table table-hover mb-0">
                         <thead class="table-light">
                             <tr>
+                                <th>STT</th>
                                 <th>Mã YC</th>
                                 <th>Loại HĐ</th>
                                 <th>Khách hàng</th>
@@ -692,8 +693,11 @@ if (isset($_SESSION['user_id'])) {
                             </tr>
                         </thead>
                         <tbody id="deployment-requests-table">
-                                <?php foreach ($requests as $request): ?>
+                                <?php foreach ($requests as $index => $request): ?>
                                 <tr data-request-id="<?php echo $request['id']; ?>">
+                                    <td class="text-center">
+                                        <strong class="text-muted"><?php echo $index + 1; ?></strong>
+                                    </td>
                                     <td>
                                         <strong class="text-primary"><?php echo htmlspecialchars($request['request_code']); ?></strong>
                                     </td>
@@ -2439,6 +2443,7 @@ function reloadDeploymentRequestsTable() {
                         <table class=\"table table-hover mb-0\">
                             <thead class=\"table-light\">
                                 <tr>
+                                    <th>STT</th>
                                     <th>Mã YC</th>
                                     <th>Loại HĐ</th>
                                     <th>Khách hàng</th>
@@ -2454,10 +2459,11 @@ function reloadDeploymentRequestsTable() {
                                 </tr>
                             </thead>
                             <tbody id=\"deployment-requests-table\">
-                                ${data.data.map(request => {
+                                ${data.data.map((request, index) => {
                                     const deleteButton = currentRole !== 'user' ? `<button class=\"btn btn-sm btn-outline-danger\" onclick=\"deleteRequest(${request.id})\" title=\"Xóa\"><i class=\"fas fa-trash\"></i></button>` : '';
                                     return `
                                     <tr data-request-id=\"${request.id}\">
+                                        <td class=\"text-center\"><strong class=\"text-muted\">${index + 1}</strong></td>
                                         <td><strong class=\"text-primary\">${request.request_code || ''}</strong></td>
                                         <td><div class=\"contract-info\"><div class=\"fw-bold\">${request.contract_type || 'N/A'}</div><small class=\"text-muted\">${request.request_detail_type || 'N/A'}</small></div></td>
                                         <td><div class=\"customer-info\"><div class=\"fw-bold\">${request.customer_name || 'N/A'}</div><small class=\"text-muted\"><i class='fas fa-user me-1'></i>${request.contact_person || 'N/A'}</small><br><small class=\"text-muted\"><i class='fas fa-phone me-1'></i>${request.contact_phone || 'N/A'}</small></div></td>
