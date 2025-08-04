@@ -196,21 +196,13 @@ $(document).ready(function() {
     }
     
     function loadDashboard() {
-        showNotification('Đang chuyển về trang chủ...', 'info');
-        
         // Redirect to dashboard page
-        setTimeout(function() {
-            window.location.href = 'dashboard.php';
-        }, 500);
+        window.location.href = 'dashboard.php';
     }
     
     function loadStaffPage() {
-        showNotification('Đang chuyển đến trang nhân sự...', 'info');
-        
         // Redirect to staff page
-        setTimeout(function() {
-            window.location.href = 'staff.php';
-        }, 500);
+        window.location.href = 'staff.php';
     }
     
     // ===== DROPDOWN FUNCTIONALITY ===== //
@@ -274,8 +266,6 @@ $(document).ready(function() {
     }
     
     function loadInternalCases() {
-        
-        showNotification('Đang chuyển đến trang Case nội bộ...', 'info');
         
         // Redirect to internal cases page
         setTimeout(function() {

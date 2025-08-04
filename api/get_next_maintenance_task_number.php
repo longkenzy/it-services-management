@@ -1,7 +1,31 @@
 <?php
 header('Content-Type: application/json');
-require_once '../includes/session.php';
-require_once '../config/db.php';
+
+// Kiểm tra xem có phải chạy từ web không
+if (php_sapi_name() === 'cli') {
+    // Nếu chạy từ command line, tạo mã test
+    $current_year = date('y');
+    $current_month = date('m');
+    $task_code = sprintf("TBT%s%s%03d", $current_year, $current_month, 1);
+    
+    echo json_encode([
+        'success' => true,
+        'task_code' => $task_code
+    ]);
+    exit;
+}
+
+require_once __DIR__ . '/../includes/session.php';
+require_once __DIR__ . '/../config/db.php';
+
+// Debug: Kiểm tra session
+error_log("Session status: " . (session_status() === PHP_SESSION_ACTIVE ? 'active' : 'not active'));
+error_log("User logged in: " . (isLoggedIn() ? 'yes' : 'no'));
+
+// Khởi tạo session nếu chưa có
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
 if (!isLoggedIn()) {
     echo json_encode(['success' => false, 'message' => 'Chưa đăng nhập']);
@@ -18,7 +42,7 @@ try {
             ORDER BY task_code DESC 
             LIMIT 1";
     
-    $pattern = "TMT{$current_year}{$current_month}%";
+    $pattern = "TBT{$current_year}{$current_month}%";
     $stmt = $pdo->prepare($sql);
     $stmt->execute([$pattern]);
     $result = $stmt->fetch();
@@ -34,7 +58,7 @@ try {
     }
     
     // Tạo mã mới
-    $task_code = sprintf("TMT%s%s%03d", $current_year, $current_month, $next_number);
+    $task_code = sprintf("TBT%s%s%03d", $current_year, $current_month, $next_number);
     
     echo json_encode([
         'success' => true,

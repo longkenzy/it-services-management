@@ -9,13 +9,13 @@ require_once '../config/db.php';
 try {
     $pdo = getConnection();
     
-    // Lấy danh sách staff thuộc IT Dept
+    // Lấy danh sách staff thuộc IT Dept và chưa nghỉ việc
     $sql = "SELECT 
                 id,
                 fullname,
                 department
             FROM staffs
-            WHERE department = 'IT Dept.'
+            WHERE department = 'IT Dept.' AND resigned = 0
             ORDER BY fullname ASC";
     
     $stmt = $pdo->prepare($sql);

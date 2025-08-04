@@ -220,7 +220,8 @@ if (isset($_SESSION['user_id'])) {
         #editDeploymentRequestModal .modal-dialog,
         #createDeploymentCaseModal .modal-dialog,
         #editDeploymentCaseModal .modal-dialog,
-        #createDeploymentTaskModal .modal-dialog {
+        #createDeploymentTaskModal .modal-dialog,
+        #editDeploymentTaskModal .modal-dialog {
             max-width: none;
             width: calc(100vw - 40px);
             margin: 80px auto 20px auto;
@@ -238,8 +239,8 @@ if (isset($_SESSION['user_id'])) {
 
         
         .deployment-request-modal .modal-header {
-            background: linear-gradient(135deg, #07ff 0%, #0056b3 100);
-            color: white;
+            background: #5bc0de;
+            color: black;
             border-bottom:2px solid #dee2e6;
             padding: 0.75rem 1.5rem;
         }
@@ -579,6 +580,52 @@ if (isset($_SESSION['user_id'])) {
             padding: 4px !important;
         }
         
+        /* Làm cho button edit và delete có hình vuông */
+        .btn-group .btn.btn-sm {
+            width: 32px;
+            height: 32px;
+            padding: 0 !important;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+        }
+        
+        /* Đảm bảo icon trong button vuông */
+        .btn-group .btn.btn-sm i {
+            font-size: 0.8rem;
+            margin: 0;
+            padding: 0;
+        }
+        
+        /* ===== TRẠNG THÁI TRIỂN KHAI STYLES ===== */
+        /* Trạng thái hoàn thành */
+        .badge.bg-success {
+            background-color: #5cb85c !important;
+            color: #fff !important;
+        }
+        
+        /* Trạng thái tiếp nhận */
+        .badge.bg-secondary {
+            background-color: #f0ad4e !important;
+            color: #fff !important;
+        }
+        
+        /* Trạng thái đang xử lý */
+        .badge.bg-warning {
+            background-color: #5bc0de !important;
+            color: #fff !important;
+        }
+        
+        /* Trạng thái huỷ */
+        .badge.bg-danger {
+            background-color: #d9534f !important;
+            color: #fff !important;
+        }
+        .btn-outline-danger {
+            padding: 4px !important;
+        }
+        
         /* Responsive table */
         @media (max-width: 1200px) {
             .table-responsive {
@@ -623,37 +670,39 @@ if (isset($_SESSION['user_id'])) {
         <!-- Table hiển thị danh sách yêu cầu triển khai -->
         <div class="card">
             <div class="card-body">
-                <?php if (empty($requests)): ?>
-                    <div class="text-center py-5">
-                        <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
-                        <h5 class="text-muted">Chưa có yêu cầu triển khai nào</h5>
-                        <p class="text-muted">Bấm nút "Tạo yêu cầu triển khai" để bắt đầu</p>
-                        <?php if (isset($_GET['debug'])): ?>
-                            <div class="mt-3">
-                                <small class="text-muted">Debug: <?php echo count($requests); ?> records found</small>
-                            </div>
-                        <?php endif; ?>
-                    </div>
-                <?php else: ?>
-                    <div class="table-responsive">
-                        <table class="table table-hover mb-0">
-                            <thead class="table-light">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Mã YC</th>
+                                <th>Loại HĐ</th>
+                                <th>Khách hàng</th>
+                                <th>Phụ trách</th>
+                                <th>Thời hạn triển khai</th>
+                                <th>Ghi chú</th>
+                                <th>Trạng thái YC</th>
+                                <th>Tổng số case</th>
+                                <th>Tổng số task</th>
+                                <th>Tiến độ (%)</th>
+                                <th>Trạng thái triển khai</th>
+                                <th>Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody id="deployment-requests-table">
+                            <?php if (empty($requests)): ?>
                                 <tr>
-                                    <th>Mã YC</th>
-                                    <th>Loại HĐ</th>
-                                    <th>Khách hàng</th>
-                                    <th>Phụ trách</th>
-                                    <th>Thời hạn triển khai</th>
-                                    <th>Ghi chú</th>
-                                    <th>Trạng thái YC</th>
-                                    <th>Tổng số case</th>
-                                    <th>Tổng số task</th>
-                                    <th>Tiến độ (%)</th>
-                                    <th>Trạng thái triển khai</th>
-                                    <th>Thao tác</th>
+                                    <td colspan="12" class="text-center py-5">
+                                        <i class="fas fa-inbox fa-3x text-muted mb-3 d-block"></i>
+                                        <h5 class="text-muted">Chưa có yêu cầu triển khai nào</h5>
+                                        <p class="text-muted">Bấm nút "Tạo yêu cầu triển khai" để bắt đầu</p>
+                                        <?php if (isset($_GET['debug'])): ?>
+                                            <div class="mt-3">
+                                                <small class="text-muted">Debug: <?php echo count($requests); ?> records found</small>
+                                            </div>
+                                        <?php endif; ?>
+                                    </td>
                                 </tr>
-                            </thead>
-                            <tbody id="deployment-requests-table">
+                            <?php else: ?>
                                 <?php foreach ($requests as $request): ?>
                                 <tr>
                                     <td>
@@ -772,140 +821,170 @@ if (isset($_SESSION['user_id'])) {
             <div class="col-md-6">
               <h6 class="text-primary mb-3"><i class="fas fa-file-contract me-2"></i>HỢP ĐỒNG</h6>
               
-              <div class="mb-3">
-                <label class="form-label">Mã yêu cầu:</label>
-                <input type="text" class="form-control" name="request_code" id="request_code" readonly value="YC<?php echo date('y').date('m'); ?>001">
-              </div>
-              
-              <div class="mb-3">
-                <label class="form-label">Số hợp đồng PO:</label>
-                <input type="text" class="form-control" name="po_number" id="po_number" placeholder="Nhập số hợp đồng PO" <?php echo ($current_role === 'user') ? 'disabled' : ''; ?>>
-                <div class="form-check mt-1">
-                  <input class="form-check-input" type="checkbox" value="1" id="no_contract_po" name="no_contract_po" <?php echo ($current_role === 'user') ? 'disabled' : ''; ?>>
-                  <label class="form-check-label" for="no_contract_po">Không có HĐ/PO</label>
+              <div class="mb-3 row align-items-center">
+                <label class="col-md-3 form-label mb-0">Mã yêu cầu:</label>
+                <div class="col-md-9">
+                  <input type="text" class="form-control" name="request_code" id="request_code" readonly value="YC<?php echo date('y').date('m'); ?>001">
                 </div>
               </div>
               
-              <div class="mb-3">
-                <label class="form-label">Loại hợp đồng:</label>
-                <select class="form-select" name="contract_type" id="contract_type" <?php echo ($current_role === 'user') ? 'disabled' : ''; ?>>
-                  <option value="">-- Chọn loại hợp đồng --</option>
-                  <option value="Hợp đồng cung cấp dịch vụ">Hợp đồng cung cấp dịch vụ</option>
-                  <option value="Hợp đồng bảo trì hệ thống">Hợp đồng bảo trì hệ thống</option>
-                  <option value="Hợp đồng phát triển phần mềm">Hợp đồng phát triển phần mềm</option>
-                  <option value="Hợp đồng tư vấn công nghệ">Hợp đồng tư vấn công nghệ</option>
-                  <option value="Hợp đồng triển khai dự án">Hợp đồng triển khai dự án</option>
-                  <option value="Hợp đồng hỗ trợ kỹ thuật">Hợp đồng hỗ trợ kỹ thuật</option>
-                  <option value="Hợp đồng đào tạo">Hợp đồng đào tạo</option>
-                  <option value="Hợp đồng gia hạn dịch vụ">Hợp đồng gia hạn dịch vụ</option>
-                  <option value="Hợp đồng nâng cấp hệ thống">Hợp đồng nâng cấp hệ thống</option>
-                  <option value="Hợp đồng tích hợp hệ thống">Hợp đồng tích hợp hệ thống</option>
-                </select>
+              <div class="mb-3 row align-items-center">
+                <label class="col-md-3 form-label mb-0">Số hợp đồng PO:</label>
+                <div class="col-md-9">
+                  <input type="text" class="form-control" name="po_number" id="po_number" placeholder="Nhập số hợp đồng PO" <?php echo ($current_role === 'user') ? 'disabled' : ''; ?>>
+                  <div class="form-check mt-1">
+                    <input class="form-check-input" type="checkbox" value="1" id="no_contract_po" name="no_contract_po" <?php echo ($current_role === 'user') ? 'disabled' : ''; ?>>
+                    <label class="form-check-label" for="no_contract_po">Không có HĐ/PO</label>
+                  </div>
+                </div>
               </div>
               
-              <div class="mb-3">
-                <label class="form-label">Loại yêu cầu chi tiết:</label>
-                <select class="form-select" name="request_detail_type" id="request_detail_type" <?php echo ($current_role === 'user') ? 'disabled' : ''; ?>>
-                  <option value="">-- Chọn loại yêu cầu chi tiết --</option>
-                  <option value="Triển khai hệ thống mới">Triển khai hệ thống mới</option>
-                  <option value="Nâng cấp hệ thống hiện có">Nâng cấp hệ thống hiện có</option>
-                  <option value="Tích hợp hệ thống bên thứ 3">Tích hợp hệ thống bên thứ 3</option>
-                  <option value="Cấu hình và tối ưu hóa">Cấu hình và tối ưu hóa</option>
-                  <option value="Di chuyển dữ liệu">Di chuyển dữ liệu</option>
-                  <option value="Sao lưu và khôi phục">Sao lưu và khôi phục</option>
-                  <option value="Bảo mật và phân quyền">Bảo mật và phân quyền</option>
-                  <option value="Đào tạo người dùng">Đào tạo người dùng</option>
-                  <option value="Hỗ trợ kỹ thuật">Hỗ trợ kỹ thuật</option>
-                  <option value="Bảo trì định kỳ">Bảo trì định kỳ</option>
-                  <option value="Khắc phục sự cố">Khắc phục sự cố</option>
-                  <option value="Tư vấn và đánh giá">Tư vấn và đánh giá</option>
-                </select>
+              <div class="mb-3 row align-items-center">
+                <label class="col-md-3 form-label mb-0">Loại hợp đồng:</label>
+                <div class="col-md-9">
+                  <select class="form-select" name="contract_type" id="contract_type" <?php echo ($current_role === 'user') ? 'disabled' : ''; ?>>
+                    <option value="">-- Chọn loại hợp đồng --</option>
+                    <option value="Hợp đồng cung cấp dịch vụ">Hợp đồng cung cấp dịch vụ</option>
+                    <option value="Hợp đồng bảo trì hệ thống">Hợp đồng bảo trì hệ thống</option>
+                    <option value="Hợp đồng phát triển phần mềm">Hợp đồng phát triển phần mềm</option>
+                    <option value="Hợp đồng tư vấn công nghệ">Hợp đồng tư vấn công nghệ</option>
+                    <option value="Hợp đồng triển khai dự án">Hợp đồng triển khai dự án</option>
+                    <option value="Hợp đồng hỗ trợ kỹ thuật">Hợp đồng hỗ trợ kỹ thuật</option>
+                    <option value="Hợp đồng đào tạo">Hợp đồng đào tạo</option>
+                    <option value="Hợp đồng gia hạn dịch vụ">Hợp đồng gia hạn dịch vụ</option>
+                    <option value="Hợp đồng nâng cấp hệ thống">Hợp đồng nâng cấp hệ thống</option>
+                    <option value="Hợp đồng tích hợp hệ thống">Hợp đồng tích hợp hệ thống</option>
+                  </select>
+                </div>
               </div>
               
-              <div class="mb-3">
-                <label class="form-label">Email subject (Khách hàng):</label>
-                <input type="text" class="form-control" name="email_subject_customer" id="email_subject_customer" placeholder="Nhập email subject cho khách hàng" <?php echo ($current_role === 'user') ? 'disabled' : ''; ?>>
+              <div class="mb-3 row align-items-center">
+                <label class="col-md-3 form-label mb-0">Loại yêu cầu chi tiết:</label>
+                <div class="col-md-9">
+                  <select class="form-select" name="request_detail_type" id="request_detail_type" <?php echo ($current_role === 'user') ? 'disabled' : ''; ?>>
+                    <option value="">-- Chọn loại yêu cầu chi tiết --</option>
+                    <option value="Triển khai hệ thống mới">Triển khai hệ thống mới</option>
+                    <option value="Nâng cấp hệ thống hiện có">Nâng cấp hệ thống hiện có</option>
+                    <option value="Tích hợp hệ thống bên thứ 3">Tích hợp hệ thống bên thứ 3</option>
+                    <option value="Cấu hình và tối ưu hóa">Cấu hình và tối ưu hóa</option>
+                    <option value="Di chuyển dữ liệu">Di chuyển dữ liệu</option>
+                    <option value="Sao lưu và khôi phục">Sao lưu và khôi phục</option>
+                    <option value="Bảo mật và phân quyền">Bảo mật và phân quyền</option>
+                    <option value="Đào tạo người dùng">Đào tạo người dùng</option>
+                    <option value="Hỗ trợ kỹ thuật">Hỗ trợ kỹ thuật</option>
+                    <option value="Bảo trì định kỳ">Bảo trì định kỳ</option>
+                    <option value="Khắc phục sự cố">Khắc phục sự cố</option>
+                    <option value="Tư vấn và đánh giá">Tư vấn và đánh giá</option>
+                  </select>
+                </div>
               </div>
               
-              <div class="mb-3">
-                <label class="form-label">Email subject (Nội bộ):</label>
-                <input type="text" class="form-control" name="email_subject_internal" id="email_subject_internal" placeholder="Nhập email subject cho nội bộ" <?php echo ($current_role === 'user') ? 'disabled' : ''; ?>>
+              <div class="mb-3 row align-items-center">
+                <label class="col-md-3 form-label mb-0">Email subject (KH):</label>
+                <div class="col-md-9">
+                  <input type="text" class="form-control" name="email_subject_customer" id="email_subject_customer" placeholder="Nhập email subject cho khách hàng" <?php echo ($current_role === 'user') ? 'disabled' : ''; ?>>
+                </div>
               </div>
               
-              <div class="mb-3">
-                <label class="form-label">Bắt đầu dự kiến:</label>
-                <input type="date" class="form-control" name="expected_start" id="expected_start" <?php echo ($current_role === 'user') ? 'disabled' : ''; ?>>
+              <div class="mb-3 row align-items-center">
+                <label class="col-md-3 form-label mb-0">Email subject (NB):</label>
+                <div class="col-md-9">
+                  <input type="text" class="form-control" name="email_subject_internal" id="email_subject_internal" placeholder="Nhập email subject cho nội bộ" <?php echo ($current_role === 'user') ? 'disabled' : ''; ?>>
+                </div>
               </div>
               
-              <div class="mb-3">
-                <label class="form-label">Kết thúc dự kiến:</label>
-                <input type="date" class="form-control" name="expected_end" id="expected_end" <?php echo ($current_role === 'user') ? 'disabled' : ''; ?>>
+              <div class="mb-3 row align-items-center">
+                <label class="col-md-3 form-label mb-0">Bắt đầu dự kiến:</label>
+                <div class="col-md-9">
+                  <input type="date" class="form-control" name="expected_start" id="expected_start" <?php echo ($current_role === 'user') ? 'disabled' : ''; ?>>
+                </div>
+              </div>
+              
+              <div class="mb-3 row align-items-center">
+                <label class="col-md-3 form-label mb-0">Kết thúc dự kiến:</label>
+                <div class="col-md-9">
+                  <input type="date" class="form-control" name="expected_end" id="expected_end" <?php echo ($current_role === 'user') ? 'disabled' : ''; ?>>
+                </div>
               </div>
             </div>
             
             <!-- Cột phải: Khách hàng & Xử lý -->
             <div class="col-md-6">
-              <h6 class="text-success mb-3"><i class="fas fa-users me-2"></i>KHÁCH HÀNG</h6>
-              <div class="mb-3">
-                <label class="form-label">Khách hàng:</label>
-                <select class="form-select" name="customer_id" id="customer_id" <?php echo ($current_role === 'user') ? 'disabled' : ''; ?>>
-                  <option value="">-- Chọn khách hàng --</option>
-                  <?php
-                  $partners = $pdo->query("SELECT id, name, contact_person, contact_phone FROM partner_companies ORDER BY name ASC")->fetchAll();
-                  foreach ($partners as $partner) {
-                    echo '<option value="'.$partner['id'].'">'.htmlspecialchars($partner['name']).'</option>';
-                  }
-                  ?>
-                </select>
-              </div>
-              
-              <div class="mb-3">
-                <label class="form-label">Người liên hệ:</label>
-                <input type="text" class="form-control" name="contact_person" id="contact_person" readonly placeholder="Sẽ tự động điền theo khách hàng">
-              </div>
-              
-              <div class="mb-3">
-                <label class="form-label">Điện thoại:</label>
-                <input type="text" class="form-control" name="contact_phone" id="contact_phone" readonly placeholder="Sẽ tự động điền theo khách hàng">
-              </div>
-              
-              <h6 class="text-warning mb-3 mt-4"><i class="fas fa-cogs me-2"></i>XỬ LÝ</h6>
-              <div class="mb-3">
-                <label class="form-label">Sale phụ trách:</label>
-                <select class="form-select" name="sale_id" id="sale_id">
-                  <option value="">-- Chọn sale phụ trách --</option>
-                  <?php
-                  $sales = $pdo->query("SELECT id, fullname FROM staffs WHERE department = 'SALE Dept.' AND status = 'active' ORDER BY fullname ASC")->fetchAll();
-                  
-                  if (empty($sales)) {
-                    echo '<option value="">-- Không có nhân viên SALE Dept --</option>';
-                  } else {
-                    foreach ($sales as $sale) {
-                      echo '<option value="'.$sale['id'].'">'.htmlspecialchars($sale['fullname']).'</option>';
+              <h6 class="text-primary mb-3"><i class="fas fa-users me-2"></i>KHÁCH HÀNG</h6>
+              <div class="mb-3 row align-items-center">
+                <label class="col-md-3 form-label mb-0">Khách hàng:</label>
+                <div class="col-md-9">
+                  <select class="form-select" name="customer_id" id="customer_id" <?php echo ($current_role === 'user') ? 'disabled' : ''; ?>>
+                    <option value="">-- Chọn khách hàng --</option>
+                    <?php
+                    $partners = $pdo->query("SELECT id, name, contact_person, contact_phone FROM partner_companies ORDER BY name ASC")->fetchAll();
+                    foreach ($partners as $partner) {
+                      echo '<option value="'.$partner['id'].'">'.htmlspecialchars($partner['name']).'</option>';
                     }
-                  }
-                  ?>
-                </select>
+                    ?>
+                  </select>
+                </div>
               </div>
               
-              <div class="mb-3">
-                <label class="form-label">Ghi chú người yêu cầu:</label>
-                <textarea class="form-control" name="requester_notes" id="requester_notes" rows="2" placeholder="Nhập ghi chú"></textarea>
+              <div class="mb-3 row align-items-center">
+                <label class="col-md-3 form-label mb-0">Người liên hệ:</label>
+                <div class="col-md-9">
+                  <input type="text" class="form-control" name="contact_person" id="contact_person" placeholder="Nhập tên người liên hệ">
+                </div>
               </div>
               
-              <div class="mb-3">
-                <label class="form-label">Quản lý triển khai:</label>
-                <input type="text" class="form-control" name="deployment_manager" id="deployment_manager" value="Trần Nguyễn Anh Khoa" readonly>
+              <div class="mb-3 row align-items-center">
+                <label class="col-md-3 form-label mb-0">Điện thoại:</label>
+                <div class="col-md-9">
+                  <input type="text" class="form-control" name="contact_phone" id="contact_phone" placeholder="Nhập số điện thoại">
+                </div>
               </div>
               
-              <div class="mb-3">
-                <label class="form-label">Trạng thái triển khai:</label>
-                <select class="form-select" name="deployment_status" id="deployment_status">
-                  <option value="Tiếp nhận">Tiếp nhận</option>
-                  <option value="Đang xử lý">Đang xử lý</option>
-                  <option value="Hoàn thành">Hoàn thành</option>
-                  <option value="Huỷ">Huỷ</option>
-                </select>
+              <h6 class="text-primary mb-3 mt-4"><i class="fas fa-cogs me-2"></i>XỬ LÝ</h6>
+              <div class="mb-3 row align-items-center">
+                <label class="col-md-3 form-label mb-0">Sale phụ trách:</label>
+                <div class="col-md-9">
+                  <select class="form-select" name="sale_id" id="sale_id">
+                    <option value="">-- Chọn sale phụ trách --</option>
+                    <?php
+                    $sales = $pdo->query("SELECT id, fullname FROM staffs WHERE (department != 'IT Dept.' OR department IS NULL) AND (resigned != 1 OR resigned IS NULL) ORDER BY fullname ASC")->fetchAll();
+                    
+                    if (empty($sales)) {
+                      echo '<option value="">-- Không có nhân viên phù hợp --</option>';
+                    } else {
+                      foreach ($sales as $sale) {
+                        echo '<option value="'.$sale['id'].'">'.htmlspecialchars($sale['fullname']).'</option>';
+                      }
+                    }
+                    ?>
+                  </select>
+                </div>
+              </div>
+              
+              <div class="mb-3 row align-items-start">
+                <label class="col-md-3 form-label mb-0">Ghi chú người yêu cầu:</label>
+                <div class="col-md-9">
+                  <textarea class="form-control" name="requester_notes" id="requester_notes" rows="2" placeholder="Nhập ghi chú"></textarea>
+                </div>
+              </div>
+              
+              <div class="mb-3 row align-items-center">
+                <label class="col-md-3 form-label mb-0">Quản lý triển khai:</label>
+                <div class="col-md-9">
+                  <input type="text" class="form-control" name="deployment_manager" id="deployment_manager" value="Trần Nguyễn Anh Khoa" readonly>
+                </div>
+              </div>
+              
+              <div class="mb-3 row align-items-center">
+                <label class="col-md-3 form-label mb-0">Trạng thái triển khai:</label>
+                <div class="col-md-9">
+                  <select class="form-select" name="deployment_status" id="deployment_status">
+                    <option value="Tiếp nhận">Tiếp nhận</option>
+                    <option value="Đang xử lý">Đang xử lý</option>
+                    <option value="Hoàn thành">Hoàn thành</option>
+                    <option value="Huỷ">Huỷ</option>
+                  </select>
+                </div>
               </div>
             </div>
           </div>
@@ -1119,7 +1198,18 @@ document.addEventListener('DOMContentLoaded', function() {
                     modal.hide();
                 }
                 setTimeout(() => {
+            
+                    // Thử reload bằng cách khác nếu cách cũ không hoạt động
                     reloadDeploymentRequestsTable();
+                    
+                    // Fallback: reload trang nếu table không được update
+                    setTimeout(() => {
+                        const tbody = document.getElementById('deployment-requests-table');
+                        if (tbody && tbody.children.length === 0) {
+            
+                            location.reload();
+                        }
+                    }, 2000);
                 }, 1500);
             } else {
                 if (typeof showAlert === 'function') {
@@ -1432,7 +1522,6 @@ function loadDeploymentCases(requestId) {
         .then(data => {
             const tbody = document.getElementById('deployment-cases-table');
             if (!tbody) {
-                console.error('Table body not found');
                 return;
             }
             
@@ -1481,7 +1570,6 @@ function loadDeploymentCases(requestId) {
             });
         })
         .catch(error => {
-            console.error('Error loading deployment cases:', error);
             const tbody = document.getElementById('deployment-cases-table');
             if (tbody) {
                 tbody.innerHTML = `<tr><td colspan="14" class="text-center text-danger py-3">
@@ -1833,7 +1921,6 @@ function editDeploymentCase(caseId) {
             }
         })
         .catch(error => {
-            console.error('Error fetching case details:', error);
             if (typeof showAlert === 'function') {
                 showAlert('Có lỗi xảy ra khi lấy thông tin case', 'error');
             } else {
@@ -1879,21 +1966,19 @@ function deleteDeploymentCase(caseId, requestId) {
             }
         }
     })
-    .catch(error => {
-        console.error('Error deleting deployment case:', error);
-        if (typeof showAlert === 'function') {
-            showAlert('Có lỗi xảy ra khi xóa case', 'error');
-        } else {
-            alert('Có lỗi xảy ra khi xóa case');
-        }
-    });
+            .catch(error => {
+            if (typeof showAlert === 'function') {
+                showAlert('Có lỗi xảy ra khi xóa case', 'error');
+            } else {
+                alert('Có lỗi xảy ra khi xóa case');
+            }
+        });
 }
 
 // Function to load task templates
 function loadTaskTemplates() {
     const select = document.getElementById('template_id');
     if (!select) {
-        console.error('template_id element not found');
         return;
     }
     
@@ -1917,12 +2002,10 @@ function loadTaskTemplates() {
                     select.appendChild(option);
                 });
                 // Task templates loaded successfully
-            } else {
-                console.error('Error loading task templates:', data.message);
             }
         })
         .catch(error => {
-            console.error('Error loading task templates:', error);
+            // Error handling
         });
 }
 
@@ -1930,7 +2013,6 @@ function loadTaskTemplates() {
 function loadITStaffs() {
     const select = document.getElementById('task_assignee_id');
     if (!select) {
-        console.error('task_assignee_id element not found');
         return;
     }
     select.innerHTML = '<option value="">-- Chọn người thực hiện --</option>';
@@ -1962,7 +2044,6 @@ function loadITStaffs() {
             }
         })
         .catch(error => {
-            console.error('Error loading IT staffs:', error);
             const option = document.createElement('option');
             option.value = '';
             option.textContent = '-- Lỗi khi tải danh sách nhân sự IT --';
@@ -2000,7 +2081,7 @@ function createDeploymentTask() {
                 }
             })
             .catch(error => {
-                console.error('Error loading case details:', error);
+                // Error handling
             });
 
         // Lấy số task tự động
@@ -2047,7 +2128,6 @@ function loadDeploymentTasks(caseId) {
         .then(data => {
             const tbody = document.getElementById('deployment-tasks-table');
             if (!tbody) {
-                console.error('Tasks table body not found');
                 return;
             }
             
@@ -2094,7 +2174,6 @@ function loadDeploymentTasks(caseId) {
             });
         })
         .catch(error => {
-            console.error('Error loading deployment tasks:', error);
             const tbody = document.getElementById('deployment-tasks-table');
             if (tbody) {
                 tbody.innerHTML = `<tr><td colspan="10" class="text-center text-danger py-3">
@@ -2168,7 +2247,6 @@ function editDeploymentTask(taskId) {
             }
         })
         .catch(error => {
-            console.error('Error fetching task details:', error);
             if (typeof showAlert === 'function') {
                 showAlert('Có lỗi xảy ra khi lấy thông tin task', 'error');
             } else {
@@ -2215,14 +2293,13 @@ function deleteDeploymentTask(taskId, caseId) {
             }
         }
     })
-    .catch(error => {
-        console.error('Error deleting deployment task:', error);
-        if (typeof showAlert === 'function') {
-            showAlert('Có lỗi xảy ra khi xóa task', 'error');
-        } else {
-            alert('Có lỗi xảy ra khi xóa task');
-        }
-    });
+            .catch(error => {
+            if (typeof showAlert === 'function') {
+                showAlert('Có lỗi xảy ra khi xóa task', 'error');
+            } else {
+                alert('Có lỗi xảy ra khi xóa task');
+            }
+        });
 }
 
 // Function xóa yêu cầu triển khai
@@ -2257,7 +2334,6 @@ function deleteRequest(requestId) {
         }
     })
     .catch(error => {
-        console.error('Error:', error);
         if (typeof showAlert === 'function') {
             showAlert('Lỗi kết nối: ' + error.message, 'error');
         } else {
@@ -2268,33 +2344,69 @@ function deleteRequest(requestId) {
 
 // Hàm reload bảng danh sách yêu cầu triển khai
 function reloadDeploymentRequestsTable() {
+
     fetch('api/get_deployment_requests.php')
         .then(response => response.json())
         .then(data => {
-            if (!data.success || !Array.isArray(data.data)) return;
-            const tbody = document.getElementById('deployment-requests-table');
-            if (!tbody) return;
+            if (!data.success || !Array.isArray(data.data)) {
+                return;
+            }
+            // Tìm table body hoặc table container
+            let tbody = document.getElementById('deployment-requests-table');
+            
+            if (!tbody) {
+                // Tìm tất cả tables và kiểm tra
+                const tables = document.querySelectorAll('table');
+                
+                for (let table of tables) {
+                    const tableTbody = table.querySelector('tbody');
+                    if (tableTbody && tableTbody.id === 'deployment-requests-table') {
+                        tbody = tableTbody;
+                        break;
+                    }
+                }
+            }
+            
+            if (!tbody) {
+                return;
+            }
             tbody.innerHTML = '';
             const currentRole = '<?php echo $current_role; ?>';
-            data.data.forEach(request => {
-                const deleteButton = currentRole !== 'user' ? `<button class="btn btn-sm btn-outline-danger" onclick="deleteRequest(${request.id})" title="Xóa"><i class="fas fa-trash"></i></button>` : '';
-                tbody.innerHTML += `
+            
+            if (data.data.length === 0) {
+                tbody.innerHTML = `
                 <tr>
-                    <td><strong class="text-primary">${request.request_code || ''}</strong></td>
-                    <td><div class="contract-info"><div class="fw-bold">${request.contract_type || 'N/A'}</div><small class="text-muted">${request.request_detail_type || 'N/A'}</small></div></td>
-                    <td><div class="customer-info"><div class="fw-bold">${request.customer_name || 'N/A'}</div><small class="text-muted"><i class='fas fa-user me-1'></i>${request.contact_person || 'N/A'}</small><br><small class="text-muted"><i class='fas fa-phone me-1'></i>${request.contact_phone || 'N/A'}</small></div></td>
-                    <td><span class="text-dark">${request.sale_name || 'N/A'}</span></td>
-                    <td>${request.expected_start ? `<div class='text-wrap' style='white-space: pre-line;'><strong>Từ</strong><br>${formatDateForDisplay(request.expected_start)}<br><strong>Đến</strong><br>${request.expected_end ? formatDateForDisplay(request.expected_end) : '(Chưa xác định)'}</div>` : '<span class="text-muted">Chưa có</span>'}</td>
-                    <td>${request.requester_notes ? `<div class='text-wrap' style='max-width: 200px; white-space: pre-wrap; word-wrap: break-word;'>${request.requester_notes}</div>` : '<span class="text-muted">-</span>'}</td>
-                    <td><span class="text-dark">${request.deployment_status || ''}</span></td>
-                    <td><span class="text-dark">${request.total_cases || 0}</span></td>
-                    <td><span class="text-dark">${request.total_tasks || 0}</span></td>
-                    <td><div class="progress" style="width: 80px; height: 20px;"><div class="progress-bar bg-warning" style="width: ${request.progress_percentage || 0}%" title="${request.progress_percentage || 0}%"><small>${request.progress_percentage || 0}%</small></div></div></td>
-                    <td><span class="badge bg-${(request.deployment_status === 'Hoàn thành' ? 'success' : (request.deployment_status === 'Đang xử lý' ? 'warning' : (request.deployment_status === 'Huỷ' ? 'danger' : 'secondary')))}">${request.deployment_status || ''}</span></td>
-                    <td><div class="btn-group" role="group"><button class="btn btn-sm btn-outline-warning" onclick="editRequest(${request.id})" title="Chỉnh sửa"><i class="fas fa-edit"></i></button>${deleteButton}</div></td>
+                    <td colspan="12" class="text-center py-5">
+                        <i class="fas fa-inbox fa-3x text-muted mb-3 d-block"></i>
+                        <h5 class="text-muted">Chưa có yêu cầu triển khai nào</h5>
+                        <p class="text-muted">Bấm nút "Tạo yêu cầu triển khai" để bắt đầu</p>
+                    </td>
                 </tr>
                 `;
-            });
+            } else {
+                data.data.forEach(request => {
+                    const deleteButton = currentRole !== 'user' ? `<button class="btn btn-sm btn-outline-danger" onclick="deleteRequest(${request.id})" title="Xóa"><i class="fas fa-trash"></i></button>` : '';
+                    tbody.innerHTML += `
+                    <tr>
+                        <td><strong class="text-primary">${request.request_code || ''}</strong></td>
+                        <td><div class="contract-info"><div class="fw-bold">${request.contract_type || 'N/A'}</div><small class="text-muted">${request.request_detail_type || 'N/A'}</small></div></td>
+                        <td><div class="customer-info"><div class="fw-bold">${request.customer_name || 'N/A'}</div><small class="text-muted"><i class='fas fa-user me-1'></i>${request.contact_person || 'N/A'}</small><br><small class="text-muted"><i class='fas fa-phone me-1'></i>${request.contact_phone || 'N/A'}</small></div></td>
+                        <td><span class="text-dark">${request.sale_name || 'N/A'}</span></td>
+                        <td>${request.expected_start ? `<div class='text-wrap' style='white-space: pre-line;'><strong>Từ</strong><br>${formatDateForDisplay(request.expected_start)}<br><strong>Đến</strong><br>${request.expected_end ? formatDateForDisplay(request.expected_end) : '(Chưa xác định)'}</div>` : '<span class="text-muted">Chưa có</span>'}</td>
+                        <td>${request.requester_notes ? `<div class='text-wrap' style='max-width: 200px; white-space: pre-wrap; word-wrap: break-word;'>${request.requester_notes}</div>` : '<span class="text-muted">-</span>'}</td>
+                        <td><span class="text-dark">${request.deployment_status || ''}</span></td>
+                        <td><span class="text-dark">${request.total_cases || 0}</span></td>
+                        <td><span class="text-dark">${request.total_tasks || 0}</span></td>
+                        <td><div class="progress" style="width: 80px; height: 20px;"><div class="progress-bar bg-warning" style="width: ${request.progress_percentage || 0}%" title="${request.progress_percentage || 0}%"><small>${request.progress_percentage || 0}%</small></div></div></td>
+                        <td><span class="badge bg-${(request.deployment_status === 'Hoàn thành' ? 'success' : (request.deployment_status === 'Đang xử lý' ? 'warning' : (request.deployment_status === 'Huỷ' ? 'danger' : 'secondary')))}">${request.deployment_status || ''}</span></td>
+                        <td><div class="btn-group" role="group"><button class="btn btn-sm btn-outline-warning" onclick="editRequest(${request.id})" title="Chỉnh sửa"><i class="fas fa-edit"></i></button>${deleteButton}</div></td>
+                    </tr>
+                    `;
+                });
+            }
+        })
+        .catch(error => {
+            // Error handling
         });
 }
 
@@ -2353,7 +2465,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             })
             .catch(error => {
-                console.error('Error creating deployment task:', error);
                 showAlert('Lỗi khi tạo task triển khai', 'error');
             });
         });
@@ -2426,7 +2537,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             })
             .catch(error => {
-                console.error('Error updating deployment task:', error);
                 showAlert('Lỗi khi cập nhật task triển khai', 'error');
             });
         });
@@ -2450,63 +2560,75 @@ document.addEventListener('DOMContentLoaded', function() {
             <div class="col-md-6">
               <h6 class="text-primary mb-3"><i class="fas fa-file-contract me-2"></i>HỢP ĐỒNG</h6>
               
-              <div class="mb-3">
-                <label class="form-label">Mã yêu cầu:</label>
-                <input type="text" class="form-control" name="request_code" id="edit_request_code" readonly>
-              </div>
-              
-              <div class="mb-3">
-                <label class="form-label">Số hợp đồng PO:</label>
-                <input type="text" class="form-control" name="po_number" id="edit_po_number" placeholder="Nhập số hợp đồng PO" <?php echo ($current_role === 'user') ? 'disabled' : ''; ?>>
-                <div class="form-check mt-1">
-                  <input class="form-check-input" type="checkbox" value="1" id="edit_no_contract_po" name="no_contract_po" <?php echo ($current_role === 'user') ? 'disabled' : ''; ?>>
-                  <label class="form-check-label" for="edit_no_contract_po">Không có HĐ/PO</label>
+              <div class="mb-3 row align-items-center">
+                <label class="col-md-3 form-label mb-0">Mã yêu cầu:</label>
+                <div class="col-md-9">
+                  <input type="text" class="form-control" name="request_code" id="edit_request_code" readonly>
                 </div>
               </div>
               
-              <div class="mb-3">
-                <label class="form-label">Loại hợp đồng:</label>
-                <select class="form-select" name="contract_type" id="edit_contract_type" <?php echo ($current_role === 'user') ? 'disabled' : ''; ?>>
-                  <option value="">-- Chọn loại hợp đồng --</option>
-                  <option value="Hợp đồng cung cấp dịch vụ">Hợp đồng cung cấp dịch vụ</option>
-                  <option value="Hợp đồng bảo trì hệ thống">Hợp đồng bảo trì hệ thống</option>
-                  <option value="Hợp đồng phát triển phần mềm">Hợp đồng phát triển phần mềm</option>
-                  <option value="Hợp đồng tư vấn công nghệ">Hợp đồng tư vấn công nghệ</option>
-                  <option value="Hợp đồng triển khai dự án">Hợp đồng triển khai dự án</option>
-                  <option value="Hợp đồng hỗ trợ kỹ thuật">Hợp đồng hỗ trợ kỹ thuật</option>
-                  <option value="Hợp đồng đào tạo">Hợp đồng đào tạo</option>
-                  <option value="Hợp đồng gia hạn dịch vụ">Hợp đồng gia hạn dịch vụ</option>
-                  <option value="Hợp đồng nâng cấp hệ thống">Hợp đồng nâng cấp hệ thống</option>
-                  <option value="Hợp đồng tích hợp hệ thống">Hợp đồng tích hợp hệ thống</option>
-                </select>
+              <div class="mb-3 row align-items-center">
+                <label class="col-md-3 form-label mb-0">Số hợp đồng PO:</label>
+                <div class="col-md-9">
+                  <input type="text" class="form-control" name="po_number" id="edit_po_number" placeholder="Nhập số hợp đồng PO" <?php echo ($current_role === 'user') ? 'disabled' : ''; ?>>
+                  <div class="form-check mt-1">
+                    <input class="form-check-input" type="checkbox" value="1" id="edit_no_contract_po" name="no_contract_po" <?php echo ($current_role === 'user') ? 'disabled' : ''; ?>>
+                    <label class="form-check-label" for="edit_no_contract_po">Không có HĐ/PO</label>
+                  </div>
+                </div>
               </div>
               
-              <div class="mb-3">
-                <label class="form-label">Loại yêu cầu chi tiết:</label>
-                <select class="form-select" name="request_detail_type" id="edit_request_detail_type" <?php echo ($current_role === 'user') ? 'disabled' : ''; ?>>
-                  <option value="">-- Chọn loại yêu cầu chi tiết --</option>
-                  <option value="Triển khai mới">Triển khai mới</option>
-                  <option value="Nâng cấp hệ thống">Nâng cấp hệ thống</option>
-                  <option value="Bảo trì hệ thống">Bảo trì hệ thống</option>
-                  <option value="Tư vấn kỹ thuật">Tư vấn kỹ thuật</option>
-                  <option value="Đào tạo người dùng">Đào tạo người dùng</option>
-                  <option value="Hỗ trợ kỹ thuật">Hỗ trợ kỹ thuật</option>
-                  <option value="Tích hợp hệ thống">Tích hợp hệ thống</option>
-                  <option value="Tích hợp hệ thống bên thứ 3">Tích hợp hệ thống bên thứ 3</option>
-                  <option value="Khắc phục sự cố">Khắc phục sự cố</option>
-                  <option value="Tối ưu hóa hiệu suất">Tối ưu hóa hiệu suất</option>
-                  <option value="Di chuyển dữ liệu">Di chuyển dữ liệu</option>
-                </select>
+              <div class="mb-3 row align-items-center">
+                <label class="col-md-3 form-label mb-0">Loại hợp đồng:</label>
+                <div class="col-md-9">
+                  <select class="form-select" name="contract_type" id="edit_contract_type" <?php echo ($current_role === 'user') ? 'disabled' : ''; ?>>
+                    <option value="">-- Chọn loại hợp đồng --</option>
+                    <option value="Hợp đồng cung cấp dịch vụ">Hợp đồng cung cấp dịch vụ</option>
+                    <option value="Hợp đồng bảo trì hệ thống">Hợp đồng bảo trì hệ thống</option>
+                    <option value="Hợp đồng phát triển phần mềm">Hợp đồng phát triển phần mềm</option>
+                    <option value="Hợp đồng tư vấn công nghệ">Hợp đồng tư vấn công nghệ</option>
+                    <option value="Hợp đồng triển khai dự án">Hợp đồng triển khai dự án</option>
+                    <option value="Hợp đồng hỗ trợ kỹ thuật">Hợp đồng hỗ trợ kỹ thuật</option>
+                    <option value="Hợp đồng đào tạo">Hợp đồng đào tạo</option>
+                    <option value="Hợp đồng gia hạn dịch vụ">Hợp đồng gia hạn dịch vụ</option>
+                    <option value="Hợp đồng nâng cấp hệ thống">Hợp đồng nâng cấp hệ thống</option>
+                    <option value="Hợp đồng tích hợp hệ thống">Hợp đồng tích hợp hệ thống</option>
+                  </select>
+                </div>
               </div>
               
-              <div class="mb-3">
-                <label class="form-label">Tiêu đề email gửi khách hàng:</label>
-                <input type="text" class="form-control" name="email_subject_customer" id="edit_email_subject_customer" placeholder="Nhập tiêu đề email" <?php echo ($current_role === 'user') ? 'disabled' : ''; ?>>
+              <div class="mb-3 row align-items-center">
+                <label class="col-md-3 form-label mb-0">Loại yêu cầu chi tiết:</label>
+                <div class="col-md-9">
+                  <select class="form-select" name="request_detail_type" id="edit_request_detail_type" <?php echo ($current_role === 'user') ? 'disabled' : ''; ?>>
+                    <option value="">-- Chọn loại yêu cầu chi tiết --</option>
+                    <option value="Triển khai mới">Triển khai mới</option>
+                    <option value="Nâng cấp hệ thống">Nâng cấp hệ thống</option>
+                    <option value="Bảo trì hệ thống">Bảo trì hệ thống</option>
+                    <option value="Tư vấn kỹ thuật">Tư vấn kỹ thuật</option>
+                    <option value="Đào tạo người dùng">Đào tạo người dùng</option>
+                    <option value="Hỗ trợ kỹ thuật">Hỗ trợ kỹ thuật</option>
+                    <option value="Tích hợp hệ thống">Tích hợp hệ thống</option>
+                    <option value="Tích hợp hệ thống bên thứ 3">Tích hợp hệ thống bên thứ 3</option>
+                    <option value="Khắc phục sự cố">Khắc phục sự cố</option>
+                    <option value="Tối ưu hóa hiệu suất">Tối ưu hóa hiệu suất</option>
+                    <option value="Di chuyển dữ liệu">Di chuyển dữ liệu</option>
+                  </select>
+                </div>
               </div>
               
-              <div class="mb-3">
-                <label class="form-label">Tiêu đề email nội bộ:</label>
-                <input type="text" class="form-control" name="email_subject_internal" id="edit_email_subject_internal" placeholder="Nhập tiêu đề email" <?php echo ($current_role === 'user') ? 'disabled' : ''; ?>>
+              <div class="mb-3 row align-items-center">
+                <label class="col-md-3 form-label mb-0">Email subject (KH):</label>
+                <div class="col-md-9">
+                  <input type="text" class="form-control" name="email_subject_customer" id="edit_email_subject_customer" placeholder="Nhập tiêu đề email" <?php echo ($current_role === 'user') ? 'disabled' : ''; ?>>
+                </div>
+              </div>
+              
+              <div class="mb-3 row align-items-center">
+                <label class="col-md-3 form-label mb-0">Email subject (NB):</label>
+                <div class="col-md-9">
+                  <input type="text" class="form-control" name="email_subject_internal" id="edit_email_subject_internal" placeholder="Nhập tiêu đề email" <?php echo ($current_role === 'user') ? 'disabled' : ''; ?>>
+                </div>
               </div>
             </div>
             
@@ -2514,86 +2636,94 @@ document.addEventListener('DOMContentLoaded', function() {
             <div class="col-md-6">
               <h6 class="text-primary mb-3"><i class="fas fa-calendar-alt me-2"></i>THÔNG TIN TRIỂN KHAI</h6>
               
-              <div class="row">
-                <div class="col-md-6">
-                  <div class="mb-3">
-                    <label class="form-label">Ngày bắt đầu dự kiến:</label>
-                    <input type="date" class="form-control" name="expected_start" id="edit_expected_start" <?php echo ($current_role === 'user') ? 'disabled' : ''; ?>>
-                  </div>
-                </div>
-                <div class="col-md-6">
-                  <div class="mb-3">
-                    <label class="form-label">Ngày kết thúc dự kiến:</label>
-                    <input type="date" class="form-control" name="expected_end" id="edit_expected_end" <?php echo ($current_role === 'user') ? 'disabled' : ''; ?>>
-                  </div>
+              <div class="mb-3 row align-items-center">
+                <label class="col-md-3 form-label mb-0">Ngày bắt đầu dự kiến:</label>
+                <div class="col-md-9">
+                  <input type="date" class="form-control" name="expected_start" id="edit_expected_start" <?php echo ($current_role === 'user') ? 'disabled' : ''; ?>>
                 </div>
               </div>
               
-              <div class="mb-3">
-                <label class="form-label">Khách hàng: <span class="text-danger">*</span></label>
-                <select class="form-select" name="customer_id" id="edit_customer_id" required <?php echo ($current_role === 'user') ? 'disabled' : ''; ?>>
-                  <option value="">-- Chọn khách hàng --</option>
-                  <?php
-                  $partners = $pdo->query("SELECT id, name, contact_person, contact_phone FROM partner_companies ORDER BY name ASC")->fetchAll();
-                  foreach ($partners as $partner) {
-                    echo '<option value="'.$partner['id'].'">'.htmlspecialchars($partner['name']).'</option>';
-                  }
-                  ?>
-                </select>
-              </div>
-              
-              <div class="row">
-                <div class="col-md-6">
-                  <div class="mb-3">
-                    <label class="form-label">Người liên hệ:</label>
-                    <input type="text" class="form-control" name="contact_person" id="edit_contact_person" placeholder="Nhập tên người liên hệ" <?php echo ($current_role === 'user') ? 'disabled' : ''; ?>>
-                  </div>
-                </div>
-                <div class="col-md-6">
-                  <div class="mb-3">
-                    <label class="form-label">Số điện thoại:</label>
-                    <input type="text" class="form-control" name="contact_phone" id="edit_contact_phone" placeholder="Nhập số điện thoại" <?php echo ($current_role === 'user') ? 'disabled' : ''; ?>>
-                  </div>
+              <div class="mb-3 row align-items-center">
+                <label class="col-md-3 form-label mb-0">Ngày kết thúc dự kiến:</label>
+                <div class="col-md-9">
+                  <input type="date" class="form-control" name="expected_end" id="edit_expected_end" <?php echo ($current_role === 'user') ? 'disabled' : ''; ?>>
                 </div>
               </div>
               
-              <div class="mb-3">
-                <label class="form-label">Sale phụ trách: <span class="text-danger">*</span></label>
-                <select class="form-select" name="sale_id" id="edit_sale_id" required <?php echo ($current_role === 'user') ? 'disabled' : ''; ?>>
-                  <option value="">-- Chọn sale phụ trách --</option>
-                  <?php
-                  $sales = $pdo->query("SELECT id, fullname FROM staffs WHERE department = 'SALE Dept.' AND status = 'active' ORDER BY fullname ASC")->fetchAll();
-                  
-                  if (empty($sales)) {
-                    echo '<option value="">-- Không có nhân viên SALE Dept --</option>';
-                  } else {
-                    foreach ($sales as $sale) {
-                      echo '<option value="'.$sale['id'].'">'.htmlspecialchars($sale['fullname']).'</option>';
+              <div class="mb-3 row align-items-center">
+                <label class="col-md-3 form-label mb-0">Khách hàng: <span class="text-danger">*</span></label>
+                <div class="col-md-9">
+                  <select class="form-select" name="customer_id" id="edit_customer_id" required <?php echo ($current_role === 'user') ? 'disabled' : ''; ?>>
+                    <option value="">-- Chọn khách hàng --</option>
+                    <?php
+                    $partners = $pdo->query("SELECT id, name, contact_person, contact_phone FROM partner_companies ORDER BY name ASC")->fetchAll();
+                    foreach ($partners as $partner) {
+                      echo '<option value="'.$partner['id'].'">'.htmlspecialchars($partner['name']).'</option>';
                     }
-                  }
-                  ?>
-                </select>
+                    ?>
+                  </select>
+                </div>
               </div>
               
-              <div class="mb-3">
-                <label class="form-label">Ghi chú yêu cầu:</label>
-                <textarea class="form-control" name="requester_notes" id="edit_requester_notes" rows="3" placeholder="Nhập ghi chú yêu cầu" <?php echo ($current_role === 'user') ? 'disabled' : ''; ?>></textarea>
+              <div class="mb-3 row align-items-center">
+                <label class="col-md-3 form-label mb-0">Người liên hệ:</label>
+                <div class="col-md-9">
+                  <input type="text" class="form-control" name="contact_person" id="edit_contact_person" placeholder="Nhập tên người liên hệ" <?php echo ($current_role === 'user') ? 'disabled' : ''; ?>>
+                </div>
               </div>
               
-              <div class="mb-3">
-                <label class="form-label">Quản lý triển khai:</label>
-                <input type="text" class="form-control" name="deployment_manager" id="edit_deployment_manager" value="Trần Nguyễn Anh Khoa" readonly>
+              <div class="mb-3 row align-items-center">
+                <label class="col-md-3 form-label mb-0">Số điện thoại:</label>
+                <div class="col-md-9">
+                  <input type="text" class="form-control" name="contact_phone" id="edit_contact_phone" placeholder="Nhập số điện thoại" <?php echo ($current_role === 'user') ? 'disabled' : ''; ?>>
+                </div>
               </div>
               
-              <div class="mb-3">
-                <label class="form-label">Trạng thái triển khai: <span class="text-danger">*</span></label>
-                <select class="form-select" name="deployment_status" id="edit_deployment_status" required <?php echo ($current_role === 'user') ? 'disabled' : ''; ?>>
-                  <option value="">-- Chọn trạng thái --</option>
-                  <option value="Tiếp nhận">Tiếp nhận</option>
-                  <option value="Đang xử lý">Đang xử lý</option>
-                  <option value="Hoàn thành">Hoàn thành</option>
-                  <option value="Huỷ">Huỷ</option>
-                </select>
+              <div class="mb-3 row align-items-center">
+                <label class="col-md-3 form-label mb-0">Sale phụ trách: <span class="text-danger">*</span></label>
+                <div class="col-md-9">
+                  <select class="form-select" name="sale_id" id="edit_sale_id" required <?php echo ($current_role === 'user') ? 'disabled' : ''; ?>>
+                    <option value="">-- Chọn sale phụ trách --</option>
+                    <?php
+                    $sales = $pdo->query("SELECT id, fullname FROM staffs WHERE (department != 'IT Dept.' OR department IS NULL) AND (resigned != 1 OR resigned IS NULL) ORDER BY fullname ASC")->fetchAll();
+                    
+                    if (empty($sales)) {
+                      echo '<option value="">-- Không có nhân viên phù hợp --</option>';
+                    } else {
+                      foreach ($sales as $sale) {
+                        echo '<option value="'.$sale['id'].'">'.htmlspecialchars($sale['fullname']).'</option>';
+                      }
+                    }
+                    ?>
+                  </select>
+                </div>
+              </div>
+              
+              <div class="mb-3 row align-items-start">
+                <label class="col-md-3 form-label mb-0">Ghi chú yêu cầu:</label>
+                <div class="col-md-9">
+                  <textarea class="form-control" name="requester_notes" id="edit_requester_notes" rows="3" placeholder="Nhập ghi chú yêu cầu" <?php echo ($current_role === 'user') ? 'disabled' : ''; ?>></textarea>
+                </div>
+              </div>
+              
+              <div class="mb-3 row align-items-center">
+                <label class="col-md-3 form-label mb-0">Quản lý triển khai:</label>
+                <div class="col-md-9">
+                  <input type="text" class="form-control" name="deployment_manager" id="edit_deployment_manager" value="Trần Nguyễn Anh Khoa" readonly>
+                </div>
+              </div>
+              
+              <div class="mb-3 row align-items-center">
+                <label class="col-md-3 form-label mb-0">Trạng thái triển khai: <span class="text-danger">*</span></label>
+                <div class="col-md-9">
+                  <select class="form-select" name="deployment_status" id="edit_deployment_status" required <?php echo ($current_role === 'user') ? 'disabled' : ''; ?>>
+                    <option value="">-- Chọn trạng thái --</option>
+                    <option value="Tiếp nhận">Tiếp nhận</option>
+                    <option value="Đang xử lý">Đang xử lý</option>
+                    <option value="Hoàn thành">Hoàn thành</option>
+                    <option value="Huỷ">Huỷ</option>
+                  </select>
+                </div>
               </div>
             </div>
           </div>
@@ -2630,7 +2760,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     </thead>
                     <tbody id="deployment-cases-table">
                       <tr>
-                        <td colspan="14" class="text-center text-muted py-3">
+                        <td colspan="12" class="text-center text-muted py-3">
                           <i class="fas fa-inbox fa-2x mb-2"></i><br>
                           Chưa có case triển khai nào
                         </td>
@@ -2641,6 +2771,7 @@ document.addEventListener('DOMContentLoaded', function() {
               </div>
             </div>
           </div>
+
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
@@ -2655,7 +2786,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 <!-- Modal tạo task triển khai -->
 <div class="modal fade" id="createDeploymentTaskModal" tabindex="-1" aria-labelledby="createDeploymentTaskModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-fullscreen">
+  <div class="modal-dialog">
     <div class="modal-content deployment-request-modal">
       <div class="modal-header">
         <h5 class="modal-title" id="createDeploymentTaskModalLabel">
@@ -2668,77 +2799,101 @@ document.addEventListener('DOMContentLoaded', function() {
           <div class="row g-4">
             <!-- Cột trái -->
             <div class="col-md-6">
-              <div class="mb-3">
-                <label class="form-label">Số task:</label>
-                <input type="text" class="form-control" name="task_number" id="task_number" readonly>
+              <div class="mb-3 row align-items-center">
+                <label class="col-md-3 form-label mb-0">Số task:</label>
+                <div class="col-md-9">
+                  <input type="text" class="form-control" name="task_number" id="task_number" readonly>
+                </div>
               </div>
-              <div class="mb-3">
-                <label class="form-label">Số case:</label>
-                <input type="text" class="form-control" name="case_code" id="task_case_code" readonly>
+              <div class="mb-3 row align-items-center">
+                <label class="col-md-3 form-label mb-0">Số case:</label>
+                <div class="col-md-9">
+                  <input type="text" class="form-control" name="case_code" id="task_case_code" readonly>
+                </div>
               </div>
-              <div class="mb-3">
-                <label class="form-label">Mã yêu cầu:</label>
-                <input type="text" class="form-control" name="request_code" id="task_request_code" readonly>
+              <div class="mb-3 row align-items-center">
+                <label class="col-md-3 form-label mb-0">Mã yêu cầu:</label>
+                <div class="col-md-9">
+                  <input type="text" class="form-control" name="request_code" id="task_request_code" readonly>
+                </div>
               </div>
-              <div class="mb-3">
-                <label for="task_type" class="form-label">Loại Task <span class="text-danger">*</span></label>
-                <select class="form-select" name="task_type" id="task_type" required>
-                  <option value="">-- Chọn loại task --</option>
-                  <option value="onsite">Onsite</option>
-                  <option value="offsite">Offsite</option>
-                  <option value="remote">Remote</option>
-                </select>
+              <div class="mb-3 row align-items-center">
+                <label for="task_type" class="col-md-3 form-label mb-0">Loại Task <span class="text-danger">*</span></label>
+                <div class="col-md-9">
+                  <select class="form-select" name="task_type" id="task_type" required>
+                    <option value="">-- Chọn loại task --</option>
+                    <option value="onsite">Onsite</option>
+                    <option value="offsite">Offsite</option>
+                    <option value="remote">Remote</option>
+                  </select>
+                </div>
               </div>
-              <div class="mb-3">
-                <label for="task_template" class="form-label">Task mẫu</label>
-                <select class="form-select" name="task_template" id="task_template">
-                  <option value="">-- Chọn task mẫu --</option>
-                  <option value="Cài đặt thiết bị">Cài đặt thiết bị</option>
-                  <option value="Cấu hình phần mềm">Cấu hình phần mềm</option>
-                  <option value="Kiểm tra hệ thống">Kiểm tra hệ thống</option>
-                  <option value="Đào tạo người dùng">Đào tạo người dùng</option>
-                  <option value="Bảo trì định kỳ">Bảo trì định kỳ</option>
-                  <option value="Khắc phục sự cố">Khắc phục sự cố</option>
-                  <option value="Nghiệm thu dự án">Nghiệm thu dự án</option>
-                </select>
+              <div class="mb-3 row align-items-center">
+                <label for="task_template" class="col-md-3 form-label mb-0">Task mẫu</label>
+                <div class="col-md-9">
+                  <select class="form-select" name="task_template" id="task_template">
+                    <option value="">-- Chọn task mẫu --</option>
+                    <option value="Cài đặt thiết bị">Cài đặt thiết bị</option>
+                    <option value="Cấu hình phần mềm">Cấu hình phần mềm</option>
+                    <option value="Kiểm tra hệ thống">Kiểm tra hệ thống</option>
+                    <option value="Đào tạo người dùng">Đào tạo người dùng</option>
+                    <option value="Bảo trì định kỳ">Bảo trì định kỳ</option>
+                    <option value="Khắc phục sự cố">Khắc phục sự cố</option>
+                    <option value="Nghiệm thu dự án">Nghiệm thu dự án</option>
+                  </select>
+                </div>
               </div>
-              <div class="mb-3">
-                <label for="task_name" class="form-label">Task <span class="text-danger">*</span></label>
-                <input type="text" class="form-control" name="task_name" id="task_name" required placeholder="Nhập tên task cụ thể">
+              <div class="mb-3 row align-items-center">
+                <label for="task_name" class="col-md-3 form-label mb-0">Task <span class="text-danger">*</span></label>
+                <div class="col-md-9">
+                  <input type="text" class="form-control" name="task_name" id="task_name" required placeholder="Nhập tên task cụ thể">
+                </div>
               </div>
-              <div class="mb-3">
-                <label for="task_note" class="form-label">Ghi chú</label>
-                <textarea class="form-control" name="task_note" id="task_note" rows="2" placeholder="Nhập ghi chú"></textarea>
+              <div class="mb-3 row align-items-start">
+                <label for="task_note" class="col-md-3 form-label mb-0">Ghi chú</label>
+                <div class="col-md-9">
+                  <textarea class="form-control" name="task_note" id="task_note" rows="2" placeholder="Nhập ghi chú"></textarea>
+                </div>
               </div>
             </div>
             <!-- Cột phải -->
             <div class="col-md-6">
-              <div class="mb-3">
-                <label for="task_assignee_id" class="form-label">Người thực hiện</label>
-                <select class="form-select" name="assignee_id" id="task_assignee_id">
-                  <option value="">-- Chọn người thực hiện --</option>
-                </select>
+              <div class="mb-3 row align-items-center">
+                <label for="task_assignee_id" class="col-md-3 form-label mb-0">Người thực hiện</label>
+                <div class="col-md-9">
+                  <select class="form-select" name="assignee_id" id="task_assignee_id">
+                    <option value="">-- Chọn người thực hiện --</option>
+                  </select>
+                </div>
               </div>
-              <div class="mb-3">
-                <label for="task_start_date" class="form-label">Thời gian bắt đầu:</label>
-                <input type="datetime-local" class="form-control" name="start_date" id="task_start_date">
+              <div class="mb-3 row align-items-center">
+                <label for="task_start_date" class="col-md-3 form-label mb-0">Thời gian bắt đầu:</label>
+                <div class="col-md-9">
+                  <input type="datetime-local" class="form-control" name="start_date" id="task_start_date">
+                </div>
               </div>
-              <div class="mb-3">
-                <label for="task_end_date" class="form-label">Thời gian kết thúc:</label>
-                <input type="datetime-local" class="form-control" name="end_date" id="task_end_date">
+              <div class="mb-3 row align-items-center">
+                <label for="task_end_date" class="col-md-3 form-label mb-0">Thời gian kết thúc:</label>
+                <div class="col-md-9">
+                  <input type="datetime-local" class="form-control" name="end_date" id="task_end_date">
+                </div>
               </div>
-              <div class="mb-3">
-                <label for="task_status" class="form-label">Trạng thái</label>
-                <select class="form-select" name="status" id="task_status">
-                  <option value="Tiếp nhận">Tiếp nhận</option>
-                  <option value="Đang xử lý">Đang xử lý</option>
-                  <option value="Hoàn thành">Hoàn thành</option>
-                  <option value="Huỷ">Huỷ</option>
-                </select>
+              <div class="mb-3 row align-items-center">
+                <label for="task_status" class="col-md-3 form-label mb-0">Trạng thái</label>
+                <div class="col-md-9">
+                  <select class="form-select" name="status" id="task_status">
+                    <option value="Tiếp nhận">Tiếp nhận</option>
+                    <option value="Đang xử lý">Đang xử lý</option>
+                    <option value="Hoàn thành">Hoàn thành</option>
+                    <option value="Huỷ">Huỷ</option>
+                  </select>
+                </div>
               </div>
-              <div class="mb-3">
-                <label class="form-label">Người nhập:</label>
-                <input type="text" class="form-control" name="created_by_name" id="task_created_by_name" value="<?php echo htmlspecialchars($_SESSION['fullname'] ?? ''); ?>" readonly>
+              <div class="mb-3 row align-items-center">
+                <label class="col-md-3 form-label mb-0">Người nhập:</label>
+                <div class="col-md-9">
+                  <input type="text" class="form-control" name="created_by_name" id="task_created_by_name" value="<?php echo htmlspecialchars($_SESSION['fullname'] ?? ''); ?>" readonly>
+                </div>
               </div>
             </div>
           </div>
@@ -2774,112 +2929,129 @@ document.addEventListener('DOMContentLoaded', function() {
             <div class="col-md-6">
               <h6 class="text-primary mb-3"><i class="fas fa-info-circle me-2"></i>THÔNG TIN CƠ BẢN</h6>
               
-              <div class="mb-3">
-                <label class="form-label">Số case:</label>
-                <input type="text" class="form-control" name="case_code" id="case_code" readonly>
+              <div class="mb-3 row align-items-center">
+                <label class="col-md-3 form-label mb-0">Số case:</label>
+                <div class="col-md-9">
+                  <input type="text" class="form-control" name="case_code" id="case_code" readonly>
+                </div>
               </div>
               
-              <div class="mb-3">
-                <label class="form-label">Loại yêu cầu:</label>
-                <select class="form-select" name="request_type" id="request_type">
-                  <option value="">-- Chọn loại yêu cầu --</option>
-                  <option value="Triển khai mới">Triển khai mới</option>
-                  <option value="Nâng cấp hệ thống">Nâng cấp hệ thống</option>
-                  <option value="Bảo trì hệ thống">Bảo trì hệ thống</option>
-                  <option value="Tư vấn kỹ thuật">Tư vấn kỹ thuật</option>
-                  <option value="Đào tạo người dùng">Đào tạo người dùng</option>
-                  <option value="Hỗ trợ kỹ thuật">Hỗ trợ kỹ thuật</option>
-                  <option value="Tích hợp hệ thống">Tích hợp hệ thống</option>
-                  <option value="Tích hợp hệ thống bên thứ 3">Tích hợp hệ thống bên thứ 3</option>
-                  <option value="Khắc phục sự cố">Khắc phục sự cố</option>
-                  <option value="Tối ưu hóa hiệu suất">Tối ưu hóa hiệu suất</option>
-                  <option value="Di chuyển dữ liệu">Di chuyển dữ liệu</option>
-                </select>
+              <div class="mb-3 row align-items-center">
+                <label class="col-md-3 form-label mb-0">Loại yêu cầu:</label>
+                <div class="col-md-9">
+                  <select class="form-select" name="request_type" id="request_type">
+                    <option value="">-- Chọn loại yêu cầu --</option>
+                    <option value="Triển khai mới">Triển khai mới</option>
+                    <option value="Nâng cấp hệ thống">Nâng cấp hệ thống</option>
+                    <option value="Bảo trì hệ thống">Bảo trì hệ thống</option>
+                    <option value="Tư vấn kỹ thuật">Tư vấn kỹ thuật</option>
+                    <option value="Đào tạo người dùng">Đào tạo người dùng</option>
+                    <option value="Hỗ trợ kỹ thuật">Hỗ trợ kỹ thuật</option>
+                    <option value="Tích hợp hệ thống">Tích hợp hệ thống</option>
+                    <option value="Tích hợp hệ thống bên thứ 3">Tích hợp hệ thống bên thứ 3</option>
+                    <option value="Khắc phục sự cố">Khắc phục sự cố</option>
+                    <option value="Tối ưu hóa hiệu suất">Tối ưu hóa hiệu suất</option>
+                    <option value="Di chuyển dữ liệu">Di chuyển dữ liệu</option>
+                  </select>
+                </div>
               </div>
               
-              <div class="mb-3">
-                <label class="form-label">Tiến trình:</label>
-                <select class="form-select" name="progress" id="progress">
-                  <option value="">-- Chọn tiến trình --</option>
-                  <option value="CS - Chốt SOW">CS - Chốt SOW</option>
-                  <option value="SH - Soạn hàng">SH - Soạn hàng</option>
-                  <option value="GH - Giao hàng">GH - Giao hàng</option>
-                  <option value="TK - Triển khai">TK - Triển khai</option>
-                  <option value="NT - Nghiệm thu">NT - Nghiệm thu</option>
-                </select>
+              <div class="mb-3 row align-items-center">
+                <label class="col-md-3 form-label mb-0">Tiến trình:</label>
+                <div class="col-md-9">
+                  <select class="form-select" name="progress" id="progress">
+                    <option value="">-- Chọn tiến trình --</option>
+                    <option value="CS - Chốt SOW">CS - Chốt SOW</option>
+                    <option value="SH - Soạn hàng">SH - Soạn hàng</option>
+                    <option value="GH - Giao hàng">GH - Giao hàng</option>
+                    <option value="TK - Triển khai">TK - Triển khai</option>
+                    <option value="NT - Nghiệm thu">NT - Nghiệm thu</option>
+                  </select>
+                </div>
               </div>
               
-              <div class="mb-3">
-                <label class="form-label">Mô tả case:</label>
-                <textarea class="form-control" name="case_description" id="case_description" rows="4" placeholder="Nhập mô tả chi tiết về case"></textarea>
+              <div class="mb-3 row align-items-start">
+                <label class="col-md-3 form-label mb-0">Mô tả case:</label>
+                <div class="col-md-9">
+                  <textarea class="form-control" name="case_description" id="case_description" rows="4" placeholder="Nhập mô tả chi tiết về case"></textarea>
+                </div>
               </div>
               
-              <div class="mb-3">
-                <label class="form-label">Ghi chú:</label>
-                <textarea class="form-control" name="notes" id="notes" rows="3" placeholder="Nhập ghi chú bổ sung"></textarea>
+              <div class="mb-3 row align-items-start">
+                <label class="col-md-3 form-label mb-0">Ghi chú:</label>
+                <div class="col-md-9">
+                  <textarea class="form-control" name="notes" id="notes" rows="3" placeholder="Nhập ghi chú bổ sung"></textarea>
+                </div>
               </div>
               
-              <div class="mb-3">
-                <label class="form-label">Người nhập:</label>
-                <input type="text" class="form-control" name="created_by_name" id="created_by_name" value="<?php echo htmlspecialchars($fullname); ?>" readonly>
+              <div class="mb-3 row align-items-center">
+                <label class="col-md-3 form-label mb-0">Người nhập:</label>
+                <div class="col-md-9">
+                  <input type="text" class="form-control" name="created_by_name" id="created_by_name" value="<?php echo htmlspecialchars($fullname); ?>" readonly>
+                </div>
               </div>
             </div>
             
             <!-- Cột phải: Thông tin triển khai -->
             <div class="col-md-6">
-              <h6 class="text-success mb-3"><i class="fas fa-cogs me-2"></i>THÔNG TIN TRIỂN KHAI</h6>
+              <h6 class="text-primary mb-3"><i class="fas fa-cogs me-2"></i>THÔNG TIN TRIỂN KHAI</h6>
               
-              <div class="mb-3">
-                <label class="form-label">Người phụ trách:</label>
-                <select class="form-select" name="assigned_to" id="assigned_to">
-                  <option value="">-- Chọn người phụ trách --</option>
-                  <?php
-                  $it_staffs = $pdo->query("SELECT id, fullname FROM staffs WHERE department = 'IT Dept.' AND status = 'active' ORDER BY fullname ASC")->fetchAll();
-                  
-                  if (empty($it_staffs)) {
-                    echo '<option value="">-- Không có nhân viên IT Dept --</option>';
-                  } else {
-                    foreach ($it_staffs as $staff) {
-                      echo '<option value="'.$staff['id'].'">'.htmlspecialchars($staff['fullname']).'</option>';
+              <div class="mb-3 row align-items-center">
+                <label class="col-md-3 form-label mb-0">Người phụ trách:</label>
+                <div class="col-md-9">
+                  <select class="form-select" name="assigned_to" id="assigned_to">
+                    <option value="">-- Chọn người phụ trách --</option>
+                    <?php
+                    $it_staffs = $pdo->query("SELECT id, fullname FROM staffs WHERE department = 'IT Dept.' AND status = 'active' AND resigned = 0 ORDER BY fullname ASC")->fetchAll();
+                    
+                    if (empty($it_staffs)) {
+                      echo '<option value="">-- Không có nhân viên IT Dept --</option>';
+                    } else {
+                      foreach ($it_staffs as $staff) {
+                        echo '<option value="'.$staff['id'].'">'.htmlspecialchars($staff['fullname']).'</option>';
+                      }
                     }
-                  }
-                  ?>
-                </select>
-              </div>
-              
-              <div class="mb-3">
-                <label class="form-label">Hình thức:</label>
-                <select class="form-select" name="work_type" id="work_type">
-                  <option value="">-- Chọn hình thức --</option>
-                  <option value="Onsite">Onsite</option>
-                  <option value="Offsite">Offsite</option>
-                  <option value="Remote">Remote</option>
-                </select>
-              </div>
-              
-              <div class="row">
-                <div class="col-md-6">
-                  <div class="mb-3">
-                    <label class="form-label">Ngày giờ bắt đầu:</label>
-                    <input type="datetime-local" class="form-control" name="start_date" id="start_date">
-                  </div>
-                </div>
-                <div class="col-md-6">
-                  <div class="mb-3">
-                    <label class="form-label">Ngày giờ kết thúc:</label>
-                    <input type="datetime-local" class="form-control" name="end_date" id="end_date">
-                  </div>
+                    ?>
+                  </select>
                 </div>
               </div>
               
-              <div class="mb-3">
-                <label class="form-label">Trạng thái:</label>
-                <select class="form-select" name="status" id="status">
-                  <option value="Tiếp nhận">Tiếp nhận</option>
-                  <option value="Đang xử lý">Đang xử lý</option>
-                  <option value="Hoàn thành">Hoàn thành</option>
-                  <option value="Huỷ">Huỷ</option>
-                </select>
+              <div class="mb-3 row align-items-center">
+                <label class="col-md-3 form-label mb-0">Hình thức:</label>
+                <div class="col-md-9">
+                  <select class="form-select" name="work_type" id="work_type">
+                    <option value="">-- Chọn hình thức --</option>
+                    <option value="Onsite">Onsite</option>
+                    <option value="Offsite">Offsite</option>
+                    <option value="Remote">Remote</option>
+                  </select>
+                </div>
+              </div>
+              
+              <div class="mb-3 row align-items-center">
+                <label class="col-md-3 form-label mb-0">Ngày giờ bắt đầu:</label>
+                <div class="col-md-9">
+                  <input type="datetime-local" class="form-control" name="start_date" id="start_date">
+                </div>
+              </div>
+              
+              <div class="mb-3 row align-items-center">
+                <label class="col-md-3 form-label mb-0">Ngày giờ kết thúc:</label>
+                <div class="col-md-9">
+                  <input type="datetime-local" class="form-control" name="end_date" id="end_date">
+                </div>
+              </div>
+              
+              <div class="mb-3 row align-items-center">
+                <label class="col-md-3 form-label mb-0">Trạng thái:</label>
+                <div class="col-md-9">
+                  <select class="form-select" name="status" id="status">
+                    <option value="Tiếp nhận">Tiếp nhận</option>
+                    <option value="Đang xử lý">Đang xử lý</option>
+                    <option value="Hoàn thành">Hoàn thành</option>
+                    <option value="Huỷ">Huỷ</option>
+                  </select>
+                </div>
               </div>
             </div>
           </div>
@@ -2909,107 +3081,122 @@ document.addEventListener('DOMContentLoaded', function() {
             <div class="col-md-6">
               <h6 class="text-primary mb-3"><i class="fas fa-info-circle me-2"></i>THÔNG TIN CƠ BẢN</h6>
               
-              <div class="mb-3">
-                <label class="form-label">Số case:</label>
-                <input type="text" class="form-control" name="case_code" id="edit_case_code" readonly>
+              <div class="mb-3 row align-items-center">
+                <label class="col-md-3 form-label mb-0">Số case:</label>
+                <div class="col-md-9">
+                  <input type="text" class="form-control" name="case_code" id="edit_case_code" readonly>
+                </div>
               </div>
               
-              <div class="mb-3">
-                <label class="form-label">Loại yêu cầu:</label>
-                <select class="form-select" name="request_type" id="edit_request_type">
-                  <option value="">-- Chọn loại yêu cầu --</option>
-                  <option value="Triển khai mới">Triển khai mới</option>
-                  <option value="Nâng cấp hệ thống">Nâng cấp hệ thống</option>
-                  <option value="Bảo trì hệ thống">Bảo trì hệ thống</option>
-                  <option value="Tư vấn kỹ thuật">Tư vấn kỹ thuật</option>
-                  <option value="Đào tạo người dùng">Đào tạo người dùng</option>
-                  <option value="Hỗ trợ kỹ thuật">Hỗ trợ kỹ thuật</option>
-                  <option value="Tích hợp hệ thống">Tích hợp hệ thống</option>
-                  <option value="Tích hợp hệ thống bên thứ 3">Tích hợp hệ thống bên thứ 3</option>
-                  <option value="Khắc phục sự cố">Khắc phục sự cố</option>
-                  <option value="Tối ưu hóa hiệu suất">Tối ưu hóa hiệu suất</option>
-                  <option value="Di chuyển dữ liệu">Di chuyển dữ liệu</option>
-                </select>
+              <div class="mb-3 row align-items-center">
+                <label class="col-md-3 form-label mb-0">Loại yêu cầu:</label>
+                <div class="col-md-9">
+                  <select class="form-select" name="request_type" id="edit_request_type">
+                    <option value="">-- Chọn loại yêu cầu --</option>
+                    <option value="Triển khai mới">Triển khai mới</option>
+                    <option value="Nâng cấp hệ thống">Nâng cấp hệ thống</option>
+                    <option value="Bảo trì hệ thống">Bảo trì hệ thống</option>
+                    <option value="Tư vấn kỹ thuật">Tư vấn kỹ thuật</option>
+                    <option value="Đào tạo người dùng">Đào tạo người dùng</option>
+                    <option value="Hỗ trợ kỹ thuật">Hỗ trợ kỹ thuật</option>
+                    <option value="Tích hợp hệ thống">Tích hợp hệ thống</option>
+                    <option value="Tích hợp hệ thống bên thứ 3">Tích hợp hệ thống bên thứ 3</option>
+                    <option value="Khắc phục sự cố">Khắc phục sự cố</option>
+                    <option value="Tối ưu hóa hiệu suất">Tối ưu hóa hiệu suất</option>
+                    <option value="Di chuyển dữ liệu">Di chuyển dữ liệu</option>
+                  </select>
+                </div>
               </div>
               
-              <div class="mb-3">
-                <label class="form-label">Tiến trình:</label>
-                <select class="form-select" name="progress" id="edit_progress">
-                  <option value="">-- Chọn tiến trình --</option>
-                  <option value="CS - Chốt SOW">CS - Chốt SOW</option>
-                  <option value="SH - Soạn hàng">SH - Soạn hàng</option>
-                  <option value="GH - Giao hàng">GH - Giao hàng</option>
-                  <option value="TK - Triển khai">TK - Triển khai</option>
-                  <option value="NT - Nghiệm thu">NT - Nghiệm thu</option>
-                </select>
+              <div class="mb-3 row align-items-center">
+                <label class="col-md-3 form-label mb-0">Tiến trình:</label>
+                <div class="col-md-9">
+                  <select class="form-select" name="progress" id="edit_progress">
+                    <option value="">-- Chọn tiến trình --</option>
+                    <option value="CS - Chốt SOW">CS - Chốt SOW</option>
+                    <option value="SH - Soạn hàng">SH - Soạn hàng</option>
+                    <option value="GH - Giao hàng">GH - Giao hàng</option>
+                    <option value="TK - Triển khai">TK - Triển khai</option>
+                    <option value="NT - Nghiệm thu">NT - Nghiệm thu</option>
+                  </select>
+                </div>
               </div>
               
-              <div class="mb-3">
-                <label class="form-label">Mô tả case:</label>
-                <textarea class="form-control" name="case_description" id="edit_case_description" rows="4" placeholder="Nhập mô tả chi tiết về case"></textarea>
+              <div class="mb-3 row align-items-start">
+                <label class="col-md-3 form-label mb-0">Mô tả case:</label>
+                <div class="col-md-9">
+                  <textarea class="form-control" name="case_description" id="edit_case_description" rows="4" placeholder="Nhập mô tả chi tiết về case"></textarea>
+                </div>
               </div>
               
-              <div class="mb-3">
-                <label class="form-label">Ghi chú:</label>
-                <textarea class="form-control" name="notes" id="edit_notes" rows="3" placeholder="Nhập ghi chú bổ sung"></textarea>
+              <div class="mb-3 row align-items-start">
+                <label class="col-md-3 form-label mb-0">Ghi chú:</label>
+                <div class="col-md-9">
+                  <textarea class="form-control" name="notes" id="edit_notes" rows="3" placeholder="Nhập ghi chú bổ sung"></textarea>
+                </div>
               </div>
             </div>
             
             <!-- Cột phải: Thông tin triển khai -->
             <div class="col-md-6">
-              <h6 class="text-success mb-3"><i class="fas fa-cogs me-2"></i>THÔNG TIN TRIỂN KHAI</h6>
+              <h6 class="text-primary mb-3"><i class="fas fa-cogs me-2"></i>THÔNG TIN TRIỂN KHAI</h6>
               
-              <div class="mb-3">
-                <label class="form-label">Người phụ trách:</label>
-                <select class="form-select" name="assigned_to" id="edit_assigned_to">
-                  <option value="">-- Chọn người phụ trách --</option>
-                  <?php
-                  $it_staffs = $pdo->query("SELECT id, fullname FROM staffs WHERE department = 'IT Dept.' AND status = 'active' ORDER BY fullname ASC")->fetchAll();
-                  
-                  if (empty($it_staffs)) {
-                    echo '<option value="">-- Không có nhân viên IT Dept --</option>';
-                  } else {
-                    foreach ($it_staffs as $staff) {
-                      echo '<option value="'.$staff['id'].'">'.htmlspecialchars($staff['fullname']).'</option>';
+              <div class="mb-3 row align-items-center">
+                <label class="col-md-3 form-label mb-0">Người phụ trách:</label>
+                <div class="col-md-9">
+                  <select class="form-select" name="assigned_to" id="edit_assigned_to">
+                    <option value="">-- Chọn người phụ trách --</option>
+                    <?php
+                    $it_staffs = $pdo->query("SELECT id, fullname FROM staffs WHERE department = 'IT Dept.' AND status = 'active' AND resigned = 0 ORDER BY fullname ASC")->fetchAll();
+                    
+                    if (empty($it_staffs)) {
+                      echo '<option value="">-- Không có nhân viên IT Dept --</option>';
+                    } else {
+                      foreach ($it_staffs as $staff) {
+                        echo '<option value="'.$staff['id'].'">'.htmlspecialchars($staff['fullname']).'</option>';
+                      }
                     }
-                  }
-                  ?>
-                </select>
-              </div>
-              
-              <div class="mb-3">
-                <label class="form-label">Hình thức:</label>
-                <select class="form-select" name="work_type" id="edit_work_type">
-                  <option value="">-- Chọn hình thức --</option>
-                  <option value="Onsite">Onsite</option>
-                  <option value="Offsite">Offsite</option>
-                  <option value="Remote">Remote</option>
-                </select>
-              </div>
-              
-              <div class="row">
-                <div class="col-md-6">
-                  <div class="mb-3">
-                    <label class="form-label">Ngày giờ bắt đầu:</label>
-                    <input type="datetime-local" class="form-control" name="start_date" id="edit_start_date">
-                  </div>
-                </div>
-                <div class="col-md-6">
-                  <div class="mb-3">
-                    <label class="form-label">Ngày giờ kết thúc:</label>
-                    <input type="datetime-local" class="form-control" name="end_date" id="edit_end_date">
-                  </div>
+                    ?>
+                  </select>
                 </div>
               </div>
               
-              <div class="mb-3">
-                <label class="form-label">Trạng thái:</label>
-                <select class="form-select" name="status" id="edit_status">
-                  <option value="Tiếp nhận">Tiếp nhận</option>
-                  <option value="Đang xử lý">Đang xử lý</option>
-                  <option value="Hoàn thành">Hoàn thành</option>
-                  <option value="Huỷ">Huỷ</option>
-                </select>
+              <div class="mb-3 row align-items-center">
+                <label class="col-md-3 form-label mb-0">Hình thức:</label>
+                <div class="col-md-9">
+                  <select class="form-select" name="work_type" id="edit_work_type">
+                    <option value="">-- Chọn hình thức --</option>
+                    <option value="Onsite">Onsite</option>
+                    <option value="Offsite">Offsite</option>
+                    <option value="Remote">Remote</option>
+                  </select>
+                </div>
+              </div>
+              
+              <div class="mb-3 row align-items-center">
+                <label class="col-md-3 form-label mb-0">Ngày giờ bắt đầu:</label>
+                <div class="col-md-9">
+                  <input type="datetime-local" class="form-control" name="start_date" id="edit_start_date">
+                </div>
+              </div>
+              
+              <div class="mb-3 row align-items-center">
+                <label class="col-md-3 form-label mb-0">Ngày giờ kết thúc:</label>
+                <div class="col-md-9">
+                  <input type="datetime-local" class="form-control" name="end_date" id="edit_end_date">
+                </div>
+              </div>
+              
+              <div class="mb-3 row align-items-center">
+                <label class="col-md-3 form-label mb-0">Trạng thái:</label>
+                <div class="col-md-9">
+                  <select class="form-select" name="status" id="edit_status">
+                    <option value="Tiếp nhận">Tiếp nhận</option>
+                    <option value="Đang xử lý">Đang xử lý</option>
+                    <option value="Hoàn thành">Hoàn thành</option>
+                    <option value="Huỷ">Huỷ</option>
+                  </select>
+                </div>
               </div>
             </div>
           </div>
@@ -3055,6 +3242,7 @@ document.addEventListener('DOMContentLoaded', function() {
               </div>
             </div>
           </div>
+
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
@@ -3066,7 +3254,7 @@ document.addEventListener('DOMContentLoaded', function() {
 </div>
     <!-- Modal chỉnh sửa task triển khai -->
     <div class="modal fade" id="editDeploymentTaskModal" tabindex="-1" aria-labelledby="editDeploymentTaskModalLabel" aria-hidden="true">
-      <div class="modal-dialog modal-xl">
+      <div class="modal-dialog">
     <div class="modal-content deployment-request-modal">
       <div class="modal-header">
         <h5 class="modal-title" id="editDeploymentTaskModalLabel">
@@ -3079,65 +3267,83 @@ document.addEventListener('DOMContentLoaded', function() {
           <div class="row g-4">
             <!-- Cột trái -->
             <div class="col-md-6">
-              <div class="mb-3">
-                <label class="form-label">Số task:</label>
-                <input type="text" class="form-control" name="task_number" id="edit_task_number" readonly>
+              <div class="mb-3 row align-items-center">
+                <label class="col-md-3 form-label mb-0">Số task:</label>
+                <div class="col-md-9">
+                  <input type="text" class="form-control" name="task_number" id="edit_task_number" readonly>
+                </div>
               </div>
-              <div class="mb-3">
-                <label for="edit_task_type" class="form-label">Loại Task <span class="text-danger">*</span></label>
-                <select class="form-select" name="task_type" id="edit_task_type" required <?php echo ($current_role === 'user') ? 'readonly' : ''; ?>>
-                  <option value="">-- Chọn loại task --</option>
-                  <option value="onsite">Onsite</option>
-                  <option value="offsite">Offsite</option>
-                  <option value="remote">Remote</option>
-                </select>
+              <div class="mb-3 row align-items-center">
+                <label for="edit_task_type" class="col-md-3 form-label mb-0">Loại Task <span class="text-danger">*</span></label>
+                <div class="col-md-9">
+                  <select class="form-select" name="task_type" id="edit_task_type" required <?php echo ($current_role === 'user') ? 'readonly' : ''; ?>>
+                    <option value="">-- Chọn loại task --</option>
+                    <option value="onsite">Onsite</option>
+                    <option value="offsite">Offsite</option>
+                    <option value="remote">Remote</option>
+                  </select>
+                </div>
               </div>
-              <div class="mb-3">
-                <label for="edit_task_template" class="form-label">Task mẫu</label>
-                <select class="form-select" name="task_template" id="edit_task_template" <?php echo ($current_role === 'user') ? 'readonly' : ''; ?>>
-                  <option value="">-- Chọn task mẫu --</option>
-                  <option value="Cài đặt thiết bị">Cài đặt thiết bị</option>
-                  <option value="Cấu hình phần mềm">Cấu hình phần mềm</option>
-                  <option value="Kiểm tra hệ thống">Kiểm tra hệ thống</option>
-                  <option value="Đào tạo người dùng">Đào tạo người dùng</option>
-                  <option value="Bảo trì định kỳ">Bảo trì định kỳ</option>
-                  <option value="Khắc phục sự cố">Khắc phục sự cố</option>
-                  <option value="Nghiệm thu dự án">Nghiệm thu dự án</option>
-                </select>
+              <div class="mb-3 row align-items-center">
+                <label for="edit_task_template" class="col-md-3 form-label mb-0">Task mẫu</label>
+                <div class="col-md-9">
+                  <select class="form-select" name="task_template" id="edit_task_template" <?php echo ($current_role === 'user') ? 'readonly' : ''; ?>>
+                    <option value="">-- Chọn task mẫu --</option>
+                    <option value="Cài đặt thiết bị">Cài đặt thiết bị</option>
+                    <option value="Cấu hình phần mềm">Cấu hình phần mềm</option>
+                    <option value="Kiểm tra hệ thống">Kiểm tra hệ thống</option>
+                    <option value="Đào tạo người dùng">Đào tạo người dùng</option>
+                    <option value="Bảo trì định kỳ">Bảo trì định kỳ</option>
+                    <option value="Khắc phục sự cố">Khắc phục sự cố</option>
+                    <option value="Nghiệm thu dự án">Nghiệm thu dự án</option>
+                  </select>
+                </div>
               </div>
-              <div class="mb-3">
-                <label for="edit_task_name" class="form-label">Task <span class="text-danger">*</span></label>
-                <input type="text" class="form-control" name="task_name" id="edit_task_name" required placeholder="Nhập tên task cụ thể" <?php echo ($current_role === 'user') ? 'readonly' : ''; ?>>
+              <div class="mb-3 row align-items-center">
+                <label for="edit_task_name" class="col-md-3 form-label mb-0">Task <span class="text-danger">*</span></label>
+                <div class="col-md-9">
+                  <input type="text" class="form-control" name="task_name" id="edit_task_name" required placeholder="Nhập tên task cụ thể" <?php echo ($current_role === 'user') ? 'readonly' : ''; ?>>
+                </div>
               </div>
-              <div class="mb-3">
-                <label for="edit_task_note" class="form-label">Ghi chú</label>
-                <textarea class="form-control" name="task_note" id="edit_task_note" rows="2" placeholder="Nhập ghi chú" <?php echo ($current_role === 'user') ? 'readonly' : ''; ?>></textarea>
+              <div class="mb-3 row align-items-start">
+                <label for="edit_task_note" class="col-md-3 form-label mb-0">Ghi chú</label>
+                <div class="col-md-9">
+                  <textarea class="form-control" name="task_note" id="edit_task_note" rows="2" placeholder="Nhập ghi chú" <?php echo ($current_role === 'user') ? 'readonly' : ''; ?>></textarea>
+                </div>
               </div>
             </div>
             <!-- Cột phải -->
             <div class="col-md-6">
-              <div class="mb-3">
-                <label for="edit_task_assignee_id" class="form-label">Người thực hiện</label>
-                <select class="form-select" name="assignee_id" id="edit_task_assignee_id" <?php echo ($current_role === 'user') ? 'readonly' : ''; ?>>
-                  <option value="">-- Chọn người thực hiện --</option>
-                </select>
+              <div class="mb-3 row align-items-center">
+                <label for="edit_task_assignee_id" class="col-md-3 form-label mb-0">Người thực hiện</label>
+                <div class="col-md-9">
+                  <select class="form-select" name="assignee_id" id="edit_task_assignee_id" <?php echo ($current_role === 'user') ? 'readonly' : ''; ?>>
+                    <option value="">-- Chọn người thực hiện --</option>
+                  </select>
+                </div>
               </div>
-              <div class="mb-3">
-                <label for="edit_task_start_date" class="form-label">Thời gian bắt đầu:</label>
-                <input type="datetime-local" class="form-control" name="start_date" id="edit_task_start_date" <?php echo ($current_role === 'user') ? 'readonly' : ''; ?>>
+              <div class="mb-3 row align-items-center">
+                <label for="edit_task_start_date" class="col-md-3 form-label mb-0">Thời gian bắt đầu:</label>
+                <div class="col-md-9">
+                  <input type="datetime-local" class="form-control" name="start_date" id="edit_task_start_date" <?php echo ($current_role === 'user') ? 'readonly' : ''; ?>>
+                </div>
               </div>
-              <div class="mb-3">
-                <label for="edit_task_end_date" class="form-label">Thời gian kết thúc:</label>
-                <input type="datetime-local" class="form-control" name="end_date" id="edit_task_end_date">
+              <div class="mb-3 row align-items-center">
+                <label for="edit_task_end_date" class="col-md-3 form-label mb-0">Thời gian kết thúc:</label>
+                <div class="col-md-9">
+                  <input type="datetime-local" class="form-control" name="end_date" id="edit_task_end_date">
+                </div>
               </div>
-              <div class="mb-3">
-                <label for="edit_task_status" class="form-label">Trạng thái</label>
-                <select class="form-select" name="status" id="edit_task_status">
-                  <option value="Tiếp nhận">Tiếp nhận</option>
-                  <option value="Đang xử lý">Đang xử lý</option>
-                  <option value="Hoàn thành">Hoàn thành</option>
-                  <option value="Huỷ">Huỷ</option>
-                </select>
+              <div class="mb-3 row align-items-center">
+                <label for="edit_task_status" class="col-md-3 form-label mb-0">Trạng thái</label>
+                <div class="col-md-9">
+                  <select class="form-select" name="status" id="edit_task_status">
+                    <option value="Tiếp nhận">Tiếp nhận</option>
+                    <option value="Đang xử lý">Đang xử lý</option>
+                    <option value="Hoàn thành">Hoàn thành</option>
+                    <option value="Huỷ">Huỷ</option>
+                  </select>
+                </div>
               </div>
             </div>
           </div>
@@ -3253,6 +3459,23 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
     }
+});
+
+// Reset form khi mở modal tạo case triển khai
+$('#createDeploymentCaseModal').on('show.bs.modal', function () {
+    // Reset toàn bộ form
+    $('#createDeploymentCaseForm')[0].reset();
+    // Reset select2 khách hàng nếu có
+    if ($('#customer_id').data('select2')) {
+        $('#customer_id').val('').trigger('change');
+    }
+    // Reset select2 sale nếu có
+    if ($('#sale_id').data('select2')) {
+        $('#sale_id').val('').trigger('change');
+    }
+    // Clear các trường custom nếu cần
+    $('#contact_person').val('');
+    $('#contact_phone').val('');
 });
 </script>
 <script src="assets/js/dashboard.js?v=<?php echo filemtime('assets/js/dashboard.js'); ?>"></script>

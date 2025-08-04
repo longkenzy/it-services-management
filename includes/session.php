@@ -59,7 +59,7 @@ function setUserSession($user_data) {
 }
 
 /**
- * Lấy thông tin user hiện tại từ session
+ * Lấy thông tin user hiện tại từ session và database
  * @return array|null Thông tin user hoặc null nếu chưa đăng nhập
  */
 function getCurrentUser() {
@@ -67,7 +67,8 @@ function getCurrentUser() {
         return null;
     }
     
-    return [
+    // Thông tin cơ bản từ session
+    $user = [
         'id' => $_SESSION[SESSION_USER_ID],
         'username' => $_SESSION[SESSION_USERNAME],
         'fullname' => $_SESSION[SESSION_FULLNAME],
@@ -75,6 +76,25 @@ function getCurrentUser() {
         'login_time' => $_SESSION[SESSION_LOGIN_TIME],
         'last_activity' => $_SESSION[SESSION_LAST_ACTIVITY]
     ];
+    
+    // Lấy thông tin chi tiết từ database
+    try {
+        global $pdo;
+        if ($pdo) {
+            $stmt = $pdo->prepare("SELECT position, department, office, staff_code FROM staffs WHERE id = ?");
+            $stmt->execute([$_SESSION[SESSION_USER_ID]]);
+            $staff_info = $stmt->fetch(PDO::FETCH_ASSOC);
+            
+            if ($staff_info) {
+                $user = array_merge($user, $staff_info);
+            }
+        }
+    } catch (Exception $e) {
+        // Log error nhưng không làm crash
+        error_log("Error getting staff info: " . $e->getMessage());
+    }
+    
+    return $user;
 }
 
 /**
@@ -338,6 +358,36 @@ function getFlashMessages() {
     $messages = $_SESSION['flash_messages'] ?? [];
     unset($_SESSION['flash_messages']);
     return $messages;
+}
+
+/**
+ * Log hoạt động của user
+ * @param string $action Hành động thực hiện
+ * @param string $details Chi tiết hành động
+ */
+function logUserActivity($action, $details = '') {
+    try {
+        global $pdo;
+        
+        if (!isset($pdo)) {
+            return; // Không có kết nối database
+        }
+        
+        $user_id = getCurrentUserId();
+        $username = getCurrentUsername();
+        $ip_address = $_SERVER['REMOTE_ADDR'] ?? 'unknown';
+        $user_agent = $_SERVER['HTTP_USER_AGENT'] ?? '';
+        
+        $sql = "INSERT INTO user_activity_logs (user_id, username, action, details, ip_address, user_agent, created_at) 
+                VALUES (?, ?, ?, ?, ?, ?, NOW())";
+        
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute([$user_id, $username, $action, $details, $ip_address, $user_agent]);
+        
+    } catch (Exception $e) {
+        // Log lỗi nhưng không làm crash ứng dụng
+        error_log("Failed to log user activity: " . $e->getMessage());
+    }
 }
 
 // Auto-update last activity cho các request

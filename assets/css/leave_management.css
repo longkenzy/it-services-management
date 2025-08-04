@@ -1,0 +1,337 @@
+/**
+ * IT Services Management - Leave Management CSS
+ * Styling cho trang quản lý nghỉ phép
+ */
+
+/* ===== LEAVE REQUESTS TABLE STYLES ===== */
+.leave-requests-table {
+    font-size: 0.85rem;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    border-collapse: collapse;
+}
+
+.leave-requests-table th {
+    background-color: #f8f9fa;
+    font-weight: 600;
+    font-size: 0.8rem;
+    color: #495057;
+    border-bottom: 2px solid #dee2e6;
+    border-right: 1px solid #dee2e6;
+    padding: 0.75rem 0.5rem;
+    vertical-align: middle;
+}
+
+.leave-requests-table th:last-child {
+    border-right: none;
+}
+
+.leave-requests-table td {
+    padding: 0.75rem 0.5rem;
+    vertical-align: middle;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #e9ecef;
+    border-right: 1px solid #e9ecef;
+}
+
+.leave-requests-table td:last-child {
+    border-right: none;
+}
+
+.leave-requests-table tbody tr:hover {
+    background-color: #f8f9fa;
+    transition: background-color 0.2s ease;
+}
+
+/* Request code styling */
+.leave-requests-table .badge {
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+/* Avatar styling */
+.leave-requests-table .avatar-sm {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.leave-requests-table .avatar-sm img {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.leave-requests-table .avatar-sm div {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 12px;
+    color: white;
+}
+
+/* Status badge styling */
+.leave-requests-table .badge.bg-warning {
+    background-color: #ffc107 !important;
+    color: #212529 !important;
+}
+
+.leave-requests-table .badge.bg-success {
+    background-color: #28a745 !important;
+}
+
+.leave-requests-table .badge.bg-danger {
+    background-color: #dc3545 !important;
+}
+
+/* Action buttons styling */
+.leave-requests-table .btn-group .btn {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+    margin: 0 0.125rem;
+}
+
+/* Text truncate for long content */
+.leave-requests-table .text-truncate {
+    max-width: 200px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Requester column styling */
+.leave-requests-table td:nth-child(2) {
+    min-width: 200px;
+    max-width: 250px;
+}
+
+.leave-requests-table td:nth-child(2) small {
+    font-size: 0.75rem;
+    line-height: 1.2;
+}
+
+/* ===== MODAL STYLES ===== */
+#createLeaveRequestModal {
+    z-index: 1060;
+}
+
+#createLeaveRequestModal .modal-backdrop {
+    z-index: 1055;
+}
+
+#createLeaveRequestModal .modal-dialog {
+    max-width: none;
+    width: calc(100vw - 40px);
+    margin: 80px auto 20px auto;
+    height: calc(100vh - 120px);
+}
+
+#createLeaveRequestModal .modal-content {
+    height: 100%;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+#createLeaveRequestModal .modal-header {
+    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+    color: white;
+    padding: 1rem 1.5rem;
+    border-radius: 12px 12px 0 0;
+}
+
+#createLeaveRequestModal .modal-header .btn-close {
+    filter: brightness(0) invert(1);
+}
+
+#createLeaveRequestModal .modal-body {
+    padding: 1.5rem;
+    max-height: 70vh;
+    overflow-y: auto;
+    flex: 1;
+}
+
+#createLeaveRequestModal .form-label {
+    color: #495057;
+    font-weight: 600;
+}
+
+#createLeaveRequestModal .form-control,
+#createLeaveRequestModal .form-select {
+    border: 1px solid #dee2e6;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.9rem;
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+#createLeaveRequestModal .form-control:focus,
+#createLeaveRequestModal .form-select:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+#createLeaveRequestModal .modal-footer {
+    padding: 1rem 1.5rem;
+    border-top: 1px solid #dee2e6;
+    border-radius: 0 0 12px 12px;
+}
+
+#createLeaveRequestModal .btn {
+    padding: 0.5rem 1.5rem;
+    font-weight: 500;
+}
+
+/* ===== VIEW MODAL STYLES ===== */
+#viewLeaveRequestModal {
+    z-index: 1060;
+}
+
+#viewLeaveRequestModal .modal-backdrop {
+    z-index: 1055;
+}
+
+#viewLeaveRequestModal .modal-dialog {
+    max-width: none;
+    width: calc(100vw - 40px);
+    margin: 80px auto 20px auto;
+    height: calc(100vh - 120px);
+}
+
+#viewLeaveRequestModal .modal-content {
+    height: 100%;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+#viewLeaveRequestModal .modal-header {
+    background: linear-gradient(135deg, #17a2b8 0%, #138496 100%);
+    color: white;
+    padding: 1rem 1.5rem;
+    border-radius: 12px 12px 0 0;
+}
+
+#viewLeaveRequestModal .modal-header .btn-close {
+    filter: brightness(0) invert(1);
+}
+
+#viewLeaveRequestModal .modal-body {
+    padding: 1.5rem;
+    max-height: 70vh;
+    overflow-y: auto;
+    flex: 1;
+}
+
+#viewLeaveRequestModal .form-label {
+    color: #495057;
+    font-weight: 600;
+}
+
+#viewLeaveRequestModal .form-control-plaintext {
+    color: #495057;
+    font-weight: 500;
+}
+
+#viewLeaveRequestModal .modal-footer {
+    border-radius: 0 0 12px 12px;
+}
+
+/* ===== FILTER STYLES ===== */
+#statusFilter,
+#typeFilter {
+    min-width: 150px;
+}
+
+/* ===== RESPONSIVE STYLES ===== */
+@media (max-width: 768px) {
+    .leave-requests-table {
+        font-size: 0.75rem;
+        border-collapse: collapse;
+    }
+    
+    .leave-requests-table th,
+    .leave-requests-table td {
+        padding: 0.5rem 0.25rem;
+        border-right: 1px solid #e9ecef;
+    }
+    
+    .leave-requests-table th:last-child,
+    .leave-requests-table td:last-child {
+        border-right: none;
+    }
+    
+    /* Hide less important columns on mobile */
+    .leave-requests-table th:nth-child(5),
+    .leave-requests-table td:nth-child(5) { display: none; } /* Hide attachment column */
+    
+    .leave-requests-table th:nth-child(6),
+    .leave-requests-table td:nth-child(6) { display: none; } /* Hide date sent column */
+    
+    /* Adjust column widths for mobile */
+    .leave-requests-table th:nth-child(1),
+    .leave-requests-table td:nth-child(1) { width: 15%; } /* Request code */
+    
+    .leave-requests-table th:nth-child(2),
+    .leave-requests-table td:nth-child(2) { 
+        width: 30%; 
+        min-width: 150px;
+    } /* Requester */
+    
+    .leave-requests-table th:nth-child(3),
+    .leave-requests-table td:nth-child(3) { width: 20%; } /* Leave period */
+    
+    .leave-requests-table th:nth-child(4),
+    .leave-requests-table td:nth-child(4) { width: 25%; } /* Reason */
+    
+    .leave-requests-table th:nth-child(7),
+    .leave-requests-table td:nth-child(7) { width: 15%; } /* Status */
+    
+    .leave-requests-table th:nth-child(8),
+    .leave-requests-table td:nth-child(8) { width: 15%; } /* Actions */
+    
+    /* Modal adjustments */
+    #createLeaveRequestModal .modal-dialog {
+        margin: 0.25rem;
+        max-width: 98vw;
+        width: 98vw;
+    }
+    
+    #createLeaveRequestModal .modal-body {
+        padding: 1rem;
+    }
+    
+    #createLeaveRequestModal .col-md-6 {
+        margin-bottom: 0.75rem;
+    }
+}
+
+/* ===== LOADING AND EMPTY STATES ===== */
+#loadingState .spinner-border {
+    width: 3rem;
+    height: 3rem;
+}
+
+#emptyState i {
+    opacity: 0.5;
+}
+
+/* ===== SEARCH INPUT STYLING ===== */
+#searchInput:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+/* ===== CARD STYLING ===== */
+.card {
+    border: none;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    border-radius: 12px;
+}
+
+.card-body {
+    border-radius: 12px;
+} 

@@ -809,11 +809,11 @@ $flash_messages = getFlashMessages();
                     }
                 }
                 
-                console.log(`Found ${foundImages.length} images:`, foundImages);
+        
                 
                 // Now load all found images
                 if (foundImages.length === 0) {
-                    console.log('No images found, creating default slides');
+            
                     createDefaultSlides();
                     return;
                 }
@@ -829,7 +829,7 @@ $flash_messages = getFlashMessages();
                             src: `assets/images/slider/image-slide${image.number}.${image.ext}`
                         };
                         
-                        console.log(`Image loaded: ${image.number}.${image.ext} (${loadedImages}/${totalImagesToCheck})`);
+    
                         
                         // Create slides when all images are loaded
                         if (loadedImages === totalImagesToCheck) {
@@ -840,7 +840,7 @@ $flash_messages = getFlashMessages();
                     
                     img.onerror = function() {
                         loadedImages++;
-                        console.log(`Image failed to load: ${image.number}.${image.ext} (${loadedImages}/${totalImagesToCheck})`);
+
                         
                         if (loadedImages === totalImagesToCheck) {
                             slides = loadedSlides.filter(slide => slide);
@@ -902,25 +902,20 @@ $flash_messages = getFlashMessages();
                 dotsContainer.append(dot);
                 
                 // Debug: log slide creation
-                console.log(`Created slide ${index + 1}:`, slide.src, `(${slideClass})`);
+
             });
             
-            console.log('=== SLIDE ORDER CHECK ===');
-            console.log('Expected order: Slide 1 (image-slide01.jpg) → Slide 2 (image-slide02.jpg) → Slide 3 (image-slide03.jpg)');
-            slides.forEach((slide, index) => {
-                console.log(`Slide ${index + 1}: ${slide.src}`);
-            });
-            console.log('========================');
+
             
             // Start auto-slide if we have multiple slides
             if (slides.length > 1) {
-                console.log('Multiple slides detected, will start auto-slide in 1 second');
+    
                 // Start auto-slide after a short delay to ensure everything is loaded
                 setTimeout(function() {
                     startAutoSlide();
                 }, 1000);
             } else {
-                console.log('Only one slide detected, no auto-slide needed');
+
             }
         }
         
@@ -952,7 +947,7 @@ $flash_messages = getFlashMessages();
             if (currentSlide < 0) currentSlide = totalSlides - 1;
             if (currentSlide >= totalSlides) currentSlide = 0;
             
-            console.log(`Animation: Slide ${oldSlide} → Slide ${currentSlide + 1}`);
+
             showSlide(currentSlide);
         }
         
@@ -988,22 +983,20 @@ $flash_messages = getFlashMessages();
             $('.slider-dot').eq(index).addClass('active');
             
             // Debug: log current slide and positions
-            console.log('Current slide:', index + 1, 'of', slides.length);
-            console.log('Slide positions - Current:', index + 1, 'Next:', nextIndex + 1);
-            console.log('Animation: Fade effect (current slide fades in, others fade out)');
+
             
             // Debug: check if any slides have conflicting opacity
             $('.slide').each(function(i) {
                 const opacity = $(this).css('opacity');
                 const classes = $(this).attr('class');
-                console.log(`Slide ${i + 1} opacity:`, opacity, 'classes:', classes);
+
             });
         }
         
         function startAutoSlide() {
             // Don't start if already running
             if (slideInterval) {
-                console.log('Auto-slide already running');
+    
                 return;
             }
             
@@ -1012,7 +1005,7 @@ $flash_messages = getFlashMessages();
                 slideInterval = setInterval(function() {
                     changeSlide(1);
                 }, 5000); // Change slide every 5 seconds
-                console.log('Auto-slide started - changing every 5 seconds');
+    
             }
         }
         
@@ -1020,7 +1013,7 @@ $flash_messages = getFlashMessages();
             if (slideInterval) {
                 clearInterval(slideInterval);
                 slideInterval = null;
-                console.log('Auto-slide stopped');
+    
             }
         }
         

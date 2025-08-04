@@ -1,254 +1,174 @@
 <?php
 /**
- * IT CRM - Get Staffs API
- * File: api/get_staffs.php
- * Mục đích: API lấy danh sách nhân sự với phân trang và tìm kiếm
+ * API: Lấy danh sách nhân viên đầy đủ cho trang staff
+ * Method: GET
+ * Parameters: page, limit, search, department, position (optional)
  */
 
-// Bật hiển thị lỗi để debug (tắt trong production)
-ini_set('display_errors', 1);
-error_reporting(E_ALL);
+header('Content-Type: application/json');
+header('Access-Control-Allow-Origin: *');
+header('Access-Control-Allow-Methods: GET');
+header('Access-Control-Allow-Headers: Content-Type');
 
-// Include các file cần thiết
-require_once '../config/db.php';
 require_once '../includes/session.php';
+require_once '../config/db.php';
 
-// Thiết lập header cho JSON response
-header('Content-Type: application/json; charset=utf-8');
-
-// Kiểm tra authentication
+// Kiểm tra đăng nhập
 if (!isLoggedIn()) {
     http_response_code(401);
-    echo json_encode([
-        'success' => false,
-        'message' => 'Vui lòng đăng nhập để truy cập.'
-    ]);
-    exit();
-}
-
-// Chỉ cho phép GET request
-if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
-    http_response_code(405);
-    echo json_encode([
-        'success' => false,
-        'message' => 'Phương thức không được phép.'
-    ]);
-    exit();
+    echo json_encode(['success' => false, 'message' => 'Chưa đăng nhập']);
+    exit;
 }
 
 try {
-    // ===== LẤY THAM SỐ TỪ URL ===== //
-    
     $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
     $limit = isset($_GET['limit']) ? (int)$_GET['limit'] : 10;
-    $search = isset($_GET['search']) ? trim($_GET['search']) : '';
-    $department = isset($_GET['department']) ? trim($_GET['department']) : '';
-    $position = isset($_GET['position']) ? trim($_GET['position']) : '';
-    $contract_type = isset($_GET['contract_type']) ? trim($_GET['contract_type']) : '';
-    $sort_by = isset($_GET['sort_by']) ? trim($_GET['sort_by']) : 'start_date';
-    $sort_order = isset($_GET['sort_order']) ? trim($_GET['sort_order']) : 'ASC';
-    $gender = isset($_GET['gender']) ? trim($_GET['gender']) : '';
+    $search = $_GET['search'] ?? '';
+    $department = $_GET['department'] ?? '';
+    $position = $_GET['position'] ?? '';
     
-    // Validate parameters
-    if ($page < 1) $page = 1;
-    if ($limit < 1) $limit = 10;
-    if ($limit > 100) $limit = 100; // Giới hạn tối đa 100 records
+    // Tính offset
+    $offset = ($page - 1) * $limit;
     
-    // Validate sort parameters
-    $allowed_sort_fields = ['staff_code', 'fullname', 'position', 'department', 'seniority', 'created_at', 'start_date'];
-    if (!in_array($sort_by, $allowed_sort_fields)) {
-        $sort_by = 'start_date';
-    }
+    // Xây dựng câu query đếm tổng số
+    $countSql = "SELECT COUNT(*) as total FROM staffs WHERE 1=1";
+    $countParams = [];
     
-    $sort_order = strtoupper($sort_order);
-    if (!in_array($sort_order, ['ASC', 'DESC'])) {
-        $sort_order = 'DESC'; // Mặc định sắp xếp theo ngày vào làm mới nhất trước
-    }
-    
-    // ===== XÂY DỰNG QUERY ===== //
-    
-    $where_conditions = [];
+    // Xây dựng câu query chính
+    $sql = "SELECT 
+                s.id,
+                s.staff_code,
+                s.fullname,
+                s.birth_date,
+                s.gender,
+                s.position,
+                s.department,
+                s.office,
+                s.phone_main,
+                s.phone_alt,
+                s.email_work,
+                s.email_personal,
+                s.status,
+                s.job_type,
+                s.resigned,
+                s.avatar,
+                s.created_at,
+                s.updated_at
+            FROM staffs s
+            WHERE 1=1";
     $params = [];
     
-    // Tìm kiếm theo tên, mã nhân viên, email
+    // Tìm kiếm
     if (!empty($search)) {
-        $where_conditions[] = "(fullname LIKE :search OR staff_code LIKE :search OR email_work LIKE :search OR email_personal LIKE :search)";
-        $params['search'] = '%' . $search . '%';
+        $searchCondition = " AND (s.fullname LIKE ? OR s.staff_code LIKE ?)";
+        $searchTerm = "%$search%";
+        $countSql .= $searchCondition;
+        $sql .= $searchCondition;
+        $countParams[] = $searchTerm;
+        $countParams[] = $searchTerm;
+        $params[] = $searchTerm;
+        $params[] = $searchTerm;
     }
     
     // Lọc theo phòng ban
     if (!empty($department)) {
-        $where_conditions[] = "department = :department";
-        $params['department'] = $department;
+        $countSql .= " AND s.department = ?";
+        $sql .= " AND s.department = ?";
+        $countParams[] = $department;
+        $params[] = $department;
     }
     
     // Lọc theo chức vụ
     if (!empty($position)) {
-        $where_conditions[] = "position = :position";
-        $params['position'] = $position;
+        $countSql .= " AND s.position = ?";
+        $sql .= " AND s.position = ?";
+        $countParams[] = $position;
+        $params[] = $position;
     }
     
-    // Lọc theo loại hợp đồng
-    if (!empty($contract_type)) {
-        $where_conditions[] = "job_type = :contract_type";
-        $params['contract_type'] = $contract_type;
-    }
+    // Đếm tổng số
+    $countStmt = $pdo->prepare($countSql);
+    $countStmt->execute($countParams);
+    $totalCount = $countStmt->fetch(PDO::FETCH_ASSOC)['total'];
     
-    // Lọc theo giới tính
-    if (!empty($gender)) {
-        $where_conditions[] = "gender = :gender";
-        $params['gender'] = $gender;
-    }
+    // Thêm ORDER BY và LIMIT
+    $sql .= " ORDER BY s.created_at DESC LIMIT ? OFFSET ?";
+    $params[] = $limit;
+    $params[] = $offset;
     
-    // Chỉ lấy nhân sự đang làm việc
-    $where_conditions[] = "status = 'active'";
-    
-    // Tạo WHERE clause
-    $where_clause = '';
-    if (!empty($where_conditions)) {
-        $where_clause = 'WHERE ' . implode(' AND ', $where_conditions);
-    }
-    
-    // ===== ĐẾM TỔNG SỐ RECORDS ===== //
-    
-    $count_sql = "SELECT COUNT(*) as total FROM staffs $where_clause";
-    $count_stmt = $pdo->prepare($count_sql);
-    $count_stmt->execute($params);
-    $total_records = $count_stmt->fetch()['total'];
-    
-    // ===== LẤY DỮ LIỆU VỚI PHÂN TRANG ===== //
-    
-    $sql = "SELECT 
-                id, staff_code, fullname, username, birth_date, gender, 
-                avatar, position, department, office, phone_main, email_work, 
-                job_type, seniority, status, role, start_date, resigned, created_at, updated_at
-            FROM staffs 
-            $where_clause 
-            ORDER BY start_date IS NULL, start_date ASC";
     $stmt = $pdo->prepare($sql);
-    foreach ($params as $key => $value) {
-        $stmt->bindValue(':' . $key, $value);
+    $stmt->execute($params);
+    $staffs = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    
+    // Tính toán thông tin pagination
+    $totalPages = ceil($totalCount / $limit);
+    
+    // Tính toán statistics chi tiết
+    $totalStmt = $pdo->query("SELECT COUNT(*) as total FROM staffs");
+    $total = $totalStmt->fetch(PDO::FETCH_ASSOC)['total'];
+    
+    $activeStmt = $pdo->query("SELECT COUNT(*) as active FROM staffs WHERE resigned = 0 OR resigned IS NULL");
+    $active = $activeStmt->fetch(PDO::FETCH_ASSOC)['active'];
+    
+    $resignedStmt = $pdo->query("SELECT COUNT(*) as resigned FROM staffs WHERE resigned = 1");
+    $resigned = $resignedStmt->fetch(PDO::FETCH_ASSOC)['resigned'];
+    
+    // Tính toán theo giới tính
+    $maleStmt = $pdo->query("SELECT COUNT(*) as male FROM staffs WHERE gender = 'Nam'");
+    $male = $maleStmt->fetch(PDO::FETCH_ASSOC)['male'];
+    
+    $femaleStmt = $pdo->query("SELECT COUNT(*) as female FROM staffs WHERE gender = 'Nữ'");
+    $female = $femaleStmt->fetch(PDO::FETCH_ASSOC)['female'];
+    
+    $statistics = [
+        'total' => $total,
+        'active' => $active,
+        'resigned' => $resigned,
+        'male' => $male,
+        'female' => $female
+    ];
+    
+    // Lấy danh sách departments và positions cho filter
+    $deptStmt = $pdo->query("SELECT DISTINCT department, COUNT(*) as count FROM staffs WHERE department IS NOT NULL AND department != '' GROUP BY department ORDER BY department");
+    $departments = $deptStmt->fetchAll(PDO::FETCH_ASSOC);
+    
+    $posStmt = $pdo->query("SELECT DISTINCT position, COUNT(*) as count FROM staffs WHERE position IS NOT NULL AND position != '' GROUP BY position ORDER BY position");
+    $positions = $posStmt->fetchAll(PDO::FETCH_ASSOC);
+    
+    // Tạo danh sách genders (nếu có cột gender)
+    $genders = [];
+    try {
+        $genderStmt = $pdo->query("SELECT DISTINCT gender, COUNT(*) as count FROM staffs WHERE gender IS NOT NULL AND gender != '' GROUP BY gender ORDER BY gender");
+        $genders = $genderStmt->fetchAll(PDO::FETCH_ASSOC);
+    } catch (Exception $e) {
+        // Nếu không có cột gender, tạo danh sách rỗng
+        $genders = [];
     }
-    $stmt->execute();
-    $staffs = $stmt->fetchAll();
-    
-    // ===== XỬ LÝ DỮ LIỆU ===== //
-    
-    $processed_staffs = [];
-    foreach ($staffs as $staff) {
-        // Xử lý avatar - nếu không có thì dùng avatar mặc định
-        $avatar_url = 'assets/images/default-avatar.svg';
-        if (!empty($staff['avatar'])) {
-            // Nếu avatar chứa đường dẫn đầy đủ thì dùng luôn
-            if (strpos($staff['avatar'], '/') !== false) {
-                $avatar_url = $staff['avatar'];
-            } else {
-                // Nếu chỉ là tên file thì thêm đường dẫn
-                $avatar_url = 'assets/uploads/avatars/' . $staff['avatar'];
-            }
-        }
-        
-        // Tính tuổi từ ngày sinh
-        $age = null;
-        if ($staff['birth_date']) {
-            $birth_date = new DateTime($staff['birth_date']);
-            $current_date = new DateTime();
-            $age = $current_date->diff($birth_date)->y;
-        }
-        
-        $processed_staffs[] = [
-            'id' => $staff['id'],
-            'staff_code' => $staff['staff_code'],
-            'fullname' => $staff['fullname'],
-            'username' => $staff['username'],
-            'birth_date' => $staff['birth_date'],
-            'age' => $age,
-            'gender' => $staff['gender'],
-            'avatar' => $avatar_url,
-            'position' => $staff['position'],
-            'department' => $staff['department'],
-            'office' => $staff['office'],
-            'phone' => $staff['phone_main'],
-            'email' => $staff['email_work'],
-            'job_type' => $staff['job_type'],
-            'seniority' => $staff['seniority'],
-            'status' => $staff['status'],
-            'role' => $staff['role'],
-            'start_date' => $staff['start_date'],
-            'resigned' => $staff['resigned'],
-            'created_at' => $staff['created_at'],
-            'updated_at' => $staff['updated_at']
-        ];
-    }
-    
-    // ===== LẤY THỐNG KÊ PHÒNG BAN ===== //
-    
-    $dept_sql = "SELECT department, COUNT(*) as count FROM staffs WHERE status = 'active' AND department IS NOT NULL AND department != '' GROUP BY department ORDER BY count DESC";
-    $dept_stmt = $pdo->prepare($dept_sql);
-    $dept_stmt->execute();
-    $departments = $dept_stmt->fetchAll();
-    
-    // ===== LẤY THỐNG KÊ CHỨC VỤ ===== //
-    
-    $pos_sql = "SELECT position, COUNT(*) as count FROM staffs WHERE status = 'active' AND position IS NOT NULL AND position != '' GROUP BY position ORDER BY count DESC";
-    $pos_stmt = $pdo->prepare($pos_sql);
-    $pos_stmt->execute();
-    $positions = $pos_stmt->fetchAll();
-    
-    // ===== LẤY THỐNG KÊ GIỚI TÍNH ===== //
-    $gender_sql = "SELECT gender, COUNT(*) as count FROM staffs WHERE status = 'active' AND gender IS NOT NULL AND gender != '' GROUP BY gender ORDER BY count DESC";
-    $gender_stmt = $pdo->prepare($gender_sql);
-    $gender_stmt->execute();
-    $genders = $gender_stmt->fetchAll();
-    
-    // ===== TÍNH TOÁN PHÂN TRANG ===== //
-    
-    // ===== TRẢ VỀ KẾT QUẢ ===== //
     
     echo json_encode([
         'success' => true,
         'data' => [
-            'staffs' => $processed_staffs,
-            'statistics' => [
-                'departments' => $departments,
-                'positions' => $positions,
-                'genders' => $genders,
-                'total_active_staff' => $total_records
-            ],
-            'filters' => [
-                'search' => $search,
-                'department' => $department,
-                'position' => $position,
-                'contract_type' => $contract_type,
-                'gender' => $gender,
-                'sort_by' => $sort_by,
-                'sort_order' => $sort_order
+            'staffs' => $staffs,
+            'statistics' => $statistics,
+            'departments' => $departments,
+            'positions' => $positions,
+            'genders' => $genders,
+            'pagination' => [
+                'current_page' => $page,
+                'total_pages' => $totalPages,
+                'total_records' => $totalCount,
+                'limit' => $limit,
+                'has_next' => $page < $totalPages,
+                'has_prev' => $page > 1
             ]
-        ],
-        'message' => 'Lấy dữ liệu nhân sự thành công.'
-    ]);
-    
-} catch (PDOException $e) {
-    // Lỗi database
-    error_log("Database error in get_staffs: " . $e->getMessage());
-    
-    http_response_code(500);
-    echo json_encode([
-        'success' => false,
-        'message' => 'Lỗi hệ thống. Vui lòng thử lại sau.',
-        'error' => $e->getMessage()
+        ]
     ]);
     
 } catch (Exception $e) {
-    // Lỗi khác
-    error_log("General error in get_staffs: " . $e->getMessage());
-    
     http_response_code(500);
     echo json_encode([
         'success' => false,
-        'message' => 'Có lỗi xảy ra. Vui lòng thử lại sau.',
-        'error' => $e->getMessage()
+        'message' => 'Có lỗi xảy ra khi tải danh sách nhân viên: ' . $e->getMessage()
     ]);
 }
-
 ?> 

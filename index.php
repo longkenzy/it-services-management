@@ -98,7 +98,7 @@ if (isLoggedIn()) {
                                 </div>
                             </div>
                             
-                            <!-- Remember Me & Forgot Password -->
+                            <!-- Remember Me -->
                             <div class="d-flex justify-content-between align-items-center mb-4">
                                 <div class="form-check">
                                     <input class="form-check-input" type="checkbox" id="rememberMe" name="remember">
@@ -106,7 +106,6 @@ if (isLoggedIn()) {
                                         Remember me
                                     </label>
                                 </div>
-                                <a href="forgot.php" class="text-decoration-none forgot-password">Forgot Password?</a>
                             </div>
                             
                             <!-- Login Button -->

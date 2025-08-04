@@ -13,15 +13,14 @@ try {
     
     $data = [
         'id' => $input['id'] ?? '',
-        'task_code' => $input['task_code'] ?? '',
-        'task_name' => $input['task_name'] ?? '',
+        'task_number' => $input['task_number'] ?? '',
+        'task_type' => $input['task_type'] ?? '',
+        'template_name' => $input['template_name'] ?? '',
         'task_description' => $input['task_description'] ?? '',
-        'assigned_to' => $input['assigned_to'] ?? '',
-        'priority' => $input['priority'] ?? '',
+        'assignee_id' => $input['assignee_id'] ?? '',
         'start_date' => $input['start_date'] ?? '',
         'end_date' => $input['end_date'] ?? '',
         'status' => $input['status'] ?? '',
-        'progress' => $input['progress'] ?? 0,
         'notes' => $input['notes'] ?? ''
     ];
 
@@ -32,15 +31,15 @@ try {
         $errors[] = 'ID task không được để trống';
     }
     
-    if (empty($data['task_code'])) {
+    if (empty($data['task_number'])) {
         $errors[] = 'Mã task không được để trống';
     }
     
-    if (empty($data['task_name'])) {
+    if (empty($data['task_description'])) {
         $errors[] = 'Tên task không được để trống';
     }
     
-    if (empty($data['assigned_to'])) {
+    if (empty($data['assignee_id'])) {
         $errors[] = 'Vui lòng chọn người được giao';
     }
     
@@ -49,18 +48,18 @@ try {
     }
 
     // Kiểm tra mã task đã tồn tại chưa (trừ record hiện tại)
-    if (!empty($data['task_code'])) {
-        $stmt = $pdo->prepare("SELECT id FROM maintenance_tasks WHERE task_code = ? AND id != ?");
-        $stmt->execute([$data['task_code'], $data['id']]);
+    if (!empty($data['task_number'])) {
+        $stmt = $pdo->prepare("SELECT id FROM maintenance_tasks WHERE task_number = ? AND id != ?");
+        $stmt->execute([$data['task_number'], $data['id']]);
         if ($stmt->fetch()) {
             $errors[] = 'Mã task đã tồn tại';
         }
     }
 
     // Kiểm tra người được giao có tồn tại không
-    if (!empty($data['assigned_to'])) {
+    if (!empty($data['assignee_id'])) {
         $stmt = $pdo->prepare("SELECT id FROM staffs WHERE id = ? AND status = 'active'");
-        $stmt->execute([$data['assigned_to']]);
+        $stmt->execute([$data['assignee_id']]);
         if (!$stmt->fetch()) {
             $errors[] = 'Người được giao không tồn tại hoặc không hoạt động';
         }
@@ -79,29 +78,27 @@ try {
 
     // Update database
     $sql = "UPDATE maintenance_tasks SET 
-            task_code = ?, task_name = ?, task_description = ?, assigned_to = ?, 
-            priority = ?, start_date = ?, end_date = ?, status = ?, 
-            progress = ?, notes = ?, updated_at = CURRENT_TIMESTAMP
+            task_number = ?, task_type = ?, template_name = ?, task_description = ?, assignee_id = ?, 
+            start_date = ?, end_date = ?, status = ?, notes = ?, updated_at = CURRENT_TIMESTAMP
             WHERE id = ?";
 
     $stmt = $pdo->prepare($sql);
     $result = $stmt->execute([
-        $data['task_code'],
-        $data['task_name'],
+        $data['task_number'],
+        $data['task_type'],
+        $data['template_name'],
         $data['task_description'],
-        $data['assigned_to'],
-        $data['priority'],
+        $data['assignee_id'],
         $start_date,
         $end_date,
         $data['status'],
-        $data['progress'],
         $data['notes'],
         $data['id']
     ]);
 
     if ($result) {
         // Log hoạt động
-        $log_message = "Cập nhật task bảo trì: {$data['task_code']}";
+        $log_message = "Cập nhật task bảo trì: {$data['task_number']}";
         $log_sql = "INSERT INTO user_activity_logs (user_id, activity, details, ip_address) VALUES (?, ?, ?, ?)";
         $log_stmt = $pdo->prepare($log_sql);
         $log_stmt->execute([

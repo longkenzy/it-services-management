@@ -9,31 +9,46 @@ if (!isLoggedIn()) {
 }
 
 try {
-    $input = json_decode(file_get_contents('php://input'), true);
+    $raw_input = file_get_contents('php://input');
+    $input = json_decode($raw_input, true);
+    
+    // Debug: Log input data
+    error_log("Raw input: " . $raw_input);
+    error_log("JSON decode error: " . json_last_error_msg());
+    error_log("Decoded input: " . print_r($input, true));
     
     $data = [
-        'task_code' => $input['task_code'] ?? '',
-        'task_name' => $input['task_name'] ?? '',
-        'task_description' => $input['task_description'] ?? '',
+        'task_number' => $input['task_number'] ?? '',
+        'task_description' => $input['task_name'] ?? '', // Map task_name to task_description
+        'task_type' => $input['task_type'] ?? '',
+        'task_template' => $input['task_template'] ?? '',
         'assigned_to' => $input['assigned_to'] ?? '',
-        'priority' => $input['priority'] ?? 'Trung bình',
         'start_date' => $input['start_date'] ?? '',
         'end_date' => $input['end_date'] ?? '',
-        'status' => $input['status'] ?? 'Chưa bắt đầu',
-        'progress' => $input['progress'] ?? 0,
+        'status' => $input['status'] ?? 'Tiếp nhận',
         'notes' => $input['notes'] ?? '',
         'maintenance_case_id' => $input['maintenance_case_id'] ?? '',
         'maintenance_request_id' => $input['maintenance_request_id'] ?? ''
     ];
+    
+    // Debug: Log processed data
+    error_log("Processed data: " . print_r($data, true));
 
     // Validation
     $errors = [];
     
-    if (empty($data['task_code'])) {
+    // Debug: Log validation checks
+    error_log("task_number: '" . $data['task_number'] . "' (empty: " . (empty($data['task_number']) ? 'true' : 'false') . ")");
+    error_log("task_description: '" . $data['task_description'] . "' (empty: " . (empty($data['task_description']) ? 'true' : 'false') . ")");
+    error_log("assigned_to: '" . $data['assigned_to'] . "' (empty: " . (empty($data['assigned_to']) ? 'true' : 'false') . ")");
+    error_log("maintenance_case_id: '" . $data['maintenance_case_id'] . "' (empty: " . (empty($data['maintenance_case_id']) ? 'true' : 'false') . ")");
+    error_log("maintenance_request_id: '" . $data['maintenance_request_id'] . "' (empty: " . (empty($data['maintenance_request_id']) ? 'true' : 'false') . ")");
+    
+    if (empty($data['task_number'])) {
         $errors[] = 'Mã task không được để trống';
     }
     
-    if (empty($data['task_name'])) {
+    if (empty($data['task_description'])) {
         $errors[] = 'Tên task không được để trống';
     }
     
@@ -50,9 +65,9 @@ try {
     }
 
     // Kiểm tra mã task đã tồn tại chưa
-    if (!empty($data['task_code'])) {
-        $stmt = $pdo->prepare("SELECT id FROM maintenance_tasks WHERE task_code = ?");
-        $stmt->execute([$data['task_code']]);
+    if (!empty($data['task_number'])) {
+        $stmt = $pdo->prepare("SELECT id FROM maintenance_tasks WHERE task_number = ?");
+        $stmt->execute([$data['task_number']]);
         if ($stmt->fetch()) {
             $errors[] = 'Mã task đã tồn tại';
         }
@@ -98,21 +113,20 @@ try {
 
     // Insert vào database
     $sql = "INSERT INTO maintenance_tasks (
-        task_code, task_name, task_description, assigned_to, priority, 
-        start_date, end_date, status, progress, notes, maintenance_case_id, maintenance_request_id
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        task_number, task_description, task_type, template_name, assignee_id, 
+        start_date, end_date, status, notes, maintenance_case_id, maintenance_request_id
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
     $stmt = $pdo->prepare($sql);
     $result = $stmt->execute([
-        $data['task_code'],
-        $data['task_name'],
+        $data['task_number'],
         $data['task_description'],
+        $data['task_type'],
+        $data['task_template'],
         $data['assigned_to'],
-        $data['priority'],
         $start_date,
         $end_date,
         $data['status'],
-        $data['progress'],
         $data['notes'],
         $data['maintenance_case_id'],
         $data['maintenance_request_id']
@@ -122,7 +136,7 @@ try {
         $task_id = $pdo->lastInsertId();
         
         // Log hoạt động
-        $log_message = "Tạo task bảo trì mới: {$data['task_code']}";
+        $log_message = "Tạo task bảo trì mới: {$data['task_number']}";
         $log_sql = "INSERT INTO user_activity_logs (user_id, activity, details, ip_address) VALUES (?, ?, ?, ?)";
         $log_stmt = $pdo->prepare($log_sql);
         $log_stmt->execute([
@@ -136,7 +150,7 @@ try {
             'success' => true,
             'message' => 'Tạo task bảo trì thành công',
             'task_id' => $task_id,
-            'task_code' => $data['task_code']
+            'task_number' => $data['task_number']
         ]);
     } else {
         throw new Exception('Không thể tạo task bảo trì');

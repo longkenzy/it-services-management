@@ -142,11 +142,17 @@ function generateCaseNumber($pdo) {
     $year = date('y'); // 2 số cuối của năm (25)
     $month = date('m'); // tháng với 2 chữ số (07)
     
-    // Lấy tổng số case hiện có trong database
+    // Lấy số thứ tự cao nhất hiện có trong database
     try {
-        $stmt = $pdo->prepare("SELECT COUNT(*) as count FROM internal_cases");
+        $stmt = $pdo->prepare("
+            SELECT MAX(CAST(SUBSTRING(case_number, -3) AS UNSIGNED)) as max_sequence 
+            FROM internal_cases 
+            WHERE case_number LIKE 'CNB.{$year}{$month}%'
+        ");
         $stmt->execute();
-        $count = $stmt->fetch()['count'] + 1;
+        $result = $stmt->fetch();
+        $max_sequence = $result['max_sequence'] ?? 0;
+        $count = $max_sequence + 1;
     } catch (Exception $e) {
         // Nếu lỗi, sử dụng số sequence mặc định
         $count = 1;

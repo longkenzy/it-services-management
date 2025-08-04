@@ -10,8 +10,11 @@ $(document).ready(function() {
         width: '100%'
     });
 
-    // Load danh sách yêu cầu bảo trì
-    loadMaintenanceRequests();
+    // Đợi một chút để đảm bảo DOM đã load xong
+    setTimeout(function() {
+        // Load danh sách yêu cầu bảo trì
+        loadMaintenanceRequests();
+    }, 100);
     
     // Ngăn chặn tất cả form submission không mong muốn khi đang mở modal case
     $(document).on('submit', 'form', function(e) {
@@ -81,6 +84,11 @@ $(document).ready(function() {
     $('#addMaintenanceTaskModal').on('show.bs.modal', function() {
         loadNextTaskNumber();
     });
+    
+    // Ẩn bảng case bảo trì khi đóng modal edit yêu cầu
+    $('#editMaintenanceRequestModal').on('hidden.bs.modal', function() {
+        $('#maintenance-cases-section').hide();
+    });
 });
 
 // Load danh sách yêu cầu bảo trì
@@ -88,23 +96,47 @@ function loadMaintenanceRequests() {
     $.ajax({
         url: 'api/get_maintenance_requests.php',
         type: 'GET',
-        success: function(response) {
-            if (response.success) {
-                displayMaintenanceRequests(response.data);
-            } else {
-                showAlert('error', 'Lỗi: ' + response.message);
+        dataType: 'json',
+        success: function(data) {
+            if (!data.success || !Array.isArray(data.data)) {
+                console.error('API error:', data.message);
+                showAlert('Lỗi: ' + (data.message || 'Dữ liệu không hợp lệ'), 'error');
+                return;
             }
+            
+            displayMaintenanceRequests(data.data);
         },
-        error: function() {
-            showAlert('error', 'Có lỗi xảy ra khi tải danh sách yêu cầu bảo trì');
+        error: function(xhr, status, error) {
+            console.error('AJAX Error:', error);
+            showAlert('Có lỗi xảy ra khi tải danh sách yêu cầu bảo trì', 'error');
         }
     });
 }
 
 // Hiển thị danh sách yêu cầu bảo trì
 function displayMaintenanceRequests(requests) {
-    const tbody = $('#maintenance-requests-table');
-    tbody.empty();
+    // Tìm table body
+    let tbody = document.getElementById('maintenance-requests-table');
+    
+    if (!tbody) {
+        console.error('Table body not found');
+        return;
+    }
+    
+    tbody.innerHTML = '';
+
+    if (!requests || requests.length === 0) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="11" class="text-center py-5">
+                    <i class="fas fa-inbox fa-3x text-muted mb-3 d-block"></i>
+                    <h5 class="text-muted">Chưa có yêu cầu bảo trì nào</h5>
+                    <p class="text-muted">Bấm nút "Tạo yêu cầu bảo trì" để bắt đầu</p>
+                </td>
+            </tr>
+        `;
+        return;
+    }
 
     requests.forEach(request => {
         const row = `
@@ -164,52 +196,76 @@ function displayMaintenanceRequests(requests) {
                 </td>
                 <td>
                     <div class="btn-group" role="group">
-                        <button class="btn btn-sm btn-outline-warning" onclick="editRequest(${request.id})" title="Chỉnh sửa">
+                        <button class="btn btn-sm btn-outline-warning" onclick="editMaintenanceRequest(${request.id})" title="Chỉnh sửa">
                             <i class="fas fa-edit"></i>
                         </button>
-                        <button class="btn btn-sm btn-outline-danger" onclick="deleteRequest(${request.id})" title="Xóa">
+                        <button class="btn btn-sm btn-outline-danger" onclick="deleteMaintenanceRequest(${request.id})" title="Xóa">
                             <i class="fas fa-trash"></i>
                         </button>
                     </div>
                 </td>
             </tr>
         `;
-        tbody.append(row);
+        tbody.innerHTML += row;
     });
 }
 
 // Tạo yêu cầu bảo trì
 function createMaintenanceRequest() {
-    const formData = {
-        request_code: $('#request_code').val(),
-        po_number: $('#po_number').val(),
-        no_contract_po: $('#no_contract_po').is(':checked') ? 1 : 0,
-        contract_type: $('#contract_type').val(),
-        request_detail_type: $('#request_detail_type').val(),
-        email_subject_customer: $('#email_subject_customer').val(),
-        email_subject_internal: $('#email_subject_internal').val(),
-        expected_start: $('#expected_start').val(),
-        expected_end: $('#expected_end').val(),
-        customer_id: $('#customer_id').val(),
-        contact_person: $('#contact_person').val(),
-        contact_phone: $('#contact_phone').val(),
-        sale_id: $('#sale_id').val(),
-        requester_notes: $('#requester_notes').val(),
-        maintenance_manager: $('#maintenance_manager').val(),
-        maintenance_status: $('#maintenance_status').val()
-    };
+    // Validation
+    const requiredFields = ['request_code', 'customer_id', 'sale_id', 'maintenance_status'];
+    let isValid = true;
+    
+    requiredFields.forEach(function(fieldId) {
+        const field = $('#' + fieldId);
+        const value = field.val();
+        if (!value) {
+            isValid = false;
+            field.addClass('is-invalid');
+        } else {
+            field.removeClass('is-invalid');
+        }
+    });
+    
+    if (!isValid) {
+        showAlert('Vui lòng điền đầy đủ các trường bắt buộc', 'error');
+        return;
+    }
+    
+    // Tạo FormData object
+    const formData = new FormData();
+    formData.append('request_code', $('#request_code').val());
+    formData.append('po_number', $('#po_number').val());
+    formData.append('no_contract_po', $('#no_contract_po').is(':checked') ? 1 : 0);
+    formData.append('contract_type', $('#contract_type').val());
+    formData.append('request_detail_type', $('#request_detail_type').val());
+    formData.append('email_subject_customer', $('#email_subject_customer').val());
+    formData.append('email_subject_internal', $('#email_subject_internal').val());
+    formData.append('expected_start', $('#expected_start').val());
+    formData.append('expected_end', $('#expected_end').val());
+    formData.append('customer_id', $('#customer_id').val());
+    formData.append('contact_person', $('#contact_person').val());
+    formData.append('contact_phone', $('#contact_phone').val());
+    formData.append('sale_id', $('#sale_id').val());
+    formData.append('requester_notes', $('#requester_notes').val());
+    formData.append('maintenance_manager', $('#maintenance_manager').val());
+    formData.append('maintenance_status', $('#maintenance_status').val());
 
     $.ajax({
         url: 'api/create_maintenance_request.php',
         type: 'POST',
-        contentType: 'application/json',
-        data: JSON.stringify(formData),
+        data: formData,
+        processData: false,
+        contentType: false,
         success: function(response) {
             if (response.success) {
                 showAlert(response.message, 'success');
                 $('#addMaintenanceRequestModal').modal('hide');
                 $('#addMaintenanceRequestForm')[0].reset();
-                loadMaintenanceRequests();
+                // Thêm delay nhỏ để đảm bảo database đã được cập nhật
+                setTimeout(function() {
+                    loadMaintenanceRequests();
+                }, 1000);
             } else {
                 showAlert(response.error || response.message, 'error');
             }
@@ -416,6 +472,12 @@ function editMaintenanceRequest(id) {
                 }
                 
                 $('#editMaintenanceRequestModal').modal('show');
+                
+                // Hiển thị bảng case bảo trì khi có yêu cầu được chọn
+                $('#maintenance-cases-section').show();
+                
+                // Load danh sách case bảo trì cho yêu cầu này
+                loadMaintenanceCases(request.id);
             } else {
                 showAlert(response.message, 'error');
             }
@@ -455,11 +517,11 @@ function loadNextCaseNumber() {
 // Load mã task tiếp theo
 function loadNextTaskNumber() {
     $.ajax({
-        url: 'api/get_next_maintenance_task_number.php',
+        url: 'api/get_next_maintenance_task_number_simple.php',
         type: 'GET',
         success: function(response) {
             if (response.success) {
-                $('#task_number').val(response.task_number);
+                $('#task_number').val(response.task_code);
             }
         }
     });
@@ -769,14 +831,33 @@ function createMaintenanceTask() {
         success: function(response) {
             if (response.success) {
                 showAlert(response.message, 'success');
-                $('#createMaintenanceTaskModal').modal('hide');
                 $('#createMaintenanceTaskForm')[0].reset();
-                loadMaintenanceTasks();
+                
+                // Đóng modal tạo task trước
+                $('#createMaintenanceTaskModal').modal('hide');
+                
+                // Reload danh sách tasks trong modal edit case
+                setTimeout(() => {
+                    loadMaintenanceTasks();
+                }, 300);
+                
+                // Cũng reload danh sách cases để cập nhật số lượng tasks
+                setTimeout(() => {
+                    loadMaintenanceCases();
+                }, 300);
+                
+                // Đảm bảo modal edit case vẫn mở và hiển thị tasks mới
+                if ($('#editMaintenanceCaseModal').hasClass('show')) {
+                    setTimeout(() => {
+                        loadMaintenanceTasks();
+                    }, 500);
+                }
             } else {
                 showAlert(response.error || response.message, 'error');
             }
         },
-        error: function() {
+        error: function(xhr, status, error) {
+            console.error('AJAX error:', xhr.responseText);
             showAlert('Có lỗi xảy ra khi tạo task bảo trì', 'error');
         }
     });
@@ -786,16 +867,15 @@ function createMaintenanceTask() {
 function updateMaintenanceTask() {
     const formData = {
         id: $('#edit_task_id').val(),
-        task_code: $('#edit_task_code').val(),
-        task_name: $('#edit_task_name').val(),
-        task_description: $('#edit_task_description').val(),
-        assigned_to: $('#edit_task_assigned_to').val(),
-        priority: $('#edit_priority').val(),
-        start_date: $('#edit_task_start_date').val(),
-        end_date: $('#edit_task_end_date').val(),
+        task_number: $('#edit_task_code').val(),
+        task_type: $('#edit_task_type').val(),
+        template_name: $('#edit_task_template').val(),
+        task_description: $('#edit_task_name').val(),
+        assignee_id: $('#edit_task_assigned_to').val(),
+        start_date: $('#edit_task_start_date').val() || null,
+        end_date: $('#edit_task_end_date').val() || null,
         status: $('#edit_task_status').val(),
-        progress: $('#edit_task_progress').val(),
-        notes: $('#edit_task_notes').val()
+        notes: $('#edit_task_note').val()
     };
 
     $.ajax({
@@ -808,6 +888,8 @@ function updateMaintenanceTask() {
                 showAlert(response.message, 'success');
                 $('#editMaintenanceTaskModal').modal('hide');
                 loadMaintenanceTasks();
+                // Cũng reload danh sách cases để cập nhật số lượng tasks
+                loadMaintenanceCases();
             } else {
                 showAlert(response.error || response.message, 'error');
             }
@@ -849,10 +931,28 @@ function deleteMaintenanceTask(id) {
     }
 }
 
-// Load danh sách tasks bảo trì
+// Load danh sách tasks bảo trì (cho modal edit case)
 function loadMaintenanceTasks() {
-    const caseId = $('#task_maintenance_case_id').val();
-    const requestId = $('#task_maintenance_request_id').val();
+    // Lấy case ID từ nhiều nguồn khác nhau
+    let caseId = $('#edit_case_id').val();
+    let requestId = $('#edit_maintenance_request_id').val();
+    
+    // Nếu không có từ modal edit case, thử lấy từ modal tạo task
+    if (!caseId) {
+        caseId = $('#task_maintenance_case_id').val();
+        requestId = $('#task_maintenance_request_id').val();
+    }
+    
+    // Nếu vẫn không có, thử lấy từ các trường khác
+    if (!caseId) {
+        caseId = $('#edit_task_case_id').val();
+        requestId = $('#edit_task_request_id').val();
+    }
+    
+    if (!caseId) {
+        console.warn('No case ID found, cannot load maintenance tasks');
+        return;
+    }
     
     $.ajax({
         url: 'api/get_maintenance_tasks.php',
@@ -865,14 +965,18 @@ function loadMaintenanceTasks() {
             if (response.success) {
                 displayMaintenanceTasks(response.data);
             } else {
+                console.error('API error:', response.message);
                 showAlert('Lỗi: ' + response.message, 'error');
             }
         },
-        error: function() {
+        error: function(xhr, status, error) {
+            console.error('Error loading maintenance tasks:', error);
             showAlert('Có lỗi xảy ra khi tải danh sách tasks bảo trì', 'error');
         }
     });
 }
+
+
 
 // Hiển thị danh sách tasks bảo trì
 function displayMaintenanceTasks(tasks) {
@@ -897,8 +1001,8 @@ function displayMaintenanceTasks(tasks) {
                 <td class="text-center">${index + 1}</td>
                 <td class="text-center"><strong class="text-primary">${task.task_number || task.task_code || 'N/A'}</strong></td>
                 <td class="text-center">${task.task_type || 'N/A'}</td>
-                <td class="text-center">${task.task_template || 'N/A'}</td>
-                <td class="text-center">${task.task_name || 'N/A'}</td>
+                <td class="text-center">${task.template_name || 'N/A'}</td>
+                <td class="text-center">${task.task_description || 'N/A'}</td>
                 <td class="text-center">${formatDateTimeForDisplay(task.start_date)}</td>
                 <td class="text-center">${formatDateTimeForDisplay(task.end_date)}</td>
                 <td class="text-center">${task.assignee_name || 'N/A'}</td>
@@ -909,7 +1013,7 @@ function displayMaintenanceTasks(tasks) {
                 </td>
                 <td class="text-center">
                     <div class="btn-group" role="group">
-                        <button type="button" class="btn btn-sm btn-warning" onclick="editMaintenanceTask(${task.id})">
+                        <button type="button" class="btn btn-sm btn-warning" onclick="console.log('Edit button clicked for task:', ${task.id}); editMaintenanceTask(${task.id})">
                             <i class="fas fa-edit"></i>
                         </button>
                         <button type="button" class="btn btn-sm btn-danger" onclick="deleteMaintenanceTask(${task.id})">
@@ -923,32 +1027,98 @@ function displayMaintenanceTasks(tasks) {
     });
 }
 
+
+
 // Chỉnh sửa task bảo trì
 function editMaintenanceTask(id) {
+    console.log('editMaintenanceTask called with id:', id);
+    
+    // Lưu task ID để sử dụng sau khi load staff
+    window.currentEditTaskId = id;
+    
+    // Load danh sách staff trước
+    $.ajax({
+        url: 'api/get_it_staffs.php',
+        type: 'GET',
+        success: function(response) {
+            console.log('Staff loaded successfully:', response);
+            const select = document.getElementById('edit_task_assigned_to');
+            if (select) {
+                select.innerHTML = '<option value="">-- Chọn người thực hiện --</option>';
+                if (response.success && Array.isArray(response.data)) {
+                    response.data.forEach(staff => {
+                        const option = document.createElement('option');
+                        option.value = staff.id;
+                        option.textContent = staff.fullname;
+                        select.appendChild(option);
+                    });
+                }
+                
+                // Sau khi load staff xong, load thông tin task
+                loadTaskDetails(window.currentEditTaskId);
+            } else {
+                console.error('edit_task_assigned_to select not found');
+            }
+        },
+        error: function(xhr, status, error) {
+            console.error('Error loading staff:', error);
+            showAlert('Có lỗi xảy ra khi tải danh sách nhân viên', 'error');
+        }
+    });
+}
+
+// Hàm load thông tin task sau khi đã load staff
+function loadTaskDetails(taskId) {
+    console.log('loadTaskDetails called with taskId:', taskId);
+    
     $.ajax({
         url: 'api/get_maintenance_task_details.php',
         type: 'GET',
-        data: { id: id },
+        data: { id: taskId },
         success: function(response) {
+            console.log('Task details loaded:', response);
             if (response.success) {
                 const task = response.data;
                 $('#edit_task_id').val(task.id);
-                $('#edit_task_code').val(task.task_code);
-                $('#edit_task_name').val(task.task_name);
-                $('#edit_task_description').val(task.task_description);
-                $('#edit_task_assigned_to').val(task.assigned_to).trigger('change');
-                $('#edit_priority').val(task.priority);
-                $('#edit_task_start_date').val(task.start_date);
-                $('#edit_task_end_date').val(task.end_date);
+                $('#edit_task_code').val(task.task_number);
+                $('#edit_task_type').val(task.task_type);
+                $('#edit_task_template').val(task.template_name);
+                $('#edit_task_name').val(task.task_description);
+                $('#edit_task_note').val(task.notes);
+                $('#edit_task_assigned_to').val(task.assignee_id).trigger('change');
+                
+                // Xử lý ngày tháng
+                if (task.start_date && task.start_date !== '0000-00-00 00:00:00') {
+                    $('#edit_task_start_date').val(task.start_date.split(' ')[0]);
+                } else {
+                    $('#edit_task_start_date').val('');
+                }
+                
+                if (task.end_date && task.end_date !== '0000-00-00 00:00:00') {
+                    $('#edit_task_end_date').val(task.end_date.split(' ')[0]);
+                } else {
+                    $('#edit_task_end_date').val('');
+                }
+                
                 $('#edit_task_status').val(task.status);
-                $('#edit_task_progress').val(task.progress);
+                $('#edit_task_progress').val(task.progress || 0);
                 $('#edit_task_notes').val(task.notes);
-                $('#editMaintenanceTaskModal').modal('show');
+                
+                console.log('Showing editMaintenanceTaskModal');
+                const modal = document.getElementById('editMaintenanceTaskModal');
+                console.log('Modal element:', modal);
+                if (modal) {
+                    $('#editMaintenanceTaskModal').modal('show');
+                } else {
+                    console.error('Modal not found in DOM');
+                    showAlert('Modal không được tìm thấy', 'error');
+                }
             } else {
                 showAlert(response.message, 'error');
             }
         },
-        error: function() {
+        error: function(xhr, status, error) {
+            console.error('Error loading task details:', error);
             showAlert('Có lỗi xảy ra khi tải thông tin task bảo trì', 'error');
         }
     });
@@ -1042,4 +1212,9 @@ function closeAlert(alertId) {
             }
         }, 300);
     }
-} 
+}
+
+// Load dữ liệu ban đầu
+$(document).ready(function() {
+    loadMaintenanceRequests();
+}); 
