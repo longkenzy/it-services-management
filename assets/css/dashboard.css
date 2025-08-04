@@ -1537,6 +1537,37 @@ select.form-select option[value=""] {
     opacity: 0.5;
 }
 
+/* Blog Posts 2-Column Layout Spacing */
+#blogPostsContainer .row {
+    margin-left: -1rem;
+    margin-right: -1rem;
+}
+
+#blogPostsContainer .col-lg-6,
+#blogPostsContainer .col-md-6 {
+    padding-left: 1rem;
+    padding-right: 1rem;
+}
+
+/* Add extra spacing between columns on larger screens */
+@media (min-width: 768px) {
+    #blogPostsContainer .col-lg-6:first-child,
+    #blogPostsContainer .col-md-6:first-child {
+        padding-right: 1.5rem;
+    }
+    
+    #blogPostsContainer .col-lg-6:last-child,
+    #blogPostsContainer .col-md-6:last-child {
+        padding-left: 1.5rem;
+    }
+    
+    #blogPostsContainer .col-lg-6:not(:first-child):not(:last-child),
+    #blogPostsContainer .col-md-6:not(:first-child):not(:last-child) {
+        padding-left: 1.5rem;
+        padding-right: 1.5rem;
+    }
+}
+
 @media (max-width: 768px) {
     .blog-post-meta {
         flex-direction: column;

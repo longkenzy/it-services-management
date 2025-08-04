@@ -31,20 +31,22 @@ $(document).ready(function() {
         createMaintenanceRequest();
     });
 
-    // Xử lý form cập nhật yêu cầu bảo trì
-    $('#editMaintenanceRequestForm').off('submit').on('submit', function(e) {
-        // Kiểm tra xem form có bị disable tạm thời không
-        if (this.hasAttribute('data-submit-disabled') || isOpeningCaseModal) {
-            e.preventDefault();
-            return false;
-        }
-        
-        // Chỉ xử lý submit khi thực sự cần thiết
-        if (e.target.id === 'editMaintenanceRequestForm') {
-            e.preventDefault();
-            updateMaintenanceRequest();
-        }
-    });
+    // Xử lý form cập nhật yêu cầu bảo trì (chỉ khi modal tồn tại)
+    if ($('#editMaintenanceRequestForm').length > 0) {
+        $('#editMaintenanceRequestForm').off('submit').on('submit', function(e) {
+            // Kiểm tra xem form có bị disable tạm thời không
+            if (this.hasAttribute('data-submit-disabled') || isOpeningCaseModal) {
+                e.preventDefault();
+                return false;
+            }
+            
+            // Chỉ xử lý submit khi thực sự cần thiết
+            if (e.target.id === 'editMaintenanceRequestForm') {
+                e.preventDefault();
+                updateMaintenanceRequest();
+            }
+        });
+    }
 
     // Xử lý form tạo case bảo trì
     $('#addMaintenanceCaseForm').on('submit', function(e) {
@@ -85,10 +87,12 @@ $(document).ready(function() {
         loadNextTaskNumber();
     });
     
-    // Ẩn bảng case bảo trì khi đóng modal edit yêu cầu
-    $('#editMaintenanceRequestModal').on('hidden.bs.modal', function() {
-        $('#maintenance-cases-section').hide();
-    });
+    // Ẩn bảng case bảo trì khi đóng modal edit yêu cầu (chỉ khi modal tồn tại)
+    if ($('#editMaintenanceRequestModal').length > 0) {
+        $('#editMaintenanceRequestModal').on('hidden.bs.modal', function() {
+            $('#maintenance-cases-section').hide();
+        });
+    }
 });
 
 // Load danh sách yêu cầu bảo trì
@@ -262,9 +266,9 @@ function createMaintenanceRequest() {
                 showAlert(response.message, 'success');
                 $('#addMaintenanceRequestModal').modal('hide');
                 $('#addMaintenanceRequestForm')[0].reset();
-                // Thêm delay nhỏ để đảm bảo database đã được cập nhật
+                // Reload toàn bộ trang để đảm bảo modal edit được render lại
                 setTimeout(function() {
-                    loadMaintenanceRequests();
+                    window.location.reload();
                 }, 1000);
             } else {
                 showAlert(response.error || response.message, 'error');
@@ -431,6 +435,12 @@ function viewMaintenanceRequest(id) {
 
 // Chỉnh sửa yêu cầu bảo trì
 function editMaintenanceRequest(id) {
+    // Kiểm tra xem modal edit có tồn tại không
+    if ($('#editMaintenanceRequestModal').length === 0) {
+        showAlert('Modal chỉnh sửa không tồn tại. Vui lòng reload trang và thử lại.', 'error');
+        return;
+    }
+    
     $.ajax({
         url: 'api/get_maintenance_request.php',
         type: 'GET',
