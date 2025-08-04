@@ -94,15 +94,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['request_code'])) {
     }
 }
 
-// Lấy tên người dùng đang đăng nhập
-// Lấy tên người dùng đang đăng nhập (ưu tiên bảng staffs, fallback sang users)
+// Lấy thông tin người dùng đang đăng nhập
+// Lấy thông tin người dùng đang đăng nhập (ưu tiên bảng staffs, fallback sang users)
 $fullname = 'Không xác định';
+$current_user_department = null;
 if (isset($_SESSION['user_id'])) {
-    $stmt = $pdo->prepare('SELECT fullname FROM staffs WHERE id = ?');
+    $stmt = $pdo->prepare('SELECT fullname, department FROM staffs WHERE id = ?');
     $stmt->execute([$_SESSION['user_id']]);
     $row = $stmt->fetch();
     if ($row && !empty($row['fullname'])) {
         $fullname = $row['fullname'];
+        $current_user_department = $row['department'];
     } else {
         // Nếu không có trong staffs, thử lấy từ users
         $stmt2 = $pdo->prepare('SELECT fullname FROM users WHERE id = ?');
@@ -658,7 +660,7 @@ if (isset($_SESSION['user_id'])) {
                     <p class="text-muted mb-0">Quản lý các yêu cầu triển khai dự án và hệ thống</p>
                 </div>
                 <div class="col-auto">
-                    <?php if ($current_role !== 'user'): ?>
+                    <?php if ($current_role !== 'user' || $current_user_department === 'SALE Dept.'): ?>
                     <button class="btn btn-primary" id="createRequestBtn" data-bs-toggle="modal" data-bs-target="#addDeploymentRequestModal">
                         <i class="fas fa-plus me-2"></i>
                         Tạo yêu cầu triển khai
@@ -844,9 +846,9 @@ if (isset($_SESSION['user_id'])) {
               </div>
               
               <div class="mb-3 row align-items-center">
-                <label class="col-md-3 form-label mb-0">Loại hợp đồng:</label>
+                <label class="col-md-3 form-label mb-0">Loại hợp đồng: <span class="text-danger">*</span></label>
                 <div class="col-md-9">
-                  <select class="form-select" name="contract_type" id="contract_type" <?php echo ($current_role === 'user') ? 'disabled' : ''; ?>>
+                  <select class="form-select" name="contract_type" id="contract_type" required <?php echo ($current_role === 'user') ? 'disabled' : ''; ?>>
                     <option value="">-- Chọn loại hợp đồng --</option>
                     <option value="Hợp đồng cung cấp dịch vụ">Hợp đồng cung cấp dịch vụ</option>
                     <option value="Hợp đồng bảo trì hệ thống">Hợp đồng bảo trì hệ thống</option>
@@ -863,9 +865,9 @@ if (isset($_SESSION['user_id'])) {
               </div>
               
               <div class="mb-3 row align-items-center">
-                <label class="col-md-3 form-label mb-0">Loại yêu cầu chi tiết:</label>
+                <label class="col-md-3 form-label mb-0">Loại yêu cầu chi tiết: <span class="text-danger">*</span></label>
                 <div class="col-md-9">
-                  <select class="form-select" name="request_detail_type" id="request_detail_type" <?php echo ($current_role === 'user') ? 'disabled' : ''; ?>>
+                  <select class="form-select" name="request_detail_type" id="request_detail_type" required <?php echo ($current_role === 'user') ? 'disabled' : ''; ?>>
                     <option value="">-- Chọn loại yêu cầu chi tiết --</option>
                     <option value="Triển khai hệ thống mới">Triển khai hệ thống mới</option>
                     <option value="Nâng cấp hệ thống hiện có">Nâng cấp hệ thống hiện có</option>
@@ -898,9 +900,9 @@ if (isset($_SESSION['user_id'])) {
               </div>
               
               <div class="mb-3 row align-items-center">
-                <label class="col-md-3 form-label mb-0">Bắt đầu dự kiến:</label>
+                <label class="col-md-3 form-label mb-0">Bắt đầu dự kiến: <span class="text-danger">*</span></label>
                 <div class="col-md-9">
-                  <input type="date" class="form-control" name="expected_start" id="expected_start" <?php echo ($current_role === 'user') ? 'disabled' : ''; ?>>
+                  <input type="date" class="form-control" name="expected_start" id="expected_start" required <?php echo ($current_role === 'user') ? 'disabled' : ''; ?>>
                 </div>
               </div>
               
@@ -916,9 +918,9 @@ if (isset($_SESSION['user_id'])) {
             <div class="col-md-6">
               <h6 class="text-primary mb-3"><i class="fas fa-users me-2"></i>KHÁCH HÀNG</h6>
               <div class="mb-3 row align-items-center">
-                <label class="col-md-3 form-label mb-0">Khách hàng:</label>
+                <label class="col-md-3 form-label mb-0">Khách hàng: <span class="text-danger">*</span></label>
                 <div class="col-md-9">
-                  <select class="form-select" name="customer_id" id="customer_id" <?php echo ($current_role === 'user') ? 'disabled' : ''; ?>>
+                  <select class="form-select" name="customer_id" id="customer_id" required <?php echo ($current_role === 'user') ? 'disabled' : ''; ?>>
                     <option value="">-- Chọn khách hàng --</option>
                     <?php
                     $partners = $pdo->query("SELECT id, name, contact_person, contact_phone FROM partner_companies ORDER BY name ASC")->fetchAll();
@@ -946,9 +948,9 @@ if (isset($_SESSION['user_id'])) {
               
               <h6 class="text-primary mb-3 mt-4"><i class="fas fa-cogs me-2"></i>XỬ LÝ</h6>
               <div class="mb-3 row align-items-center">
-                <label class="col-md-3 form-label mb-0">Sale phụ trách:</label>
+                <label class="col-md-3 form-label mb-0">Sale phụ trách: <span class="text-danger">*</span></label>
                 <div class="col-md-9">
-                  <select class="form-select" name="sale_id" id="sale_id">
+                  <select class="form-select" name="sale_id" id="sale_id" required>
                     <option value="">-- Chọn sale phụ trách --</option>
                     <?php
                     $sales = $pdo->query("SELECT id, fullname FROM staffs WHERE (department != 'IT Dept.' OR department IS NULL) AND (resigned != 1 OR resigned IS NULL) ORDER BY fullname ASC")->fetchAll();
@@ -2652,9 +2654,9 @@ document.addEventListener('DOMContentLoaded', function() {
               </div>
               
               <div class="mb-3 row align-items-center">
-                <label class="col-md-3 form-label mb-0">Loại hợp đồng:</label>
+                <label class="col-md-3 form-label mb-0">Loại hợp đồng: <span class="text-danger">*</span></label>
                 <div class="col-md-9">
-                  <select class="form-select" name="contract_type" id="edit_contract_type" <?php echo ($current_role === 'user') ? 'disabled' : ''; ?>>
+                  <select class="form-select" name="contract_type" id="edit_contract_type" required <?php echo ($current_role === 'user') ? 'disabled' : ''; ?>>
                     <option value="">-- Chọn loại hợp đồng --</option>
                     <option value="Hợp đồng cung cấp dịch vụ">Hợp đồng cung cấp dịch vụ</option>
                     <option value="Hợp đồng bảo trì hệ thống">Hợp đồng bảo trì hệ thống</option>
@@ -2671,9 +2673,9 @@ document.addEventListener('DOMContentLoaded', function() {
               </div>
               
               <div class="mb-3 row align-items-center">
-                <label class="col-md-3 form-label mb-0">Loại yêu cầu chi tiết:</label>
+                <label class="col-md-3 form-label mb-0">Loại yêu cầu chi tiết: <span class="text-danger">*</span></label>
                 <div class="col-md-9">
-                  <select class="form-select" name="request_detail_type" id="edit_request_detail_type" <?php echo ($current_role === 'user') ? 'disabled' : ''; ?>>
+                  <select class="form-select" name="request_detail_type" id="edit_request_detail_type" required <?php echo ($current_role === 'user') ? 'disabled' : ''; ?>>
                     <option value="">-- Chọn loại yêu cầu chi tiết --</option>
                     <option value="Triển khai mới">Triển khai mới</option>
                     <option value="Nâng cấp hệ thống">Nâng cấp hệ thống</option>
@@ -2710,9 +2712,9 @@ document.addEventListener('DOMContentLoaded', function() {
               <h6 class="text-primary mb-3"><i class="fas fa-calendar-alt me-2"></i>THÔNG TIN TRIỂN KHAI</h6>
               
               <div class="mb-3 row align-items-center">
-                <label class="col-md-3 form-label mb-0">Ngày bắt đầu dự kiến:</label>
+                <label class="col-md-3 form-label mb-0">Ngày bắt đầu dự kiến: <span class="text-danger">*</span></label>
                 <div class="col-md-9">
-                  <input type="date" class="form-control" name="expected_start" id="edit_expected_start" <?php echo ($current_role === 'user') ? 'disabled' : ''; ?>>
+                  <input type="date" class="form-control" name="expected_start" id="edit_expected_start" required <?php echo ($current_role === 'user') ? 'disabled' : ''; ?>>
                 </div>
               </div>
               

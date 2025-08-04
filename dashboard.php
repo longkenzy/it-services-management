@@ -1193,39 +1193,42 @@ $flash_messages = getFlashMessages();
         
         function displayBlogPosts(posts) {
             const container = $('#blogPostsContainer');
-            let html = '';
+            let html = '<div class="row">';
             
-            posts.forEach(post => {
+            posts.forEach((post, index) => {
                 const statusText = post.status === 'published' ? 'Đã xuất bản' : 'Bản nháp';
                 const statusClass = post.status === 'published' ? 'published' : 'draft';
                 
                 html += `
-                    <div class="blog-post-card" style="cursor: pointer;" onclick="window.location.href='view_blog_post.php?id=${post.id}'">
-                        ${post.featured_image ? `<div class="blog-post-image mb-3"><img src="${escapeHtml(post.featured_image)}" alt="Featured Image" class="img-fluid rounded" style="width: 100%; height: 150px; object-fit: cover;"></div>` : ''}
-                        <h4 class="blog-post-title">${escapeHtml(post.title)}</h4>
-                        ${post.summary ? `<p class="blog-post-summary">${escapeHtml(post.summary)}</p>` : ''}
-                        <div class="blog-post-meta">
-                            <div class="blog-post-author">
-                                <i class="fas fa-user"></i>
-                                <span>${escapeHtml(post.author_name)}</span>
+                    <div class="col-lg-6 col-md-6 mb-4">
+                        <div class="blog-post-card" style="cursor: pointer;" onclick="window.location.href='view_blog_post.php?id=${post.id}'">
+                            ${post.featured_image ? `<div class="blog-post-image mb-3"><img src="${escapeHtml(post.featured_image)}" alt="Featured Image" class="img-fluid rounded" style="width: 100%; height: 150px; object-fit: cover;"></div>` : ''}
+                            <h4 class="blog-post-title">${escapeHtml(post.title)}</h4>
+                            ${post.summary ? `<p class="blog-post-summary">${escapeHtml(post.summary)}</p>` : ''}
+                            <div class="blog-post-meta">
+                                <div class="blog-post-author">
+                                    <i class="fas fa-user"></i>
+                                    <span>${escapeHtml(post.author_name)}</span>
+                                </div>
+                                <div class="blog-post-date">
+                                    <i class="fas fa-calendar"></i>
+                                    <span>${post.created_at_formatted}</span>
+                                </div>
+                                <span class="blog-post-status ${statusClass}">${statusText}</span>
+                                ${post.additional_images && post.additional_images.length > 0 ? `<div class="blog-post-images-count"><i class="fas fa-images"></i> <span>${post.additional_images.length} hình ảnh</span></div>` : ''}
                             </div>
-                            <div class="blog-post-date">
-                                <i class="fas fa-calendar"></i>
-                                <span>${post.created_at_formatted}</span>
+                            <div class="blog-post-read-more mt-3">
+                                <small class="text-primary">
+                                    <i class="fas fa-eye me-1"></i>
+                                    Click để đọc chi tiết
+                                </small>
                             </div>
-                            <span class="blog-post-status ${statusClass}">${statusText}</span>
-                            ${post.additional_images && post.additional_images.length > 0 ? `<div class="blog-post-images-count"><i class="fas fa-images"></i> <span>${post.additional_images.length} hình ảnh</span></div>` : ''}
-                        </div>
-                        <div class="blog-post-read-more mt-3">
-                            <small class="text-primary">
-                                <i class="fas fa-eye me-1"></i>
-                                Click để đọc chi tiết
-                            </small>
                         </div>
                     </div>
                 `;
             });
             
+            html += '</div>';
             container.html(html);
         }
         

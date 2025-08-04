@@ -989,7 +989,8 @@ if (isset($_SESSION['user_id'])) {
   </div>
 </div>
 
-<!-- Modal chỉnh sửa yêu cầu bảo trì -->
+<!-- Modal chỉnh sửa yêu cầu bảo trì - Chỉ hiển thị khi có yêu cầu bảo trì -->
+<?php if (!empty($requests)): ?>
 <div class="modal fade" id="editMaintenanceRequestModal" tabindex="-1" aria-labelledby="editMaintenanceRequestModalLabel">
   <div class="modal-dialog modal-fullscreen">
     <div class="modal-content maintenance-request-modal">
@@ -1897,6 +1898,7 @@ if (isset($_SESSION['user_id'])) {
     </div>
   </div>
 </div>
+<?php endif; ?>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
@@ -1944,7 +1946,8 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    // Khởi tạo Select2 cho modal chỉnh sửa
+    // Khởi tạo Select2 cho modal chỉnh sửa (chỉ khi có yêu cầu bảo trì)
+    <?php if (!empty($requests)): ?>
     function initializeEditSelect2() {
         $('#edit_customer_id').select2({
             theme: 'bootstrap-5',
@@ -1978,6 +1981,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
+    <?php endif; ?>
     
     // Khởi tạo Select2 khi modal hiển thị
     $('#addMaintenanceRequestModal').on('shown.bs.modal', function() {
@@ -1996,7 +2000,8 @@ document.addEventListener('DOMContentLoaded', function() {
         this.removeAttribute('inert');
     });
     
-    // Khởi tạo Select2 khi modal chỉnh sửa hiển thị
+    // Khởi tạo Select2 khi modal chỉnh sửa hiển thị (chỉ khi modal tồn tại)
+    <?php if (!empty($requests)): ?>
     $('#editMaintenanceRequestModal').on('shown.bs.modal', function() {
         initializeEditSelect2();
         setupEditCheckboxHandler();
@@ -2015,6 +2020,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // Xóa inert khi modal hiển thị
         this.removeAttribute('inert');
     });
+    <?php endif; ?>
     
     // Khởi tạo khi modal tạo case hiển thị
     $('#createMaintenanceCaseModal').on('shown.bs.modal', function() {
@@ -2270,23 +2276,28 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Tạo mã yêu cầu tự động
     function generateRequestCode() {
+        const requestCodeElement = document.getElementById('request_code');
+        if (!requestCodeElement) {
+            return; // Element không tồn tại, thoát khỏi function
+        }
+        
         fetch('api/get_next_maintenance_request_number.php')
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    document.getElementById('request_code').value = data.request_code;
+                    requestCodeElement.value = data.request_code;
                 } else {
                     // Fallback nếu API lỗi
                     const year = new Date().getFullYear().toString().slice(-2);
                     const month = (new Date().getMonth() + 1).toString().padStart(2, '0');
-                    document.getElementById('request_code').value = `YC${year}${month}001`;
+                    requestCodeElement.value = `YC${year}${month}001`;
                 }
             })
             .catch(error => {
                 // Fallback nếu API lỗi
                 const year = new Date().getFullYear().toString().slice(-2);
                 const month = (new Date().getMonth() + 1).toString().padStart(2, '0');
-                document.getElementById('request_code').value = `YC${year}${month}001`;
+                requestCodeElement.value = `YC${year}${month}001`;
             });
     }
     
@@ -2303,15 +2314,20 @@ document.addEventListener('DOMContentLoaded', function() {
     
 
     
-    // Xử lý submit form tạo case bảo trì
-    document.getElementById('createMaintenanceCaseForm').addEventListener('submit', function(e) {
-        e.preventDefault();
-        // Gọi function createMaintenanceCase từ file JS
-        createMaintenanceCase();
-    });
+    // Xử lý submit form tạo case bảo trì (chỉ khi form tồn tại)
+    const createMaintenanceCaseForm = document.getElementById('createMaintenanceCaseForm');
+    if (createMaintenanceCaseForm) {
+        createMaintenanceCaseForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            // Gọi function createMaintenanceCase từ file JS
+            createMaintenanceCase();
+        });
+    }
     
-    // Xử lý submit form tạo task bảo trì
-    document.getElementById('createMaintenanceTaskForm').addEventListener('submit', function(e) {
+    // Xử lý submit form tạo task bảo trì (chỉ khi form tồn tại)
+    const createMaintenanceTaskForm = document.getElementById('createMaintenanceTaskForm');
+    if (createMaintenanceTaskForm) {
+        createMaintenanceTaskForm.addEventListener('submit', function(e) {
         e.preventDefault();
         
         // Validation
@@ -2761,6 +2777,7 @@ function createMaintenanceTask(caseId) {
 
     // Handler khi modal hiển thị
     const handler = function() {
+        const modalElement = document.getElementById('createMaintenanceTaskModal'); // Thêm dòng này để đảm bảo biến tồn tại
         // Lấy thông tin case và request
         fetch('api/get_maintenance_case_details.php?id=' + caseId)
             .then(response => response.json())
@@ -2803,14 +2820,18 @@ function createMaintenanceTask(caseId) {
                 }
             });
 
-        modalElement.removeEventListener('shown.bs.modal', handler);
+        if (modalElement) {
+            modalElement.removeEventListener('shown.bs.modal', handler);
+        }
     };
     
     const modalElement = document.getElementById('createMaintenanceTaskModal');
-    modalElement.addEventListener('shown.bs.modal', handler);
+    if (modalElement) {
+        modalElement.addEventListener('shown.bs.modal', handler);
 
-    const modal = new bootstrap.Modal(modalElement);
-    modal.show();
+        const modal = new bootstrap.Modal(modalElement);
+        modal.show();
+    }
 }
 
 // Function format date cho hiển thị
@@ -2980,7 +3001,5 @@ function showAlert(message, type = 'info') {
 
 <!-- Include maintenance requests JavaScript -->
 <script src="assets/js/maintenance_requests.js?v=<?php echo filemtime('assets/js/maintenance_requests.js'); ?>"></script>
-</body>
-</html> 
 </body>
 </html> 
