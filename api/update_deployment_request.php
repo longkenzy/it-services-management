@@ -62,7 +62,7 @@ if (!empty($data['customer_id'])) {
 }
 
 if (!empty($data['sale_id'])) {
-    $sale_check = $pdo->prepare("SELECT id FROM staffs WHERE id = ? AND department = 'SALE Dept.' AND status = 'active'");
+    $sale_check = $pdo->prepare("SELECT id FROM staffs WHERE id = ? AND (department != 'IT Dept.' OR department IS NULL) AND (resigned != 1 OR resigned IS NULL)");
     $sale_check->execute([$data['sale_id']]);
     if (!$sale_check->fetch()) {
         $errors[] = 'Sale phụ trách không tồn tại hoặc không hoạt động.';

@@ -222,10 +222,10 @@ $flash_messages = getFlashMessages();
         }
         
         .internal-cases-table th {
-            background-color: #f8f9fa;
+            background-color: #9ecad6;
             border-bottom: 2px solid #dee2e6;
             font-weight: 600;
-            color: #495057;
+            color: #495068;
         }
         
         .internal-cases-table tbody tr:hover {

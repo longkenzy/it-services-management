@@ -1,0 +1,14 @@
+# Bảo vệ thư mục uploads
+Options -Indexes
+
+# Cho phép truy cập các file hình ảnh
+<FilesMatch "\.(jpg|jpeg|png|gif|webp)$">
+    Order Allow,Deny
+    Allow from all
+</FilesMatch>
+
+# Chặn truy cập các file PHP
+<FilesMatch "\.php$">
+    Order Deny,Allow
+    Deny from all
+</FilesMatch> 

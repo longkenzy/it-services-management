@@ -25,7 +25,7 @@ input[type="password"],
 input[type="number"],
 input[type="tel"],
 input[type="url"],
-input[type="search"],
+
 input[type="date"],
 input[type="datetime-local"],
 input[type="month"],
@@ -316,8 +316,7 @@ input[type="reset"],
 
 /* Dashboard Specific (không áp dụng cho header) */
 .brand-logo:not(.main-header .brand-logo),
-.search-form .input-group:not(.main-header .search-form .input-group),
-.search-form .btn:not(.main-header .search-form .btn),
+
 .dropdown-menu-custom:not(.main-header .dropdown-menu-custom),
 .user-profile-link:not(.main-header .user-profile-link) {
     border-radius: 0 !important;
@@ -471,8 +470,7 @@ img.rounded-circle {
 .navbar,
 .navbar *,
 .main-header .brand-logo,
-.main-header .search-form,
-.main-header .search-form *,
+
 .main-header .dropdown-menu-custom,
 .main-header .user-profile-link,
 .main-header .user-avatar,

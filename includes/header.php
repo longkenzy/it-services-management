@@ -169,20 +169,20 @@ $current_page = basename($_SERVER['PHP_SELF']);
                     </li>
                     <?php endif; ?>
                     
+                    <!-- Blog - Chỉ hiển thị cho admin -->
+                    <?php if (hasRole('admin')): ?>
+                    <li class="nav-item">
+                        <a class="nav-link fw-semibold <?php echo $current_page === 'blog.php' ? 'active' : ''; ?>" 
+                           href="blog.php" id="blogLink">
+                            <i class="fas fa-blog me-2"></i>
+                            Blog
+                        </a>
+                    </li>
+                    <?php endif; ?>
+                    
                 </ul>
                 
-                <!-- Search Bar -->
-                <div class="search-wrapper mx-lg-4 my-3 my-lg-0">
-                    <form class="search-form">
-                        <div class="input-group">
-                            <input type="text" class="form-control border-start-0" 
-                                   placeholder="Tìm kiếm case, nhân viên..." id="globalSearchInput">
-                            <button class="btn btn-outline-primary" type="submit">
-                                <i class="fas fa-search"></i>
-                            </button>
-                        </div>
-                    </form>
-                </div>
+
                 
                 <!-- Thông báo ngoài header -->
                 <?php if (hasRole('admin')): ?>

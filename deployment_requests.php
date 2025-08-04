@@ -667,8 +667,9 @@ if (isset($_SESSION['user_id'])) {
                 </div>
             </div>
         </div>
+        <?php if (!empty($requests)): ?>
         <!-- Table hiển thị danh sách yêu cầu triển khai -->
-        <div class="card">
+        <div class="card" id="deployment-requests-card">
             <div class="card-body">
                 <div class="table-responsive">
                     <table class="table table-hover mb-0">
@@ -689,22 +690,8 @@ if (isset($_SESSION['user_id'])) {
                             </tr>
                         </thead>
                         <tbody id="deployment-requests-table">
-                            <?php if (empty($requests)): ?>
-                                <tr>
-                                    <td colspan="12" class="text-center py-5">
-                                        <i class="fas fa-inbox fa-3x text-muted mb-3 d-block"></i>
-                                        <h5 class="text-muted">Chưa có yêu cầu triển khai nào</h5>
-                                        <p class="text-muted">Bấm nút "Tạo yêu cầu triển khai" để bắt đầu</p>
-                                        <?php if (isset($_GET['debug'])): ?>
-                                            <div class="mt-3">
-                                                <small class="text-muted">Debug: <?php echo count($requests); ?> records found</small>
-                                            </div>
-                                        <?php endif; ?>
-                                    </td>
-                                </tr>
-                            <?php else: ?>
                                 <?php foreach ($requests as $request): ?>
-                                <tr>
+                                <tr data-request-id="<?php echo $request['id']; ?>">
                                     <td>
                                         <strong class="text-primary"><?php echo htmlspecialchars($request['request_code']); ?></strong>
                                     </td>
@@ -801,9 +788,26 @@ if (isset($_SESSION['user_id'])) {
                             </tbody>
                         </table>
                     </div>
-                <?php endif; ?>
+                </div>
             </div>
         </div>
+        <?php else: ?>
+        <!-- Hiển thị thông báo khi chưa có yêu cầu triển khai nào -->
+        <div class="card" id="deployment-requests-card">
+            <div class="card-body">
+                <div class="text-center py-5">
+                    <i class="fas fa-inbox fa-3x text-muted mb-3 d-block"></i>
+                    <h5 class="text-muted">Chưa có yêu cầu triển khai nào</h5>
+                    <p class="text-muted">Bấm nút "Tạo yêu cầu triển khai" để bắt đầu</p>
+                    <?php if (isset($_GET['debug'])): ?>
+                        <div class="mt-3">
+                            <small class="text-muted">Debug: <?php echo count($requests); ?> records found</small>
+                        </div>
+                    <?php endif; ?>
+                </div>
+            </div>
+        </div>
+        <?php endif; ?>
     </div>
 </main>
 <!-- Modal tạo yêu cầu triển khai -->
@@ -1154,6 +1158,8 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('addDeploymentRequestForm').addEventListener('submit', function(e) {
         e.preventDefault();
         
+
+        
         // Validation
         const requiredFields = ['customer_id', 'sale_id', 'deployment_status'];
         let isValid = true;
@@ -1193,24 +1199,38 @@ document.addEventListener('DOMContentLoaded', function() {
                 } else {
                     alert('Tạo yêu cầu triển khai thành công!');
                 }
+                
+                // Đóng modal
                 const modal = bootstrap.Modal.getInstance(document.getElementById('addDeploymentRequestModal'));
                 if (modal) {
                     modal.hide();
+                    // Đảm bảo focus được reset
+                    document.activeElement.blur();
                 }
+                
+                // Reset form
+                document.getElementById('addDeploymentRequestForm').reset();
+                
+                // Reset Select2 dropdowns
+                if ($('#customer_id').data('select2')) {
+                    $('#customer_id').val('').trigger('change');
+                }
+                if ($('#sale_id').data('select2')) {
+                    $('#sale_id').val('').trigger('change');
+                }
+                
+                // Reload bảng ngay lập tức sau khi tạo thành công
                 setTimeout(() => {
-            
-                    // Thử reload bằng cách khác nếu cách cũ không hoạt động
                     reloadDeploymentRequestsTable();
-                    
-                    // Fallback: reload trang nếu table không được update
-                    setTimeout(() => {
-                        const tbody = document.getElementById('deployment-requests-table');
-                        if (tbody && tbody.children.length === 0) {
-            
-                            location.reload();
-                        }
-                    }, 2000);
-                }, 1500);
+                }, 500);
+                
+                // Fallback: reload trang nếu không thành công sau 3 giây
+                setTimeout(() => {
+                    const tbody = document.getElementById('deployment-requests-table');
+                    if (!tbody) {
+                        location.reload();
+                    }
+                }, 3000);
             } else {
                 if (typeof showAlert === 'function') {
                     showAlert(data.error || 'Có lỗi xảy ra khi tạo yêu cầu', 'error');
@@ -1277,6 +1297,10 @@ function editRequest(requestId) {
                 
                 // Hiển thị modal edit
                 const editModal = new bootstrap.Modal(document.getElementById('editDeploymentRequestModal'));
+                
+                // Đảm bảo modal được khởi tạo đúng cách
+                editModal._config.backdrop = true;
+                editModal._config.keyboard = true;
                 
                 // Lưu dữ liệu để set sau khi modal hiển thị
                 const requestData = request;
@@ -1442,6 +1466,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 const modal = bootstrap.Modal.getInstance(document.getElementById('editDeploymentRequestModal'));
                 if (modal) {
                     modal.hide();
+                    // Đảm bảo focus được reset
+                    document.activeElement.blur();
                 }
                 setTimeout(() => {
                     reloadDeploymentRequestsTable();
@@ -2308,6 +2334,8 @@ function deleteRequest(requestId) {
         return;
     }
     
+
+    
     fetch('api/delete_deployment_request.php', {
         method: 'POST',
         headers: {
@@ -2315,16 +2343,51 @@ function deleteRequest(requestId) {
         },
         body: JSON.stringify({ id: requestId })
     })
-    .then(response => response.json())
-    .then(data => {
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+    })
+            .then(data => {
+        
         if (data.success) {
             if (typeof showAlert === 'function') {
                 showAlert('Xóa yêu cầu triển khai thành công!', 'success');
             } else {
                 alert('Xóa yêu cầu triển khai thành công!');
             }
-            // Reload trang để cập nhật danh sách
-            reloadDeploymentRequestsTable();
+            
+            // Xóa row trực tiếp từ DOM ngay lập tức
+            const row = document.querySelector(`tr[data-request-id="${requestId}"]`);
+            if (row) {
+                row.remove();
+                
+                // Kiểm tra xem còn row nào không
+                const remainingRows = document.querySelectorAll('#deployment-requests-table tr[data-request-id]');
+                if (remainingRows.length === 0) {
+                    // Nếu không còn row nào, hiển thị thông báo trống
+                    const tbody = document.getElementById('deployment-requests-table');
+                    if (tbody) {
+                        tbody.innerHTML = `<tr><td colspan="12" class="text-center text-muted py-3">
+                            <i class="fas fa-inbox fa-2x mb-2"></i><br>Chưa có yêu cầu triển khai nào
+                        </td></tr>`;
+                    }
+                }
+            }
+            
+            // Reload bảng để đảm bảo dữ liệu đồng bộ
+            setTimeout(() => {
+                reloadDeploymentRequestsTable();
+            }, 500);
+            
+                            // Fallback: reload trang nếu không thành công sau 3 giây
+                setTimeout(() => {
+                    const tbody = document.getElementById('deployment-requests-table');
+                    if (!tbody) {
+                        location.reload();
+                    }
+                }, 3000);
         } else {
             if (typeof showAlert === 'function') {
                 showAlert('Lỗi: ' + (data.message || 'Không thể xóa yêu cầu triển khai'), 'error');
@@ -2333,7 +2396,7 @@ function deleteRequest(requestId) {
             }
         }
     })
-    .catch(error => {
+            .catch(error => {
         if (typeof showAlert === 'function') {
             showAlert('Lỗi kết nối: ' + error.message, 'error');
         } else {
@@ -2344,69 +2407,79 @@ function deleteRequest(requestId) {
 
 // Hàm reload bảng danh sách yêu cầu triển khai
 function reloadDeploymentRequestsTable() {
-
     fetch('api/get_deployment_requests.php')
         .then(response => response.json())
         .then(data => {
             if (!data.success || !Array.isArray(data.data)) {
                 return;
             }
-            // Tìm table body hoặc table container
-            let tbody = document.getElementById('deployment-requests-table');
-            
-            if (!tbody) {
-                // Tìm tất cả tables và kiểm tra
-                const tables = document.querySelectorAll('table');
-                
-                for (let table of tables) {
-                    const tableTbody = table.querySelector('tbody');
-                    if (tableTbody && tableTbody.id === 'deployment-requests-table') {
-                        tbody = tableTbody;
-                        break;
-                    }
-                }
-            }
-            
-            if (!tbody) {
+            const cardContainer = document.getElementById('deployment-requests-card');
+            if (!cardContainer) {
                 return;
             }
-            tbody.innerHTML = '';
             const currentRole = '<?php echo $current_role; ?>';
-            
             if (data.data.length === 0) {
-                tbody.innerHTML = `
-                <tr>
-                    <td colspan="12" class="text-center py-5">
-                        <i class="fas fa-inbox fa-3x text-muted mb-3 d-block"></i>
-                        <h5 class="text-muted">Chưa có yêu cầu triển khai nào</h5>
-                        <p class="text-muted">Bấm nút "Tạo yêu cầu triển khai" để bắt đầu</p>
-                    </td>
-                </tr>
+                // Hiển thị thông báo khi không có dữ liệu
+                cardContainer.innerHTML = `
+                <div class=\"card-body\">
+                    <div class=\"text-center py-5\">
+                        <i class=\"fas fa-inbox fa-3x text-muted mb-3 d-block\"></i>
+                        <h5 class=\"text-muted\">Chưa có yêu cầu triển khai nào</h5>
+                        <p class=\"text-muted\">Bấm nút \"Tạo yêu cầu triển khai\" để bắt đầu</p>
+                    </div>
+                </div>
                 `;
             } else {
-                data.data.forEach(request => {
-                    const deleteButton = currentRole !== 'user' ? `<button class="btn btn-sm btn-outline-danger" onclick="deleteRequest(${request.id})" title="Xóa"><i class="fas fa-trash"></i></button>` : '';
-                    tbody.innerHTML += `
-                    <tr>
-                        <td><strong class="text-primary">${request.request_code || ''}</strong></td>
-                        <td><div class="contract-info"><div class="fw-bold">${request.contract_type || 'N/A'}</div><small class="text-muted">${request.request_detail_type || 'N/A'}</small></div></td>
-                        <td><div class="customer-info"><div class="fw-bold">${request.customer_name || 'N/A'}</div><small class="text-muted"><i class='fas fa-user me-1'></i>${request.contact_person || 'N/A'}</small><br><small class="text-muted"><i class='fas fa-phone me-1'></i>${request.contact_phone || 'N/A'}</small></div></td>
-                        <td><span class="text-dark">${request.sale_name || 'N/A'}</span></td>
-                        <td>${request.expected_start ? `<div class='text-wrap' style='white-space: pre-line;'><strong>Từ</strong><br>${formatDateForDisplay(request.expected_start)}<br><strong>Đến</strong><br>${request.expected_end ? formatDateForDisplay(request.expected_end) : '(Chưa xác định)'}</div>` : '<span class="text-muted">Chưa có</span>'}</td>
-                        <td>${request.requester_notes ? `<div class='text-wrap' style='max-width: 200px; white-space: pre-wrap; word-wrap: break-word;'>${request.requester_notes}</div>` : '<span class="text-muted">-</span>'}</td>
-                        <td><span class="text-dark">${request.deployment_status || ''}</span></td>
-                        <td><span class="text-dark">${request.total_cases || 0}</span></td>
-                        <td><span class="text-dark">${request.total_tasks || 0}</span></td>
-                        <td><div class="progress" style="width: 80px; height: 20px;"><div class="progress-bar bg-warning" style="width: ${request.progress_percentage || 0}%" title="${request.progress_percentage || 0}%"><small>${request.progress_percentage || 0}%</small></div></div></td>
-                        <td><span class="badge bg-${(request.deployment_status === 'Hoàn thành' ? 'success' : (request.deployment_status === 'Đang xử lý' ? 'warning' : (request.deployment_status === 'Huỷ' ? 'danger' : 'secondary')))}">${request.deployment_status || ''}</span></td>
-                        <td><div class="btn-group" role="group"><button class="btn btn-sm btn-outline-warning" onclick="editRequest(${request.id})" title="Chỉnh sửa"><i class="fas fa-edit"></i></button>${deleteButton}</div></td>
-                    </tr>
-                    `;
-                });
+                // Hiển thị bảng khi có dữ liệu
+                cardContainer.innerHTML = `
+                <div class=\"card-body\">
+                    <div class=\"table-responsive\">
+                        <table class=\"table table-hover mb-0\">
+                            <thead class=\"table-light\">
+                                <tr>
+                                    <th>Mã YC</th>
+                                    <th>Loại HĐ</th>
+                                    <th>Khách hàng</th>
+                                    <th>Phụ trách</th>
+                                    <th>Thời hạn triển khai</th>
+                                    <th>Ghi chú</th>
+                                    <th>Trạng thái YC</th>
+                                    <th>Tổng số case</th>
+                                    <th>Tổng số task</th>
+                                    <th>Tiến độ (%)</th>
+                                    <th>Trạng thái triển khai</th>
+                                    <th>Thao tác</th>
+                                </tr>
+                            </thead>
+                            <tbody id=\"deployment-requests-table\">
+                                ${data.data.map(request => {
+                                    const deleteButton = currentRole !== 'user' ? `<button class=\"btn btn-sm btn-outline-danger\" onclick=\"deleteRequest(${request.id})\" title=\"Xóa\"><i class=\"fas fa-trash\"></i></button>` : '';
+                                    return `
+                                    <tr data-request-id=\"${request.id}\">
+                                        <td><strong class=\"text-primary\">${request.request_code || ''}</strong></td>
+                                        <td><div class=\"contract-info\"><div class=\"fw-bold\">${request.contract_type || 'N/A'}</div><small class=\"text-muted\">${request.request_detail_type || 'N/A'}</small></div></td>
+                                        <td><div class=\"customer-info\"><div class=\"fw-bold\">${request.customer_name || 'N/A'}</div><small class=\"text-muted\"><i class='fas fa-user me-1'></i>${request.contact_person || 'N/A'}</small><br><small class=\"text-muted\"><i class='fas fa-phone me-1'></i>${request.contact_phone || 'N/A'}</small></div></td>
+                                        <td><span class=\"text-dark\">${request.sale_name || 'N/A'}</span></td>
+                                        <td>${request.expected_start ? `<div class='text-wrap' style='white-space: pre-line;'><strong>Từ</strong><br>${formatDateForDisplay(request.expected_start)}<br><strong>Đến</strong><br>${request.expected_end ? formatDateForDisplay(request.expected_end) : '(Chưa xác định)'}</div>` : '<span class=\"text-muted\">Chưa có</span>'}</td>
+                                        <td>${request.requester_notes ? `<div class='text-wrap' style='max-width: 200px; white-space: pre-wrap; word-wrap: break-word;'>${request.requester_notes}</div>` : '<span class=\"text-muted\">-</span>'}</td>
+                                        <td><span class=\"text-dark\">${request.deployment_status || ''}</span></td>
+                                        <td><span class=\"text-dark\">${request.total_cases || 0}</span></td>
+                                        <td><span class=\"text-dark\">${request.total_tasks || 0}</span></td>
+                                        <td><div class=\"progress\" style=\"width: 80px; height: 20px;\"><div class=\"progress-bar bg-warning\" style=\"width: ${request.progress_percentage || 0}%\" title=\"${request.progress_percentage || 0}%\"><small>${request.progress_percentage || 0}%</small></div></div></td>
+                                        <td><span class=\"badge bg-${(request.deployment_status === 'Hoàn thành' ? 'success' : (request.deployment_status === 'Đang xử lý' ? 'warning' : (request.deployment_status === 'Huỷ' ? 'danger' : 'secondary')))}\">${request.deployment_status || ''}</span></td>
+                                        <td><div class=\"btn-group\" role=\"group\"><button class=\"btn btn-sm btn-outline-warning\" onclick=\"editRequest(${request.id})\" title=\"Chỉnh sửa\"><i class=\"fas fa-edit\"></i></button>${deleteButton}</div></td>
+                                    </tr>
+                                    `;
+                                }).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                `;
             }
         })
         .catch(error => {
-            // Error handling
+            // Silent error handling
         });
 }
 
@@ -3369,7 +3442,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    reloadDeploymentRequestsTable();
+    // Reload bảng khi trang load
+    setTimeout(() => {
+        reloadDeploymentRequestsTable();
+    }, 500);
     
     // Disable form fields for user role
     const currentRole = '<?php echo $current_role; ?>';
