@@ -196,7 +196,22 @@ try {
         
         // Kiểm tra xem ID có hợp lệ không
         if ($request_id <= 0) {
-            throw new Exception('Không thể lấy ID của đơn nghỉ phép vừa tạo');
+            // Thử cách khác để lấy ID
+            $stmt = $pdo->query("SELECT LAST_INSERT_ID() as last_id");
+            $last_id_result = $stmt->fetch(PDO::FETCH_ASSOC);
+            $request_id = $last_id_result['last_id'];
+            
+            // Nếu vẫn không được, thử lấy ID từ request_code
+            if ($request_id <= 0) {
+                $stmt = $pdo->prepare("SELECT id FROM leave_requests WHERE request_code = ? ORDER BY id DESC LIMIT 1");
+                $stmt->execute([$request_code]);
+                $result = $stmt->fetch(PDO::FETCH_ASSOC);
+                if ($result) {
+                    $request_id = $result['id'];
+                } else {
+                    throw new Exception('Không thể lấy ID của đơn nghỉ phép vừa tạo');
+                }
+            }
         }
         
         // Log hoạt động (bỏ qua nếu có lỗi)
