@@ -1,6 +1,6 @@
 <?php
 /**
- * API: Phê duyệt đơn nghỉ phép
+ * API: Phê duyệt/từ chối đơn nghỉ phép (2 cấp)
  * Method: POST
  * Parameters: request_id, action (approve/reject), comment (optional)
  */
@@ -20,35 +20,23 @@ if (!isLoggedIn()) {
     exit;
 }
 
-// Kiểm tra quyền (chỉ admin và hr mới được phê duyệt)
-$current_user = getCurrentUser();
-if (!in_array($current_user['role'], ['admin', 'hr'])) {
-    http_response_code(403);
-    echo json_encode(['success' => false, 'message' => 'Bạn không có quyền phê duyệt đơn nghỉ phép']);
-    exit;
-}
-
-// Kiểm tra method
-if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    http_response_code(405);
-    echo json_encode(['success' => false, 'message' => 'Method không được hỗ trợ']);
-    exit;
-}
-
 try {
-    // Lấy dữ liệu từ request
-    $request_id = $_POST['request_id'] ?? '';
-    $action = $_POST['action'] ?? ''; // approve hoặc reject
-    $comment = $_POST['comment'] ?? '';
+    $current_user = getCurrentUser();
     
-    // Validate dữ liệu
-    if (empty($request_id) || empty($action)) {
-        echo json_encode(['success' => false, 'message' => 'Thiếu thông tin cần thiết']);
+    // Kiểm tra quyền phê duyệt (admin hoặc hr)
+    if (!in_array($current_user['role'], ['admin', 'hr'])) {
+        http_response_code(403);
+        echo json_encode(['success' => false, 'message' => 'Không có quyền phê duyệt đơn nghỉ phép']);
         exit;
     }
     
-    if (!in_array($action, ['approve', 'reject'])) {
-        echo json_encode(['success' => false, 'message' => 'Hành động không hợp lệ']);
+    // Lấy dữ liệu từ request
+    $request_id = $_POST['request_id'] ?? null;
+    $action = $_POST['action'] ?? null; // approve hoặc reject
+    $comment = $_POST['comment'] ?? '';
+    
+    if (!$request_id || !$action) {
+        echo json_encode(['success' => false, 'message' => 'Thiếu thông tin cần thiết']);
         exit;
     }
     
@@ -62,54 +50,116 @@ try {
         exit;
     }
     
-    // Kiểm tra trạng thái hiện tại
-    if ($leave_request['status'] !== 'Chờ phê duyệt') {
-        echo json_encode(['success' => false, 'message' => 'Đơn nghỉ phép đã được xử lý']);
-        exit;
+    // Xử lý theo role và trạng thái hiện tại
+    $current_status = $leave_request['status'];
+    $user_role = $current_user['role'];
+    $result = false;
+    
+    if ($user_role === 'admin') {
+        // Admin chỉ có thể phê duyệt đơn ở trạng thái "Chờ phê duyệt"
+        if ($current_status !== 'Chờ phê duyệt') {
+            echo json_encode(['success' => false, 'message' => 'Đơn nghỉ phép không ở trạng thái chờ phê duyệt']);
+            exit;
+        }
+        
+        if ($action === 'approve') {
+            $new_status = 'Admin đã phê duyệt';
+            $approval_message = 'Đơn nghỉ phép đã được admin phê duyệt (chờ HR phê duyệt cuối)';
+            
+            // Cập nhật thông tin admin
+            $stmt = $pdo->prepare("UPDATE leave_requests SET 
+                status = ?, 
+                admin_approved_by = ?, 
+                admin_approved_at = NOW(), 
+                admin_approval_comment = ? 
+                WHERE id = ?");
+            $result = $stmt->execute([$new_status, $current_user['id'], $comment, $request_id]);
+            
+            if ($result) {
+                // Gửi thông báo cho HR
+                try {
+                    $hr_ids = [];
+                    $stmt = $pdo->prepare("SELECT id FROM staffs WHERE role = 'hr'");
+                    $stmt->execute();
+                    while ($hr = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                        $hr_ids[] = $hr['id'];
+                    }
+                    
+                    foreach ($hr_ids as $hr_id) {
+                        $notification_sql = "INSERT INTO notifications (user_id, title, message, type, related_id) VALUES (?, ?, ?, ?, ?)";
+                        $notification_stmt = $pdo->prepare($notification_sql);
+                        $notification_stmt->execute([
+                            $hr_id,
+                            'Đơn nghỉ phép cần phê duyệt (Cấp 2)',
+                            "Đơn nghỉ phép {$leave_request['request_code']} đã được admin phê duyệt, cần HR phê duyệt cuối (Cấp 2)",
+                            'leave_request',
+                            $request_id
+                        ]);
+                    }
+                } catch (Exception $e) {
+                    // Bỏ qua lỗi notification
+                }
+            }
+            
+        } elseif ($action === 'reject') {
+            $new_status = 'Từ chối bởi Admin';
+            $approval_message = 'Đơn nghỉ phép đã bị admin từ chối';
+            
+            // Cập nhật thông tin admin
+            $stmt = $pdo->prepare("UPDATE leave_requests SET 
+                status = ?, 
+                admin_approved_by = ?, 
+                admin_approved_at = NOW(), 
+                admin_approval_comment = ? 
+                WHERE id = ?");
+            $result = $stmt->execute([$new_status, $current_user['id'], $comment, $request_id]);
+        }
+        
+    } elseif ($user_role === 'hr') {
+        // HR chỉ có thể phê duyệt đơn ở trạng thái "Admin đã phê duyệt"
+        if ($current_status !== 'Admin đã phê duyệt') {
+            echo json_encode(['success' => false, 'message' => 'Đơn nghỉ phép chưa được admin phê duyệt hoặc không ở trạng thái phù hợp']);
+            exit;
+        }
+        
+        if ($action === 'approve') {
+            $new_status = 'HR đã phê duyệt';
+            $approval_message = 'Đơn nghỉ phép đã được HR phê duyệt cuối cùng';
+            
+            // Cập nhật thông tin HR
+            $stmt = $pdo->prepare("UPDATE leave_requests SET 
+                status = ?, 
+                hr_approved_by = ?, 
+                hr_approved_at = NOW(), 
+                hr_approval_comment = ? 
+                WHERE id = ?");
+            $result = $stmt->execute([$new_status, $current_user['id'], $comment, $request_id]);
+            
+        } elseif ($action === 'reject') {
+            $new_status = 'Từ chối bởi HR';
+            $approval_message = 'Đơn nghỉ phép đã bị HR từ chối';
+            
+            // Cập nhật thông tin HR
+            $stmt = $pdo->prepare("UPDATE leave_requests SET 
+                status = ?, 
+                hr_approved_by = ?, 
+                hr_approved_at = NOW(), 
+                hr_approval_comment = ? 
+                WHERE id = ?");
+            $result = $stmt->execute([$new_status, $current_user['id'], $comment, $request_id]);
+        }
     }
-    
-    // Cập nhật trạng thái đơn nghỉ phép
-    $new_status = ($action === 'approve') ? 'Đã phê duyệt' : 'Từ chối';
-    $approver_id = $current_user['id'];
-    $approver_name = $current_user['fullname'];
-    
-    $update_sql = "UPDATE leave_requests SET 
-                    status = ?, 
-                    approved_by = ?, 
-                    approved_at = NOW(), 
-                    approval_comment = ?
-                    WHERE id = ?";
-    
-    $stmt = $pdo->prepare($update_sql);
-    $result = $stmt->execute([
-        $new_status,
-        $approver_id,
-        $comment,
-        $request_id
-    ]);
     
     if ($result) {
         // Gửi thông báo cho người tạo đơn
         try {
-            $notification_title = ($action === 'approve') ? 
-                'Đơn nghỉ phép đã được phê duyệt' : 
-                'Đơn nghỉ phép đã bị từ chối';
-            
-            $notification_message = ($action === 'approve') ?
-                "Đơn nghỉ phép của bạn (Mã: {$leave_request['request_code']}) đã được phê duyệt bởi {$approver_name}." :
-                "Đơn nghỉ phép của bạn (Mã: {$leave_request['request_code']}) đã bị từ chối bởi {$approver_name}.";
-            
-            if (!empty($comment)) {
-                $notification_message .= " Lý do: {$comment}";
-            }
-            
             $notification_sql = "INSERT INTO notifications (user_id, title, message, type, related_id) VALUES (?, ?, ?, ?, ?)";
             $notification_stmt = $pdo->prepare($notification_sql);
             $notification_stmt->execute([
                 $leave_request['requester_id'],
-                $notification_title,
-                $notification_message,
-                'leave_approval',
+                'Kết quả phê duyệt đơn nghỉ phép',
+                "$approval_message. Mã đơn: {$leave_request['request_code']}. " . ($comment ? "Ghi chú: $comment" : ''),
+                'leave_request',
                 $request_id
             ]);
         } catch (Exception $e) {
@@ -122,8 +172,8 @@ try {
             $log_stmt = $pdo->prepare($log_sql);
             $log_stmt->execute([
                 $current_user['id'],
-                'approve_leave_request',
-                "Phê duyệt đơn nghỉ phép: {$leave_request['request_code']} - {$new_status}"
+                $action === 'approve' ? 'approve_leave_request' : 'reject_leave_request',
+                "{$action} đơn nghỉ phép: {$leave_request['request_code']} (Role: {$user_role})"
             ]);
         } catch (Exception $e) {
             // Bỏ qua lỗi log
@@ -131,12 +181,7 @@ try {
         
         echo json_encode([
             'success' => true,
-            'message' => "Đã {$new_status} đơn nghỉ phép thành công",
-            'data' => [
-                'request_code' => $leave_request['request_code'],
-                'status' => $new_status,
-                'approved_by' => $approver_name
-            ]
+            'message' => $approval_message
         ]);
     } else {
         echo json_encode(['success' => false, 'message' => 'Có lỗi xảy ra khi cập nhật đơn nghỉ phép']);
@@ -146,7 +191,7 @@ try {
     http_response_code(500);
     echo json_encode([
         'success' => false,
-        'message' => 'Có lỗi xảy ra khi phê duyệt đơn nghỉ phép: ' . $e->getMessage()
+        'message' => 'Có lỗi xảy ra: ' . $e->getMessage()
     ]);
 }
 ?> 

@@ -874,3 +874,15 @@
     letter-spacing: 0.5px;
     border: none;
 } 
+/* Alert styling for resigned warning */
+#resignedWarning {
+    border-left: 4px solid #ffc107;
+    background-color: #fff3cd;
+    color: #856404;
+}
+
+#accountStatusAlert {
+    border-left: 4px solid #dc3545;
+    background-color: #f8d7da;
+    color: #721c24;
+}
