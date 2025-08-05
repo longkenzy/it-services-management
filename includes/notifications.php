@@ -13,8 +13,11 @@ if (isLoggedIn()) {
         $stmt->execute([$_SESSION[SESSION_USER_ID]]);
         $result = $stmt->fetch(PDO::FETCH_ASSOC);
         $unread_count = $result['count'];
+        
+
     } catch (Exception $e) {
         // Ignore error
+
     }
 }
 ?>
@@ -212,7 +215,7 @@ function displayNotifications(notifications) {
         const timeAgo = getTimeAgo(notification.created_at);
         
         html += `
-            <div class="notification-item ${isUnread ? 'unread' : ''}" data-id="${notification.id}" onclick="handleNotificationClick(${notification.id}, '${notification.type}', ${notification.related_id})">
+            <div class="notification-item ${isUnread ? 'unread' : ''}" data-id="${notification.id}" data-type="${notification.type}" data-related-id="${notification.related_id}" onclick="handleNotificationClick(${notification.id}, '${notification.type}', ${notification.related_id})">
                 <div class="d-flex align-items-start">
                     ${isUnread ? '<span class="notification-badge"></span>' : ''}
                     <div class="flex-grow-1">
@@ -229,7 +232,17 @@ function displayNotifications(notifications) {
 }
 
 function handleNotificationClick(notificationId, type, relatedId) {
-    // Mark as read
+    console.log('Notification clicked:', notificationId, type, relatedId);
+    
+    // Mark as read immediately in UI
+    const notificationItem = jQuery(`.notification-item[data-id="${notificationId}"]`);
+    if (notificationItem.length > 0) {
+        notificationItem.removeClass('unread');
+        notificationItem.find('.notification-badge').remove();
+        updateNotificationBadge();
+    }
+    
+    // Mark as read in database
     markNotificationRead(notificationId);
     
     // Handle different notification types
@@ -255,18 +268,29 @@ function markNotificationRead(notificationId) {
         return;
     }
     
+    console.log('Marking notification as read:', notificationId);
+    
     jQuery.ajax({
         url: 'api/mark_notification_read.php',
         type: 'POST',
         data: {
             notification_id: notificationId
         },
+        dataType: 'json',
         success: function(response) {
+            console.log('Mark notification response:', response);
             if (response.success) {
-                // Update UI
+                // Update UI immediately
                 jQuery(`.notification-item[data-id="${notificationId}"]`).removeClass('unread');
+                jQuery(`.notification-item[data-id="${notificationId}"] .notification-badge`).remove();
                 updateNotificationBadge();
+            } else {
+                console.error('Failed to mark notification as read:', response.message);
             }
+        },
+        error: function(xhr, status, error) {
+            console.error('Error marking notification as read:', error);
+            console.error('Response:', xhr.responseText);
         }
     });
 }
@@ -304,10 +328,19 @@ function updateNotificationBadge() {
     const unreadCount = jQuery('.notification-item.unread').length;
     const badge = jQuery('#notificationDropdown .badge');
     
+    console.log('Updating notification badge, unread count:', unreadCount);
+    
     if (unreadCount > 0) {
         badge.text(unreadCount > 99 ? '99+' : unreadCount).show();
     } else {
         badge.hide();
+    }
+    
+    // Also update the mark all read button
+    if (unreadCount > 0) {
+        jQuery('#markAllRead').show();
+    } else {
+        jQuery('#markAllRead').hide();
     }
 }
 

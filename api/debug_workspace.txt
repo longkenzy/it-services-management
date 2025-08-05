@@ -202,3 +202,5 @@ Current user_id: 11, username: longht, role: admin, status_filter: processing
 Data returned: []
 Current user_id: 11, username: longht, role: admin, status_filter: processing
 Data returned: []
+Current user_id: 21, username: phucth, role: sale, status_filter: processing
+Data returned: []

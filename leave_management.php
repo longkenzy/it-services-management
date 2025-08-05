@@ -108,8 +108,9 @@ $can_approve = in_array($current_user['role'], ['admin', 'hr']);
                         <table class="table table-hover mb-0 leave-requests-table">
                             <thead>
                                 <tr>
+                                    <th style="width: 5%;">STT</th>
                                     <th style="width: 8%;">Mã đơn</th>
-                                    <th style="width: 20%;">Người yêu cầu</th>
+                                    <th style="width: 18%;">Người yêu cầu</th>
                                     <th style="width: 15%;">Thời gian nghỉ</th>
                                     <th style="width: 18%;">Lý do nghỉ</th>
                                     <th style="width: 10%;">Đính kèm</th>
@@ -357,7 +358,7 @@ $can_approve = in_array($current_user['role'], ['admin', 'hr']);
     
     <!-- Modal Xem chi tiết đơn nghỉ phép -->
     <div class="modal fade" id="viewLeaveRequestModal" tabindex="-1" aria-labelledby="viewLeaveRequestModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg">
+        <div class="modal-dialog modal-xl">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="viewLeaveRequestModalLabel">
@@ -368,6 +369,12 @@ $can_approve = in_array($current_user['role'], ['admin', 'hr']);
                 </div>
                 <div class="modal-body" id="viewLeaveRequestModalBody">
                     <!-- Content will be loaded here -->
+                    <div class="text-center py-4">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Đang tải...</span>
+                        </div>
+                        <p class="mt-2 text-muted">Đang tải thông tin đơn nghỉ phép...</p>
+                    </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
@@ -399,6 +406,7 @@ $can_approve = in_array($current_user['role'], ['admin', 'hr']);
     // Truyền thông tin quyền phê duyệt cho JavaScript
     window.canApprove = <?php echo json_encode($can_approve); ?>;
     window.currentUserRole = "<?php echo addslashes($current_user['role']); ?>";
+    
 
     </script>
     
