@@ -56,13 +56,14 @@ $can_approve = in_array($current_user['role'], ['admin', 'hr']);
                             <i class="fas fa-calendar-alt text-primary me-3"></i>
                             <?php echo $page_title; ?>
                         </h1>
-                        <p class="text-muted mb-0">Quản lý và theo dõi các đơn nghỉ phép của nhân viên</p>
+                                                 <p class="text-muted mb-0">Quản lý và theo dõi các đơn nghỉ phép của nhân viên</p>
                     </div>
                     <div>
                         <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createLeaveRequestModal">
                             <i class="fas fa-plus me-2"></i>
                             Tạo đơn nghỉ phép
                         </button>
+                        
                     </div>
                 </div>
             </div>
@@ -74,7 +75,11 @@ $can_approve = in_array($current_user['role'], ['admin', 'hr']);
                         <select class="form-select" style="width: auto;" id="statusFilter">
                             <option value="">Tất cả trạng thái</option>
                             <option value="Chờ phê duyệt">Chờ phê duyệt</option>
+                            <option value="Admin đã phê duyệt">Admin đã phê duyệt</option>
+                            <option value="HR đã phê duyệt">HR đã phê duyệt</option>
                             <option value="Đã phê duyệt">Đã phê duyệt</option>
+                            <option value="Từ chối bởi Admin">Từ chối bởi Admin</option>
+                            <option value="Từ chối bởi HR">Từ chối bởi HR</option>
                             <option value="Từ chối">Từ chối</option>
                         </select>
                         <select class="form-select" style="width: auto;" id="typeFilter">
@@ -394,8 +399,7 @@ $can_approve = in_array($current_user['role'], ['admin', 'hr']);
     // Truyền thông tin quyền phê duyệt cho JavaScript
     window.canApprove = <?php echo json_encode($can_approve); ?>;
     window.currentUserRole = "<?php echo addslashes($current_user['role']); ?>";
-    console.log('PHP canApprove:', <?php echo json_encode($can_approve); ?>);
-    console.log('PHP currentUserRole:', "<?php echo addslashes($current_user['role']); ?>");
+
     </script>
     
     <script src="assets/js/leave_management.js"></script>

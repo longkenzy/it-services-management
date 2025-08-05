@@ -109,15 +109,17 @@ $current_user = getCurrentUser();
                             </div>
                             <div class="col-md-2">
                                 <label class="form-label">Sắp xếp</label>
-                                <select class="form-select" id="sortFilter">
-                                    <option value="start_date:DESC" selected>Ngày vào làm (Mới nhất)</option>
-                                    <option value="start_date:ASC">Ngày vào làm (Cũ nhất)</option>
-                                    <option value="employee_code:ASC">Mã NV (A-Z)</option>
-                                    <option value="fullname:ASC">Tên (A-Z)</option>
-                                    <option value="fullname:DESC">Tên (Z-A)</option>
-                                    <option value="seniority:DESC">Thâm niên (Cao-Thấp)</option>
-                                    <option value="created_at:DESC">Mới nhất</option>
-                                </select>
+                                                                 <select class="form-select" id="sortFilter">
+                                     <option value="start_date:DESC">Ngày vào làm (Mới nhất)</option>
+                                     <option value="start_date:ASC" selected>Ngày vào làm (Cũ nhất)</option>
+                                     <option value="employee_code:ASC">Mã NV (A-Z)</option>
+                                     <option value="fullname:ASC">Tên (A-Z)</option>
+                                     <option value="fullname:DESC">Tên (Z-A)</option>
+                                     <option value="seniority:DESC">Thâm niên (Cao-Thấp)</option>
+                                     <option value="created_at:DESC">Mới nhất</option>
+                                     <option value="resigned:DESC">Đã nghỉ việc</option>
+                                     <option value="active:ASC">Đang làm việc</option>
+                                 </select>
                             </div>
                             <div class="col-md-1">
                                 <label class="form-label">&nbsp;</label>
@@ -242,8 +244,8 @@ $current_user = getCurrentUser();
                             <th>Phòng ban</th>
                             <th>SĐT Chính</th>
                                         <th>Email công việc</th>
-                                        <th>Trạng thái</th>
-                                        <th>Loại hợp đồng</th>
+                                                                                   <th>Trạng thái</th>
+                                           <th>Loại hợp đồng</th>
                                         <th width="80">Option</th>
                                     </tr>
                                 </thead>
@@ -400,6 +402,10 @@ $current_user = getCurrentUser();
                                                         <label class="form-check-label" for="resigned">
                                                             Đánh dấu nhân viên đã nghỉ việc
                                                         </label>
+                                                    </div>
+                                                    <div class="alert alert-warning mt-2 d-none" id="resignedWarning">
+                                                        <i class="fas fa-exclamation-triangle me-2"></i>
+                                                        <strong>Lưu ý:</strong> Khi đánh dấu nhân viên đã nghỉ việc, tài khoản đăng nhập sẽ bị vô hiệu hóa và không thể đăng nhập vào hệ thống.
                                                     </div>
                                                 </div>
                                             </div>
@@ -626,12 +632,12 @@ $current_user = getCurrentUser();
                                                 </div>
                                                 <div class="col-8">
                                                     <select class="form-select" name="role" id="role">
-                                                        <option value="user">user</option>
-                                                        <option value="admin">admin</option>
-                                                        <option value="hr">hr</option>
-                                                        <option value="sale">sale</option>
-                                                        <option value="it">it</option>
-                                                        <option value="leader">leader</option>
+                                                        <option value="user">USER</option>
+                                                        <option value="admin">ADMIN</option>
+                                                        <option value="hr">HR</option>
+                                                        <option value="sale">SALE</option>
+                                                        <option value="it">IT</option>
+                                                        <option value="leader">LEADER</option>
                                                     </select>
                                                 </div>
                                             </div>

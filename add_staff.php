@@ -167,9 +167,16 @@ try {
             logUserActivity("Thêm nhân sự mới", "{$_POST['fullname']} ({$_POST['staff_code']})");
         }
         
+        $message = 'Thêm nhân sự thành công!';
+        
+        // Thêm thông báo về trạng thái tài khoản nếu đã nghỉ
+        if (isset($_POST['resigned']) && $_POST['resigned'] == 1) {
+            $message .= ' Tài khoản đăng nhập đã bị vô hiệu hóa.';
+        }
+        
         $response = [
             'success' => true, 
-            'message' => 'Thêm nhân sự thành công!',
+            'message' => $message,
             'staff_id' => $staff_id,
             'staff_code' => $_POST['staff_code'],
             'fullname' => $_POST['fullname'],

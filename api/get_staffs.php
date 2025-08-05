@@ -54,6 +54,8 @@ try {
                 s.status,
                 s.job_type,
                 s.resigned,
+                s.username,
+                s.role,
                 s.avatar,
                 s.created_at,
                 s.updated_at
@@ -102,15 +104,26 @@ try {
     $countStmt->execute($countParams);
     $totalCount = $countStmt->fetch(PDO::FETCH_ASSOC)['total'];
     
+    // Xử lý filter theo trạng thái nghỉ việc
+    if ($sort_by === 'resigned') {
+        $countSql .= " AND s.resigned = 1";
+        $sql .= " AND s.resigned = 1";
+        $sort_by = 'created_at'; // Reset sort_by về created_at cho resigned
+    } elseif ($sort_by === 'active') {
+        $countSql .= " AND (s.resigned = 0 OR s.resigned IS NULL)";
+        $sql .= " AND (s.resigned = 0 OR s.resigned IS NULL)";
+        $sort_by = 'start_date'; // Reset sort_by về start_date cho active để sắp xếp theo ngày vào làm
+    }
+    
     // Validate sort_by và sort_order
     $allowed_sort_fields = ['created_at', 'fullname', 'staff_code', 'start_date', 'seniority'];
     $allowed_sort_orders = ['ASC', 'DESC'];
     
     if (!in_array($sort_by, $allowed_sort_fields)) {
-        $sort_by = 'created_at';
+        $sort_by = 'start_date';
     }
     if (!in_array(strtoupper($sort_order), $allowed_sort_orders)) {
-        $sort_order = 'DESC';
+        $sort_order = 'ASC';
     }
     
     // Thêm ORDER BY và LIMIT

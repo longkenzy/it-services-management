@@ -233,9 +233,16 @@ try {
     error_log($log_message);
     
     // Trả về kết quả thành công
+    $message = "Đã cập nhật thành công thông tin nhân sự: {$data['fullname']}";
+    
+    // Thêm thông báo về trạng thái tài khoản nếu đã nghỉ
+    if ($data['resigned'] == 1) {
+        $message .= ". Tài khoản đăng nhập đã bị vô hiệu hóa.";
+    }
+    
     echo json_encode([
         'success' => true, 
-        'message' => "Đã cập nhật thành công thông tin nhân sự: {$data['fullname']}",
+        'message' => $message,
         'name' => $data['fullname']
     ]);
     

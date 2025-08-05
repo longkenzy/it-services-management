@@ -56,7 +56,7 @@ if (!empty($errors)) {
 
 try {
     // Đăng nhập chỉ dùng bảng staffs
-    $sql = "SELECT id, username, password, fullname, role FROM staffs WHERE username = :username LIMIT 1";
+    $sql = "SELECT id, username, password, fullname, role, resigned FROM staffs WHERE username = :username LIMIT 1";
     $stmt = $pdo->prepare($sql);
     $stmt->execute(['username' => $username]);
     $staff = $stmt->fetch();
@@ -67,6 +67,17 @@ try {
         echo json_encode([
             'success' => false,
             'message' => 'Tên đăng nhập hoặc mật khẩu không đúng.'
+        ]);
+        exit();
+    }
+
+    // Kiểm tra trạng thái resigned - nếu đã nghỉ thì không cho đăng nhập
+    if ($staff['resigned'] == 1) {
+        error_log("Login failed: Resigned staff trying to login - " . $username . " from IP: " . ($_SERVER['REMOTE_ADDR'] ?? 'unknown'));
+        http_response_code(403);
+        echo json_encode([
+            'success' => false,
+            'message' => 'Tài khoản đã bị vô hiệu hóa do nhân sự đã nghỉ việc. Vui lòng liên hệ quản trị viên.'
         ]);
         exit();
     }

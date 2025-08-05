@@ -25,9 +25,9 @@ $(document).ready(function() {
     // ===== KHỞI TẠO TRANG ===== //
     function init() {
         setupEventListeners();
-        // Ép dropdown luôn chọn đúng mặc định
-        $('#sortFilter').val('start_date:ASC');
-        currentFilters.sort_by = 'start_date';
+        // Ép dropdown luôn chọn đúng mặc định - hiển thị nhân viên đang làm việc, sắp xếp theo ngày vào làm cũ nhất
+        $('#sortFilter').val('active:ASC');
+        currentFilters.sort_by = 'active';
         currentFilters.sort_order = 'ASC';
         loadStaffData();
     }
@@ -482,7 +482,7 @@ $(document).ready(function() {
             search: '',
             department: '',
             position: '',
-            sort_by: 'start_date',
+            sort_by: 'active',
             sort_order: 'ASC',
             gender: ''
         };
@@ -492,7 +492,7 @@ $(document).ready(function() {
         $('#departmentFilter').val('');
         $('#positionFilter').val('');
         $('#genderFilter').val('');
-        $('#sortFilter').val('start_date:ASC');
+        $('#sortFilter').val('active:ASC');
         $('#limitSelect').val('20');
         
         currentPage = 1;
@@ -644,6 +644,12 @@ $(document).ready(function() {
             
             // Đã nghỉ việc
             $('#resigned').prop('checked', staff.resigned == 1);
+            // Hiển thị cảnh báo nếu đã nghỉ
+            if (staff.resigned == 1) {
+                $('#resignedWarning').removeClass('d-none');
+            } else {
+                $('#resignedWarning').addClass('d-none');
+            }
             
             // TÀI KHOẢN ĐĂNG NHẬP
             $('#username').val(staff.username || '');
@@ -722,6 +728,16 @@ $(document).ready(function() {
         } else if ((window.currentUserRole === 'user' || window.currentUserRole === 'account user') && $('#btnViewToEdit').length) {
             $('#btnViewToEdit').remove();
         }
+        
+        // Thêm thông báo về trạng thái tài khoản nếu đã nghỉ
+        if ($('#resigned').is(':checked')) {
+            if ($('#accountStatusAlert').length === 0) {
+                $('<div class="alert alert-danger mt-3" id="accountStatusAlert"><i class="fas fa-ban me-2"></i><strong>Tài khoản đã bị vô hiệu hóa</strong> - Nhân sự này không thể đăng nhập vào hệ thống.</div>')
+                    .insertAfter($('#resigned').closest('.mb-2'));
+            }
+        } else {
+            $('#accountStatusAlert').remove();
+        }
         // Ẩn nút Lưu/Thêm
         $('#addStaffForm button[type="submit"]').hide();
         // Sự kiện chuyển sang chế độ chỉnh sửa
@@ -791,6 +807,15 @@ $(document).ready(function() {
             setTimeout(function() {
                 calculateSeniority();
             }, 100);
+        });
+        
+        // Show/hide resigned warning
+        $('#resigned').on('change', function() {
+            if ($(this).is(':checked')) {
+                $('#resignedWarning').removeClass('d-none');
+            } else {
+                $('#resignedWarning').addClass('d-none');
+            }
         });
         
         // Also calculate seniority when start date field is focused and has value
@@ -968,6 +993,8 @@ $(document).ready(function() {
         $('#start_date_error').remove();
         $('#start_date').removeClass('is-invalid');
         $('.is-invalid').removeClass('is-invalid');
+        $('#resignedWarning').addClass('d-none');
+        $('#accountStatusAlert').remove();
         $('#addStaffModalLabel').html('<i class="fas fa-user-plus me-2"></i>Thêm nhân sự mới');
         $('#addStaffForm button[type="submit"]').html('<i class="fas fa-plus me-2"></i>Thêm nhân sự');
         $('#password').attr('placeholder', '').attr('required', true);

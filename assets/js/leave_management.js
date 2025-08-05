@@ -12,6 +12,8 @@ if (typeof window.canApprove !== 'undefined') {
     console.log('Can approve initialized:', canApprove);
 }
 
+
+
 // Đảm bảo jQuery đã được load trước khi chạy
 if (typeof jQuery === 'undefined') {
     console.error('jQuery is not loaded! Please check script loading order.');
@@ -45,18 +47,11 @@ if (typeof jQuery === 'undefined') {
         // Kiểm tra quyền phê duyệt từ biến global
         if (typeof window.canApprove !== 'undefined') {
             canApprove = window.canApprove;
-            console.log('Can approve from window:', canApprove);
-        } else {
-            console.log('window.canApprove is undefined');
         }
         
-        // Kiểm tra lại sau 1 giây để đảm bảo
-        setTimeout(function() {
-            if (typeof window.canApprove !== 'undefined') {
-                canApprove = window.canApprove;
-                console.log('Can approve after timeout:', canApprove);
-            }
-        }, 1000);
+
+        
+
     });
 }
 
@@ -121,13 +116,30 @@ function loadLeaveRequests() {
 }
 
 /**
- * Kiểm tra quyền phê duyệt
+ * Kiểm tra quyền phê duyệt theo trạng thái
+ */
+function canUserApproveForStatus(status) {
+    const userRole = window.currentUserRole;
+    
+    if (status === 'Chờ phê duyệt') {
+        // Chỉ admin có thể phê duyệt đơn mới
+        return userRole === 'admin';
+    } else if (status === 'Admin đã phê duyệt') {
+        // Chỉ HR có thể phê duyệt đơn đã được admin phê duyệt
+        return userRole === 'hr';
+    }
+    
+    return false;
+}
+
+/**
+ * Kiểm tra quyền phê duyệt (tổng quát)
  */
 function canUserApprove() {
-    const result = canApprove || window.canApprove || (window.currentUserRole && ['admin', 'hr'].includes(window.currentUserRole));
-    console.log('canUserApprove() - canApprove:', canApprove, 'window.canApprove:', window.canApprove, 'window.currentUserRole:', window.currentUserRole, 'result:', result);
-    return result;
+    return canApprove || window.canApprove || (window.currentUserRole && ['admin', 'hr'].includes(window.currentUserRole));
 }
+
+
 
 /**
  * Hiển thị danh sách đơn nghỉ phép
@@ -143,11 +155,19 @@ function displayLeaveRequests(requests) {
     
     hideEmptyState();
     
-    console.log('Displaying requests, canApprove:', canApprove);
-    console.log('window.canApprove:', window.canApprove);
-    console.log('window.currentUserRole:', window.currentUserRole);
-    requests.forEach(request => {
-        console.log('Request status:', request.status, 'canApprove:', canApprove);
+            requests.forEach(request => {
+        const canApproveThisRequest = canUserApproveForStatus(request.status);
+        const approvalButtons = canApproveThisRequest ? `
+            <button type="button" class="btn btn-outline-success" onclick="approveLeaveRequest(${request.id})" title="Phê duyệt">
+                <i class="fas fa-check"></i>
+            </button>
+            <button type="button" class="btn btn-outline-danger" onclick="rejectLeaveRequest(${request.id})" title="Từ chối">
+                <i class="fas fa-times"></i>
+            </button>
+        ` : '';
+        
+
+        
         const row = `
             <tr>
                 <td>
@@ -220,22 +240,18 @@ function displayLeaveRequests(requests) {
                         <button type="button" class="btn btn-outline-info" onclick="viewLeaveRequest(${request.id})" title="Xem chi tiết">
                             <i class="fas fa-eye"></i>
                         </button>
-                        ${request.status === 'Chờ phê duyệt' ? `
-                            <button type="button" class="btn btn-outline-warning" onclick="editLeaveRequest(${request.id})" title="Chỉnh sửa">
-                                <i class="fas fa-edit"></i>
-                            </button>
-                            <button type="button" class="btn btn-outline-danger" onclick="cancelLeaveRequest(${request.id})" title="Hủy đơn">
-                                <i class="fas fa-times"></i>
-                            </button>
-                            ${canUserApprove() ? `
-                                <button type="button" class="btn btn-outline-success" onclick="approveLeaveRequest(${request.id})" title="Phê duyệt">
-                                    <i class="fas fa-check"></i>
+                                                    ${request.status === 'Chờ phê duyệt' ? `
+                                <button type="button" class="btn btn-outline-warning" onclick="editLeaveRequest(${request.id})" title="Chỉnh sửa">
+                                    <i class="fas fa-edit"></i>
                                 </button>
-                                <button type="button" class="btn btn-outline-danger" onclick="rejectLeaveRequest(${request.id})" title="Từ chối">
+                                <button type="button" class="btn btn-outline-danger" onclick="cancelLeaveRequest(${request.id})" title="Hủy đơn">
                                     <i class="fas fa-times"></i>
                                 </button>
+                                ${approvalButtons}
                             ` : ''}
-                        ` : ''}
+                            ${request.status === 'Admin đã phê duyệt' ? `
+                                ${approvalButtons}
+                            ` : ''}
                     </div>
                 </td>
             </tr>
@@ -571,7 +587,11 @@ function hideEmptyState() {
 function getStatusBadge(status) {
     const statusClasses = {
         'Chờ phê duyệt': 'bg-warning',
+        'Admin đã phê duyệt': 'bg-info',
+        'HR đã phê duyệt': 'bg-success',
         'Đã phê duyệt': 'bg-success',
+        'Từ chối bởi Admin': 'bg-danger',
+        'Từ chối bởi HR': 'bg-danger',
         'Từ chối': 'bg-danger'
     };
     
