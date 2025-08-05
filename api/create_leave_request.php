@@ -28,6 +28,9 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 }
 
 try {
+    // Bắt đầu transaction để đảm bảo tính toàn vẹn dữ liệu
+    $pdo->beginTransaction();
+    
     $current_user = getCurrentUser();
     
     // Lấy dữ liệu từ form
@@ -143,8 +146,8 @@ try {
     $sql = "INSERT INTO leave_requests (
                 request_code, requester_id, requester_position, requester_department, requester_office,
                 start_date, end_date, return_date, leave_days, leave_type, reason, handover_to,
-                attachment, status
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                attachment, status, created_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())";
     
     $stmt = $pdo->prepare($sql);
     $result = $stmt->execute([
@@ -166,6 +169,11 @@ try {
     
     if ($result) {
         $request_id = $pdo->lastInsertId();
+        
+        // Kiểm tra xem ID có hợp lệ không
+        if ($request_id <= 0) {
+            throw new Exception('Không thể lấy ID của đơn nghỉ phép vừa tạo');
+        }
         
         // Log hoạt động (bỏ qua nếu có lỗi)
         try {
@@ -205,7 +213,8 @@ try {
             // Bỏ qua lỗi notification
         }
         
-
+        // Commit transaction
+        $pdo->commit();
         
         echo json_encode([
             'success' => true,
@@ -216,10 +225,17 @@ try {
             ]
         ]);
     } else {
+        // Rollback nếu insert thất bại
+        $pdo->rollBack();
         echo json_encode(['success' => false, 'message' => 'Có lỗi xảy ra khi tạo đơn nghỉ phép']);
     }
     
 } catch (Exception $e) {
+    // Rollback transaction nếu có lỗi
+    if ($pdo->inTransaction()) {
+        $pdo->rollBack();
+    }
+    
     http_response_code(500);
     echo json_encode([
         'success' => false,

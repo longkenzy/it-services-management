@@ -4,8 +4,6 @@ require_once '../includes/session.php';
 header('Content-Type: application/json');
 header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
 header('Pragma: no-cache');
-header('Expires: 0');
-header('Last-Modified: ' . gmdate('D, d M Y H:i:s') . ' GMT');
 
 if (null === getCurrentUserId()) {
     http_response_code(401);
@@ -25,7 +23,9 @@ try {
         SELECT COUNT(*) FROM deployment_cases dc WHERE dc.deployment_request_id = dr.id
     ) as total_cases,
     (
-        SELECT COUNT(*) FROM deployment_tasks dt WHERE dt.deployment_request_id = dr.id
+        SELECT COUNT(*) FROM deployment_tasks dt 
+        INNER JOIN deployment_cases dc ON dt.deployment_case_id = dc.id 
+        WHERE dc.deployment_request_id = dr.id
     ) as total_tasks,
     (
         SELECT COUNT(*) FROM deployment_cases dc WHERE dc.deployment_request_id = dr.id AND dc.status = 'Hoàn thành'
