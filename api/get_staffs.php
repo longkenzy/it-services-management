@@ -26,12 +26,15 @@ try {
     $search = $_GET['search'] ?? '';
     $department = $_GET['department'] ?? '';
     $position = $_GET['position'] ?? '';
+    $gender = $_GET['gender'] ?? '';
+    $sort_by = $_GET['sort_by'] ?? 'created_at';
+    $sort_order = $_GET['sort_order'] ?? 'DESC';
     
     // Tính offset
     $offset = ($page - 1) * $limit;
     
     // Xây dựng câu query đếm tổng số
-    $countSql = "SELECT COUNT(*) as total FROM staffs WHERE 1=1";
+    $countSql = "SELECT COUNT(*) as total FROM staffs s WHERE 1=1";
     $countParams = [];
     
     // Xây dựng câu query chính
@@ -86,18 +89,42 @@ try {
         $params[] = $position;
     }
     
+    // Lọc theo giới tính
+    if (!empty($gender)) {
+        $countSql .= " AND s.gender = ?";
+        $sql .= " AND s.gender = ?";
+        $countParams[] = $gender;
+        $params[] = $gender;
+    }
+    
     // Đếm tổng số
     $countStmt = $pdo->prepare($countSql);
     $countStmt->execute($countParams);
     $totalCount = $countStmt->fetch(PDO::FETCH_ASSOC)['total'];
     
+    // Validate sort_by và sort_order
+    $allowed_sort_fields = ['created_at', 'fullname', 'staff_code', 'start_date', 'seniority'];
+    $allowed_sort_orders = ['ASC', 'DESC'];
+    
+    if (!in_array($sort_by, $allowed_sort_fields)) {
+        $sort_by = 'created_at';
+    }
+    if (!in_array(strtoupper($sort_order), $allowed_sort_orders)) {
+        $sort_order = 'DESC';
+    }
+    
     // Thêm ORDER BY và LIMIT
-    $sql .= " ORDER BY s.created_at DESC LIMIT ? OFFSET ?";
-    $params[] = $limit;
-    $params[] = $offset;
+    $sql .= " ORDER BY s.$sort_by $sort_order LIMIT ? OFFSET ?";
     
     $stmt = $pdo->prepare($sql);
-    $stmt->execute($params);
+    
+    // Bind tất cả parameters
+    foreach ($params as $index => $param) {
+        $stmt->bindValue($index + 1, $param);
+    }
+    $stmt->bindValue(count($params) + 1, $limit, PDO::PARAM_INT);
+    $stmt->bindValue(count($params) + 2, $offset, PDO::PARAM_INT);
+    $stmt->execute();
     $staffs = $stmt->fetchAll(PDO::FETCH_ASSOC);
     
     // Tính toán thông tin pagination

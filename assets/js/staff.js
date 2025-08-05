@@ -157,11 +157,13 @@ $(document).ready(function() {
                 isLoading = false;
                 hideLoadingState();
                 
+                console.log('API Response:', response);
+                
                 if (response.success) {
                     staffData = response.data.staffs;
                     renderStaffTable(staffData);
                     updateStatistics(response.data.statistics);
-                    updateFilterOptions(response.data.statistics);
+                    updateFilterOptions(response.data);
                     
                     // Show empty state if no data
                     if (staffData.length === 0) {
@@ -409,14 +411,17 @@ $(document).ready(function() {
     }
     
     // ===== CẬP NHẬT TÙY CHỌN LỌC ===== //
-    function updateFilterOptions(stats) {
+    function updateFilterOptions(data) {
+        console.log('Updating filter options with data:', data);
+        
         // Update department filter
         const deptFilter = $('#departmentFilter');
         const currentDept = deptFilter.val();
         deptFilter.find('option:not(:first)').remove();
         
-        if (stats.departments && Array.isArray(stats.departments)) {
-            stats.departments.forEach(dept => {
+        if (data.departments && Array.isArray(data.departments)) {
+            console.log('Adding departments:', data.departments);
+            data.departments.forEach(dept => {
                 deptFilter.append(`<option value="${dept.department}">${dept.department} (${dept.count})</option>`);
             });
         }
@@ -427,8 +432,9 @@ $(document).ready(function() {
         const currentPos = posFilter.val();
         posFilter.find('option:not(:first)').remove();
         
-        if (stats.positions && Array.isArray(stats.positions)) {
-            stats.positions.forEach(pos => {
+        if (data.positions && Array.isArray(data.positions)) {
+            console.log('Adding positions:', data.positions);
+            data.positions.forEach(pos => {
                 posFilter.append(`<option value="${pos.position}">${pos.position} (${pos.count})</option>`);
             });
         }
@@ -439,8 +445,9 @@ $(document).ready(function() {
         const currentGender = genderFilter.val();
         genderFilter.find('option:not(:first)').remove();
 
-        if (stats.genders && Array.isArray(stats.genders)) {
-            stats.genders.forEach(gender => {
+        if (data.genders && Array.isArray(data.genders)) {
+            console.log('Adding genders:', data.genders);
+            data.genders.forEach(gender => {
                 genderFilter.append(`<option value="${gender.gender}">${gender.gender} (${gender.count})</option>`);
             });
         }

@@ -7,7 +7,7 @@
 require_once 'includes/session.php';
 require_once 'config/db.php';
 
-// Kiểm tra quyền truy cập
+// Kiểm tra đăng nhập
 if (!isLoggedIn()) {
     header('Location: auth/login.php');
     exit;
@@ -15,6 +15,9 @@ if (!isLoggedIn()) {
 
 $current_user = getCurrentUser();
 $page_title = "Quản lý Nghỉ phép";
+
+// Kiểm tra quyền phê duyệt
+$can_approve = in_array($current_user['role'], ['admin', 'hr']);
 ?>
 
 <!DOCTYPE html>
@@ -386,6 +389,15 @@ $page_title = "Quản lý Nghỉ phép";
             console.error('jQuery is not loaded!');
         }
     </script>
+    
+    <script>
+    // Truyền thông tin quyền phê duyệt cho JavaScript
+    window.canApprove = <?php echo json_encode($can_approve); ?>;
+    window.currentUserRole = "<?php echo addslashes($current_user['role']); ?>";
+    console.log('PHP canApprove:', <?php echo json_encode($can_approve); ?>);
+    console.log('PHP currentUserRole:', "<?php echo addslashes($current_user['role']); ?>");
+    </script>
+    
     <script src="assets/js/leave_management.js"></script>
 </body>
 </html> 

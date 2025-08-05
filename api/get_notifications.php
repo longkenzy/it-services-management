@@ -42,7 +42,14 @@ try {
     // Lấy danh sách thông báo
     $sql = "SELECT * FROM notifications WHERE $where_clause ORDER BY created_at DESC LIMIT ? OFFSET ?";
     $stmt = $pdo->prepare($sql);
-    $stmt->execute(array_merge($params, [$limit, $offset]));
+    
+    // Bind parameters
+    foreach ($params as $index => $param) {
+        $stmt->bindValue($index + 1, $param);
+    }
+    $stmt->bindValue(count($params) + 1, $limit, PDO::PARAM_INT);
+    $stmt->bindValue(count($params) + 2, $offset, PDO::PARAM_INT);
+    $stmt->execute();
     $notifications = $stmt->fetchAll(PDO::FETCH_ASSOC);
     
     // Tính toán pagination
