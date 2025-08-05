@@ -626,9 +626,12 @@ $current_user = getCurrentUser();
                                                 </div>
                                                 <div class="col-8">
                                                     <select class="form-select" name="role" id="role">
-                                                        <option value="user">Nhân viên</option>
-                                                        <option value="leader">Trưởng nhóm</option>
-                                                        <option value="admin">Quản trị viên</option>
+                                                        <option value="user">user</option>
+                                                        <option value="admin">admin</option>
+                                                        <option value="hr">hr</option>
+                                                        <option value="sale">sale</option>
+                                                        <option value="it">it</option>
+                                                        <option value="leader">leader</option>
                                                     </select>
                                                 </div>
                                             </div>

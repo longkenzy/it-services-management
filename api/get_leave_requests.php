@@ -68,11 +68,8 @@ try {
         $params[] = $searchTerm;
     }
     
-    // Chỉ hiển thị đơn của người dùng hiện tại (trừ admin/leader)
-    if (!hasRole(['admin', 'leader'])) {
-        $sql .= " AND lr.requester_id = ?";
-        $params[] = $current_user['id'];
-    }
+    // Cho phép tất cả mọi người xem tất cả đơn nghỉ phép
+    // (Không cần lọc theo người dùng hiện tại)
     
     $sql .= " ORDER BY lr.created_at DESC";
     

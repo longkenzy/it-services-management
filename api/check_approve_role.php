@@ -1,8 +1,8 @@
 <?php
 /**
- * API: Lấy danh sách nhân viên cho dropdown bàn giao
+ * API: Kiểm tra quyền phê duyệt đơn nghỉ phép
  * Method: GET
- * Response: JSON với danh sách nhân viên
+ * Response: JSON với thông tin quyền
  */
 
 header('Content-Type: application/json');
@@ -21,26 +21,22 @@ if (!isLoggedIn()) {
 }
 
 try {
-    // Lấy danh sách nhân viên đang làm việc (không nghỉ việc)
-    $sql = "SELECT id, fullname, position, department, office 
-            FROM staffs 
-            WHERE resigned = 0 OR resigned IS NULL 
-            ORDER BY fullname ASC";
+    $current_user = getCurrentUser();
     
-    $stmt = $pdo->prepare($sql);
-    $stmt->execute();
-    $staffs = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    // Kiểm tra quyền phê duyệt (admin hoặc hr)
+    $can_approve = in_array($current_user['role'], ['admin', 'hr']);
     
     echo json_encode([
         'success' => true,
-        'data' => $staffs
+        'can_approve' => $can_approve,
+        'user_role' => $current_user['role']
     ]);
     
 } catch (Exception $e) {
     http_response_code(500);
     echo json_encode([
         'success' => false,
-        'message' => 'Có lỗi xảy ra khi tải danh sách nhân viên: ' . $e->getMessage()
+        'message' => 'Có lỗi xảy ra khi kiểm tra quyền: ' . $e->getMessage()
     ]);
 }
 ?> 

@@ -3,8 +3,14 @@
  * Xử lý logic cho trang quản lý nghỉ phép
  */
 
-// Biến global để kiểm tra quyền admin
-let isAdmin = false;
+// Biến global để kiểm tra quyền phê duyệt
+let canApprove = false;
+
+// Khởi tạo ngay khi script được load
+if (typeof window.canApprove !== 'undefined') {
+    canApprove = window.canApprove;
+    console.log('Can approve initialized:', canApprove);
+}
 
 // Đảm bảo jQuery đã được load trước khi chạy
 if (typeof jQuery === 'undefined') {
@@ -36,19 +42,21 @@ if (typeof jQuery === 'undefined') {
         $('#leave_days').on('input', calculateEndDate);
         $('#return_date').on('change', validateReturnDate);
         
-        // Kiểm tra quyền admin từ server
-        jQuery.ajax({
-            url: 'api/check_admin_role.php',
-            type: 'GET',
-            success: function(response) {
-                if (response.success && response.is_admin) {
-                    isAdmin = true;
-                }
-            },
-            error: function() {
-                console.log('Could not check admin role');
+        // Kiểm tra quyền phê duyệt từ biến global
+        if (typeof window.canApprove !== 'undefined') {
+            canApprove = window.canApprove;
+            console.log('Can approve from window:', canApprove);
+        } else {
+            console.log('window.canApprove is undefined');
+        }
+        
+        // Kiểm tra lại sau 1 giây để đảm bảo
+        setTimeout(function() {
+            if (typeof window.canApprove !== 'undefined') {
+                canApprove = window.canApprove;
+                console.log('Can approve after timeout:', canApprove);
             }
-        });
+        }, 1000);
     });
 }
 
@@ -113,6 +121,15 @@ function loadLeaveRequests() {
 }
 
 /**
+ * Kiểm tra quyền phê duyệt
+ */
+function canUserApprove() {
+    const result = canApprove || window.canApprove || (window.currentUserRole && ['admin', 'hr'].includes(window.currentUserRole));
+    console.log('canUserApprove() - canApprove:', canApprove, 'window.canApprove:', window.canApprove, 'window.currentUserRole:', window.currentUserRole, 'result:', result);
+    return result;
+}
+
+/**
  * Hiển thị danh sách đơn nghỉ phép
  */
 function displayLeaveRequests(requests) {
@@ -126,7 +143,11 @@ function displayLeaveRequests(requests) {
     
     hideEmptyState();
     
+    console.log('Displaying requests, canApprove:', canApprove);
+    console.log('window.canApprove:', window.canApprove);
+    console.log('window.currentUserRole:', window.currentUserRole);
     requests.forEach(request => {
+        console.log('Request status:', request.status, 'canApprove:', canApprove);
         const row = `
             <tr>
                 <td>
@@ -206,7 +227,7 @@ function displayLeaveRequests(requests) {
                             <button type="button" class="btn btn-outline-danger" onclick="cancelLeaveRequest(${request.id})" title="Hủy đơn">
                                 <i class="fas fa-times"></i>
                             </button>
-                            ${isAdmin ? `
+                            ${canUserApprove() ? `
                                 <button type="button" class="btn btn-outline-success" onclick="approveLeaveRequest(${request.id})" title="Phê duyệt">
                                     <i class="fas fa-check"></i>
                                 </button>
@@ -615,7 +636,7 @@ function approveLeaveRequest(requestId) {
         data: {
             request_id: requestId,
             action: 'approve',
-            notes: notes
+            comment: notes
         },
         success: function(response) {
             if (response.success) {
@@ -651,7 +672,7 @@ function rejectLeaveRequest(requestId) {
         data: {
             request_id: requestId,
             action: 'reject',
-            notes: notes
+            comment: notes
         },
         success: function(response) {
             if (response.success) {

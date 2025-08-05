@@ -53,12 +53,17 @@ try {
     
     // Thêm ORDER BY và LIMIT
     $sql .= " ORDER BY bp.created_at DESC LIMIT ? OFFSET ?";
-    $params[] = $limit;
-    $params[] = $offset;
     
     // Thực thi câu lệnh
     $stmt = $pdo->prepare($sql);
-    $stmt->execute($params);
+    
+    // Bind parameters
+    foreach ($params as $index => $param) {
+        $stmt->bindValue($index + 1, $param);
+    }
+    $stmt->bindValue(count($params) + 1, $limit, PDO::PARAM_INT);
+    $stmt->bindValue(count($params) + 2, $offset, PDO::PARAM_INT);
+    $stmt->execute();
     $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
     
     // Đếm tổng số bài viết

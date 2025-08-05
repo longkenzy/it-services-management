@@ -180,21 +180,21 @@ try {
             // Bỏ qua lỗi log
         }
         
-        // Tạo thông báo cho admin (bỏ qua nếu có lỗi)
+        // Tạo thông báo cho admin và hr (bỏ qua nếu có lỗi)
         try {
-            $admin_ids = [];
-            $stmt = $pdo->prepare("SELECT id FROM staffs WHERE role = 'admin'");
+            $approver_ids = [];
+            $stmt = $pdo->prepare("SELECT id FROM staffs WHERE role IN ('admin', 'hr')");
             $stmt->execute();
-            while ($admin = $stmt->fetch(PDO::FETCH_ASSOC)) {
-                $admin_ids[] = $admin['id'];
+            while ($approver = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                $approver_ids[] = $approver['id'];
             }
             
-            // Gửi thông báo cho tất cả admin
-            foreach ($admin_ids as $admin_id) {
+            // Gửi thông báo cho tất cả admin và hr
+            foreach ($approver_ids as $approver_id) {
                 $notification_sql = "INSERT INTO notifications (user_id, title, message, type, related_id) VALUES (?, ?, ?, ?, ?)";
                 $notification_stmt = $pdo->prepare($notification_sql);
                 $notification_stmt->execute([
-                    $admin_id,
+                    $approver_id,
                     'Đơn nghỉ phép mới cần phê duyệt',
                     "Có đơn nghỉ phép mới từ {$current_user['fullname']} cần phê duyệt. Mã đơn: $request_code",
                     'leave_request',

@@ -756,7 +756,7 @@ if (isset($_SESSION['user_id'])) {
                                     <td>
                                         <div class="progress" style="width: 80px; height: 20px;"><div class="progress-bar bg-warning" style="width: <?php echo $request['progress_percentage'] ?? 0; ?>%" title="<?php echo $request['progress_percentage'] ?? 0; ?>%"><small><?php echo $request['progress_percentage'] ?? 0; ?>%</small></div></div>
                                     </td>
-                                    <td>
+                                    <td class="text-center">
                                         <?php
                                         $statusClass = '';
                                         switch ($request['deployment_status']) {
@@ -1321,11 +1321,12 @@ function editRequest(requestId) {
                     const saleSelect = document.getElementById('edit_sale_id');
                     const statusSelect = document.getElementById('edit_deployment_status');
                     
-
+                    // Debug: Log giá trị request_detail_type
+                    console.log('request_detail_type from API:', requestData.request_detail_type);
                     
                     if (detailTypeSelect) {
                         detailTypeSelect.value = requestData.request_detail_type || '';
-
+                        console.log('Set detailTypeSelect.value to:', detailTypeSelect.value);
                     }
                     
                     if (customerSelect) {
@@ -2474,7 +2475,7 @@ function reloadDeploymentRequestsTable() {
                                         <td><span class=\"text-dark\">${request.total_cases || 0}</span></td>
                                         <td><span class=\"text-dark\">${request.total_tasks || 0}</span></td>
                                         <td><div class=\"progress\" style=\"width: 80px; height: 20px;\"><div class=\"progress-bar bg-warning\" style=\"width: ${request.progress_percentage || 0}%\" title=\"${request.progress_percentage || 0}%\"><small>${request.progress_percentage || 0}%</small></div></div></td>
-                                        <td><span class=\"badge bg-${(request.deployment_status === 'Hoàn thành' ? 'success' : (request.deployment_status === 'Đang xử lý' ? 'warning' : (request.deployment_status === 'Huỷ' ? 'danger' : 'secondary')))}\">${request.deployment_status || ''}</span></td>
+                                        <td class=\"text-center\"><span class=\"badge bg-${(request.deployment_status === 'Hoàn thành' ? 'success' : (request.deployment_status === 'Đang xử lý' ? 'warning' : (request.deployment_status === 'Huỷ' ? 'danger' : 'secondary')))}\">${request.deployment_status || ''}</span></td>
                                         <td><div class=\"btn-group\" role=\"group\"><button class=\"btn btn-sm btn-outline-warning\" onclick=\"editRequest(${request.id})\" title=\"Chỉnh sửa\"><i class=\"fas fa-edit\"></i></button>${deleteButton}</div></td>
                                     </tr>
                                     `;
@@ -2683,17 +2684,18 @@ document.addEventListener('DOMContentLoaded', function() {
                 <div class="col-md-9">
                   <select class="form-select" name="request_detail_type" id="edit_request_detail_type" required <?php echo ($current_role === 'user') ? 'disabled' : ''; ?>>
                     <option value="">-- Chọn loại yêu cầu chi tiết --</option>
-                    <option value="Triển khai mới">Triển khai mới</option>
-                    <option value="Nâng cấp hệ thống">Nâng cấp hệ thống</option>
-                    <option value="Bảo trì hệ thống">Bảo trì hệ thống</option>
-                    <option value="Tư vấn kỹ thuật">Tư vấn kỹ thuật</option>
+                    <option value="Triển khai hệ thống mới">Triển khai hệ thống mới</option>
+                    <option value="Nâng cấp hệ thống hiện có">Nâng cấp hệ thống hiện có</option>
+                    <option value="Tích hợp hệ thống bên thứ 3">Tích hợp hệ thống bên thứ 3</option>
+                    <option value="Cấu hình và tối ưu hóa">Cấu hình và tối ưu hóa</option>
+                    <option value="Di chuyển dữ liệu">Di chuyển dữ liệu</option>
+                    <option value="Sao lưu và khôi phục">Sao lưu và khôi phục</option>
+                    <option value="Bảo mật và phân quyền">Bảo mật và phân quyền</option>
                     <option value="Đào tạo người dùng">Đào tạo người dùng</option>
                     <option value="Hỗ trợ kỹ thuật">Hỗ trợ kỹ thuật</option>
-                    <option value="Tích hợp hệ thống">Tích hợp hệ thống</option>
-                    <option value="Tích hợp hệ thống bên thứ 3">Tích hợp hệ thống bên thứ 3</option>
+                    <option value="Bảo trì định kỳ">Bảo trì định kỳ</option>
                     <option value="Khắc phục sự cố">Khắc phục sự cố</option>
-                    <option value="Tối ưu hóa hiệu suất">Tối ưu hóa hiệu suất</option>
-                    <option value="Di chuyển dữ liệu">Di chuyển dữ liệu</option>
+                    <option value="Tư vấn và đánh giá">Tư vấn và đánh giá</option>
                   </select>
                 </div>
               </div>
