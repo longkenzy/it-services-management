@@ -6,10 +6,11 @@
 // Biến global để kiểm tra quyền phê duyệt
 let canApprove = false;
 
+
 // Khởi tạo ngay khi script được load
 if (typeof window.canApprove !== 'undefined') {
     canApprove = window.canApprove;
-    console.log('Can approve initialized:', canApprove);
+    
 }
 
 
@@ -48,6 +49,7 @@ if (typeof jQuery === 'undefined') {
         if (typeof window.canApprove !== 'undefined') {
             canApprove = window.canApprove;
         }
+
         
 
         
@@ -96,9 +98,18 @@ function populateHandoverDropdown(staffs) {
 function loadLeaveRequests() {
     showLoading();
     
-    jQuery.ajax({
+    const statusFilter = $('#statusFilter').val();
+    const typeFilter = $('#typeFilter').val();
+    const searchInput = $('#searchInput').val();
+    
+            jQuery.ajax({
         url: 'api/get_leave_requests.php',
         type: 'GET',
+        data: {
+            status: statusFilter,
+            type: typeFilter,
+            search: searchInput
+        },
         dataType: 'json',
         success: function(response) {
             hideLoading();
@@ -120,13 +131,16 @@ function loadLeaveRequests() {
  */
 function canUserApproveForStatus(status) {
     const userRole = window.currentUserRole;
+
     
     if (status === 'Chờ phê duyệt') {
         // Chỉ admin có thể phê duyệt đơn mới
-        return userRole === 'admin';
+        const result = userRole === 'admin';
+        return result;
     } else if (status === 'Admin đã phê duyệt') {
         // Chỉ HR có thể phê duyệt đơn đã được admin phê duyệt
-        return userRole === 'hr';
+        const result = userRole === 'hr';
+        return result;
     }
     
     return false;
@@ -145,18 +159,22 @@ function canUserApprove() {
  * Hiển thị danh sách đơn nghỉ phép
  */
 function displayLeaveRequests(requests) {
-    const tbody = jQuery('#leaveRequestsTableBody');
-    tbody.empty();
+            const tbody = jQuery('#leaveRequestsTableBody');
+        tbody.empty();
+        
+        if (!requests || requests.length === 0) {
+            showEmptyState();
+            return;
+        }
+        
+        hideEmptyState();
+        
+        console.log('Displaying requests:', requests.length, 'items');
     
-    if (!requests || requests.length === 0) {
-        showEmptyState();
-        return;
-    }
-    
-    hideEmptyState();
-    
-            requests.forEach(request => {
+            requests.forEach((request, index) => {
+                console.log('Processing request', index + 1, ':', request.request_code);
         const canApproveThisRequest = canUserApproveForStatus(request.status);
+        
         const approvalButtons = canApproveThisRequest ? `
             <button type="button" class="btn btn-outline-success" onclick="approveLeaveRequest(${request.id})" title="Phê duyệt">
                 <i class="fas fa-check"></i>
@@ -170,6 +188,9 @@ function displayLeaveRequests(requests) {
         
         const row = `
             <tr>
+                <td class="text-center">
+                    <span class="badge">${index + 1}</span>
+                </td>
                 <td>
                     <span class="badge bg-primary">${request.request_code}</span>
                 </td>
@@ -240,24 +261,24 @@ function displayLeaveRequests(requests) {
                         <button type="button" class="btn btn-outline-info" onclick="viewLeaveRequest(${request.id})" title="Xem chi tiết">
                             <i class="fas fa-eye"></i>
                         </button>
-                                                    ${request.status === 'Chờ phê duyệt' ? `
-                                <button type="button" class="btn btn-outline-warning" onclick="editLeaveRequest(${request.id})" title="Chỉnh sửa">
-                                    <i class="fas fa-edit"></i>
-                                </button>
-                                <button type="button" class="btn btn-outline-danger" onclick="cancelLeaveRequest(${request.id})" title="Hủy đơn">
-                                    <i class="fas fa-times"></i>
-                                </button>
-                                ${approvalButtons}
-                            ` : ''}
-                            ${request.status === 'Admin đã phê duyệt' ? `
-                                ${approvalButtons}
-                            ` : ''}
+                        ${request.status === 'Chờ phê duyệt' ? `
+                            <button type="button" class="btn btn-outline-warning" onclick="editLeaveRequest(${request.id})" title="Chỉnh sửa">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button type="button" class="btn btn-outline-danger" onclick="cancelLeaveRequest(${request.id})" title="Hủy đơn">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        ` : ''}
+                        ${approvalButtons}
                     </div>
                 </td>
             </tr>
         `;
+        console.log('Appending row with STT:', index + 1);
         tbody.append(row);
     });
+    
+    console.log('Total rows added:', requests.length);
 }
 
 /**
@@ -294,6 +315,19 @@ function createLeaveRequest(e) {
  * Xem chi tiết đơn nghỉ phép
  */
 function viewLeaveRequest(id) {
+    // Show modal first
+    $('#viewLeaveRequestModal').modal('show');
+    
+    // Show loading state
+    $('#viewLeaveRequestModalBody').html(`
+        <div class="text-center py-4">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Đang tải...</span>
+            </div>
+            <p class="mt-2 text-muted">Đang tải thông tin đơn nghỉ phép...</p>
+        </div>
+    `);
+    
     $.ajax({
         url: 'api/get_leave_request_details.php',
         type: 'GET',
@@ -302,13 +336,25 @@ function viewLeaveRequest(id) {
         success: function(response) {
             if (response.success) {
                 displayLeaveRequestDetails(response.data);
-                $('#viewLeaveRequestModal').modal('show');
             } else {
-                showAlert(response.message || 'Có lỗi xảy ra khi tải thông tin đơn nghỉ phép', 'error');
+                $('#viewLeaveRequestModalBody').html(`
+                    <div class="text-center py-4">
+                        <i class="fas fa-exclamation-triangle text-warning fa-2x mb-3"></i>
+                        <h5 class="text-muted">Có lỗi xảy ra</h5>
+                        <p class="text-muted">${response.message || 'Không thể tải thông tin đơn nghỉ phép'}</p>
+                    </div>
+                `);
             }
         },
         error: function(xhr, status, error) {
-            showAlert('Có lỗi xảy ra khi tải thông tin đơn nghỉ phép', 'error');
+            console.error('Error details:', xhr.responseText);
+            $('#viewLeaveRequestModalBody').html(`
+                <div class="text-center py-4">
+                    <i class="fas fa-exclamation-triangle text-danger fa-2x mb-3"></i>
+                    <h5 class="text-muted">Có lỗi xảy ra</h5>
+                    <p class="text-muted">Không thể tải thông tin đơn nghỉ phép</p>
+                </div>
+            `);
         }
     });
 }
@@ -319,123 +365,370 @@ function viewLeaveRequest(id) {
 function displayLeaveRequestDetails(request) {
     const modalBody = $('#viewLeaveRequestModalBody');
     
+    // Tạo nội dung modal với thiết kế đẹp và chuyên nghiệp
     const content = `
-        <div class="row g-3">
-            <div class="col-md-6">
-                <label class="form-label fw-semibold">Mã đơn:</label>
-                <div class="form-control-plaintext">
-                    <span class="badge bg-primary fs-6">${request.request_code}</span>
-                </div>
-            </div>
-            <div class="col-md-6">
-                <label class="form-label fw-semibold">Trạng thái:</label>
-                <div class="form-control-plaintext">
-                    ${getStatusBadge(request.status)}
-                </div>
-            </div>
-            <div class="col-md-6">
-                <label class="form-label fw-semibold">Người yêu cầu:</label>
-                <div class="form-control-plaintext">
-                    <div class="d-flex align-items-center">
-                        <div class="avatar-sm me-2">
-                            ${getAvatarHtml(request.requester_avatar, request.requester_name)}
-                        </div>
-                        <div>
-                            <div class="fw-semibold">${request.requester_name}</div>
-                            <small class="text-muted">${request.requester_position || ''}</small>
+        <div class="leave-request-details">
+            <!-- Header với logo và thông tin đơn -->
+            <div class="leave-request-header mb-4">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <div class="d-flex align-items-center">
+                            <div class="company-logo me-3">
+                                <i class="fas fa-building text-primary" style="font-size: 2.5rem;"></i>
+                            </div>
+                            <div>
+                                <h4 class="mb-1 fw-bold text-dark">CÔNG TY IT SERVICES</h4>
+                                <h6 class="mb-0 text-muted">ĐƠN XIN NGHỈ PHÉP</h6>
+                            </div>
                         </div>
                     </div>
-                </div>
-            </div>
-            <div class="col-md-6">
-                <label class="form-label fw-semibold">Chức vụ:</label>
-                <div class="form-control-plaintext">${request.requester_position || ''}</div>
-            </div>
-            <div class="col-md-6">
-                <label class="form-label fw-semibold">Phòng ban:</label>
-                <div class="form-control-plaintext">${request.requester_department || ''}</div>
-            </div>
-            <div class="col-md-6">
-                <label class="form-label fw-semibold">Văn phòng:</label>
-                <div class="form-control-plaintext">${request.requester_office || ''}</div>
-            </div>
-            <div class="col-md-6">
-                <label class="form-label fw-semibold">Loại nghỉ phép:</label>
-                <div class="form-control-plaintext">${request.leave_type}</div>
-            </div>
-            <div class="col-md-6">
-                <label class="form-label fw-semibold">Số ngày nghỉ:</label>
-                <div class="form-control-plaintext">${request.leave_days} ngày</div>
-            </div>
-            <div class="col-md-4">
-                <label class="form-label fw-semibold">Ngày bắt đầu:</label>
-                <div class="form-control-plaintext">${formatDateTime(request.start_date)}</div>
-            </div>
-            <div class="col-md-4">
-                <label class="form-label fw-semibold">Ngày kết thúc:</label>
-                <div class="form-control-plaintext">${formatDateTime(request.end_date)}</div>
-            </div>
-            <div class="col-md-4">
-                <label class="form-label fw-semibold">Ngày đi làm lại:</label>
-                <div class="form-control-plaintext">${formatDateTime(request.return_date)}</div>
-            </div>
-            <div class="col-md-6">
-                <label class="form-label fw-semibold">Đã bàn giao việc cho:</label>
-                <div class="form-control-plaintext">
-                    ${request.handover_name ? `${request.handover_name} - ${request.handover_position || ''}` : 'Chưa bàn giao'}
-                </div>
-            </div>
-            <div class="col-md-6">
-                <label class="form-label fw-semibold">Đính kèm:</label>
-                <div class="form-control-plaintext">
-                    ${request.attachment ? 
-                        `<a href="assets/uploads/leave_attachments/${request.attachment}" target="_blank" class="btn btn-sm btn-outline-primary">
-                            <i class="fas fa-download me-1"></i>Tải xuống
-                        </a>` : 
-                        '<span class="text-muted">Không có</span>'
-                    }
-                </div>
-            </div>
-            <div class="col-12">
-                <label class="form-label fw-semibold">Lý do nghỉ phép:</label>
-                <div class="form-control-plaintext">${request.reason}</div>
-            </div>
-            ${request.attachment ? `
-                <div class="col-12">
-                    <label class="form-label fw-semibold">Tài liệu đính kèm:</label>
-                    <div class="form-control-plaintext">
-                        <a href="assets/uploads/leave_attachments/${request.attachment}" target="_blank" class="btn btn-outline-primary">
-                            <i class="fas fa-download me-2"></i>Tải xuống tài liệu
-                        </a>
+                    <div class="col-md-4 text-end">
+                        <div class="request-info">
+                            <div class="request-code mb-2">
+                                <small class="text-muted d-block">Mã đơn:</small>
+                                <span class="fw-bold text-primary">${request.request_code}</span>
+                            </div>
+                            <div class="request-status">
+                                <small class="text-muted d-block">Trạng thái:</small>
+                                ${getStatusBadge(request.status)}
+                            </div>
+                        </div>
                     </div>
                 </div>
-            ` : ''}
-            <div class="col-md-6">
-                <label class="form-label fw-semibold">Ngày gửi:</label>
-                <div class="form-control-plaintext">
-                    ${formatDate(request.created_at)} ${formatTime(request.created_at)}
-                </div>
             </div>
-            ${request.approved_by ? `
-                <div class="col-md-6">
-                    <label class="form-label fw-semibold">Người phê duyệt:</label>
-                    <div class="form-control-plaintext">${request.approver_name}</div>
+
+            <!-- Thông tin người yêu cầu -->
+            <div class="card mb-4 border-primary">
+                <div class="card-header bg-primary text-white">
+                    <h6 class="mb-0 fw-semibold">
+                        <i class="fas fa-user me-2"></i>
+                        THÔNG TIN NGƯỜI YÊU CẦU
+                    </h6>
                 </div>
-                <div class="col-md-6">
-                    <label class="form-label fw-semibold">Ngày phê duyệt:</label>
-                    <div class="form-control-plaintext">
-                        ${formatDate(request.approved_at)} ${formatTime(request.approved_at)}
+                <div class="card-body">
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <div class="requester-profile d-flex align-items-center">
+                                <div class="avatar-lg me-3">
+                                    ${getAvatarHtml(request.requester_avatar, request.requester_name)}
+                                </div>
+                                <div class="requester-info">
+                                    <h5 class="mb-1 fw-bold text-dark">${request.requester_name}</h5>
+                                    <p class="mb-1 text-muted">${request.requester_position || 'Chưa cập nhật'}</p>
+                                    <small class="text-muted">
+                                        <i class="fas fa-map-marker-alt me-1"></i>
+                                        ${request.requester_department || ''} - ${request.requester_office || ''}
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="row g-3">
+                                <div class="col-6">
+                                    <div class="info-field">
+                                        <label class="text-muted small fw-semibold">Chức vụ:</label>
+                                        <div class="fw-semibold text-dark">${request.requester_position || 'Chưa cập nhật'}</div>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="info-field">
+                                        <label class="text-muted small fw-semibold">Phòng ban:</label>
+                                        <div class="fw-semibold text-dark">${request.requester_department || 'Chưa cập nhật'}</div>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="info-field">
+                                        <label class="text-muted small fw-semibold">Văn phòng:</label>
+                                        <div class="fw-semibold text-dark">${request.requester_office || 'Chưa cập nhật'}</div>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="info-field">
+                                        <label class="text-muted small fw-semibold">Ngày gửi:</label>
+                                        <div class="fw-semibold text-dark">${request.formatted_created_at}</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
-                <div class="col-md-6">
-                    <label class="form-label fw-semibold">Ghi chú phê duyệt:</label>
-                    <div class="form-control-plaintext">${request.approval_notes || 'Không có'}</div>
+            </div>
+
+            <!-- Thông tin nghỉ phép -->
+            <div class="card mb-4 border-success">
+                <div class="card-header bg-success text-white">
+                    <h6 class="mb-0 fw-semibold">
+                        <i class="fas fa-calendar-alt me-2"></i>
+                        THÔNG TIN NGHỈ PHÉP
+                    </h6>
                 </div>
-            ` : ''}
+                <div class="card-body">
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <div class="info-field">
+                                <label class="text-muted small fw-semibold">Loại nghỉ phép:</label>
+                                <div class="fw-semibold text-dark">${request.leave_type}</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="info-field">
+                                <label class="text-muted small fw-semibold">Số ngày nghỉ:</label>
+                                <div class="fw-semibold text-primary fs-5">${request.leave_days} ngày</div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="info-field">
+                                <label class="text-muted small fw-semibold">Ngày bắt đầu:</label>
+                                <div class="fw-semibold text-dark">
+                                    <i class="fas fa-play-circle text-success me-1"></i>
+                                    ${request.formatted_start_date} ${request.start_time}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="info-field">
+                                <label class="text-muted small fw-semibold">Ngày kết thúc:</label>
+                                <div class="fw-semibold text-dark">
+                                    <i class="fas fa-stop-circle text-danger me-1"></i>
+                                    ${request.formatted_end_date} ${request.end_time}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="info-field">
+                                <label class="text-muted small fw-semibold">Ngày đi làm lại:</label>
+                                <div class="fw-semibold text-dark">
+                                    <i class="fas fa-undo text-info me-1"></i>
+                                    ${request.formatted_return_date} ${request.return_time}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Lý do và bàn giao -->
+            <div class="row g-4 mb-4">
+                <div class="col-md-8">
+                    <div class="card border-info">
+                        <div class="card-header bg-info text-white">
+                            <h6 class="mb-0 fw-semibold">
+                                <i class="fas fa-comment me-2"></i>
+                                LÝ DO NGHỈ PHÉP
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="reason-content">
+                                <p class="mb-0 fst-italic">"${request.reason || 'Không có lý do'}"</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card border-warning">
+                        <div class="card-header bg-warning text-dark">
+                            <h6 class="mb-0 fw-semibold">
+                                <i class="fas fa-handshake me-2"></i>
+                                BÀN GIAO VIỆC
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="handover-info">
+                                <div class="d-flex align-items-center">
+                                    <div class="avatar-sm me-2">
+                                        ${getAvatarHtml(null, request.handover_name)}
+                                    </div>
+                                    <div>
+                                        <div class="fw-semibold text-dark">${request.handover_name || 'Chưa chọn'}</div>
+                                        <small class="text-muted">${request.handover_position || ''}</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Thông tin phê duyệt -->
+            ${getApprovalInfo(request)}
+
+            <!-- Đính kèm -->
+            ${getAttachmentInfo(request)}
         </div>
     `;
     
     modalBody.html(content);
+}
+
+/**
+ * Tạo HTML cho thông tin phê duyệt
+ */
+function getApprovalInfo(request) {
+    let approvalHtml = `
+        <div class="card mb-4 border-secondary">
+            <div class="card-header bg-secondary text-white">
+                <h6 class="mb-0 fw-semibold">
+                    <i class="fas fa-check-circle me-2"></i>
+                    THÔNG TIN PHÊ DUYỆT
+                </h6>
+            </div>
+            <div class="card-body">
+    `;
+    
+    // Thông tin Admin approval
+    if (request.admin_approved_by) {
+        approvalHtml += `
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <div class="approval-item border-primary">
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="approval-icon me-2">
+                                <i class="fas fa-user-shield text-primary"></i>
+                            </div>
+                            <div>
+                                <span class="fw-bold text-primary">PHÊ DUYỆT CẤP 1</span>
+                                <br><small class="text-muted">Quản trị viên</small>
+                            </div>
+                        </div>
+                        <div class="approval-details">
+                            <div class="d-flex align-items-center mb-2">
+                                <div class="avatar-sm me-2">
+                                    ${getAvatarHtml(null, request.admin_approver_name)}
+                                </div>
+                                <div>
+                                    <div class="fw-semibold text-dark">${request.admin_approver_name}</div>
+                                    <small class="text-muted">${request.admin_approver_position || ''}</small>
+                                </div>
+                            </div>
+                            <div class="approval-time">
+                                <small class="text-muted">
+                                    <i class="fas fa-calendar-check me-1"></i>
+                                    ${request.formatted_admin_approved_at}
+                                </small>
+                            </div>
+                            ${request.admin_approval_comment ? `
+                                <div class="approval-comment mt-2">
+                                    <small class="text-muted">
+                                        <i class="fas fa-comment me-1"></i>
+                                        Ghi chú: ${request.admin_approval_comment}
+                                    </small>
+                                </div>
+                            ` : ''}
+                        </div>
+                    </div>
+                </div>
+        `;
+    }
+    
+    // Thông tin HR approval
+    if (request.hr_approved_by) {
+        approvalHtml += `
+                <div class="col-md-6">
+                    <div class="approval-item border-success">
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="approval-icon me-2">
+                                <i class="fas fa-user-tie text-success"></i>
+                            </div>
+                            <div>
+                                <span class="fw-bold text-success">PHÊ DUYỆT CẤP 2</span>
+                                <br><small class="text-muted">Nhân sự</small>
+                            </div>
+                        </div>
+                        <div class="approval-details">
+                            <div class="d-flex align-items-center mb-2">
+                                <div class="avatar-sm me-2">
+                                    ${getAvatarHtml(null, request.hr_approver_name)}
+                                </div>
+                                <div>
+                                    <div class="fw-semibold text-dark">${request.hr_approver_name}</div>
+                                    <small class="text-muted">${request.hr_approver_position || ''}</small>
+                                </div>
+                            </div>
+                            <div class="approval-time">
+                                <small class="text-muted">
+                                    <i class="fas fa-calendar-check me-1"></i>
+                                    ${request.formatted_hr_approved_at}
+                                </small>
+                            </div>
+                            ${request.hr_approval_comment ? `
+                                <div class="approval-comment mt-2">
+                                    <small class="text-muted">
+                                        <i class="fas fa-comment me-1"></i>
+                                        Ghi chú: ${request.hr_approval_comment}
+                                    </small>
+                                </div>
+                            ` : ''}
+                        </div>
+                    </div>
+                </div>
+        `;
+    }
+    
+    if (!request.admin_approved_by && !request.hr_approved_by) {
+        approvalHtml += `
+            <div class="col-12">
+                <div class="text-center text-muted py-4">
+                    <i class="fas fa-clock fa-3x mb-3 text-warning"></i>
+                    <h6 class="mb-2">Đang chờ phê duyệt</h6>
+                    <p class="mb-0 small">Đơn nghỉ phép đã được gửi và đang chờ xử lý</p>
+                </div>
+            </div>
+        `;
+    }
+    
+    approvalHtml += `
+            </div>
+        </div>
+    `;
+    
+    return approvalHtml;
+}
+
+/**
+ * Tạo HTML cho thông tin đính kèm
+ */
+function getAttachmentInfo(request) {
+    if (!request.attachment) {
+        return `
+            <div class="card">
+                <div class="card-header bg-light">
+                    <h6 class="mb-0 fw-semibold">
+                        <i class="fas fa-paperclip text-muted me-2"></i>
+                        Tài liệu đính kèm
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="text-center text-muted py-3">
+                        <i class="fas fa-file-alt fa-2x mb-2"></i>
+                        <p class="mb-0">Không có tài liệu đính kèm</p>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+    
+    return `
+        <div class="card">
+            <div class="card-header bg-light">
+                <h6 class="mb-0 fw-semibold">
+                    <i class="fas fa-paperclip text-primary me-2"></i>
+                    Tài liệu đính kèm
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-file-alt text-primary me-3" style="font-size: 1.5rem;"></i>
+                    <div class="flex-grow-1">
+                        <div class="fw-semibold">${request.attachment}</div>
+                        <small class="text-muted">Tài liệu đính kèm</small>
+                    </div>
+                    <a href="assets/uploads/leave_attachments/${request.attachment}" target="_blank" class="btn btn-sm btn-outline-primary">
+                        <i class="fas fa-download me-1"></i>Tải xuống
+                    </a>
+                </div>
+            </div>
+        </div>
+    `;
 }
 
 /**
@@ -710,7 +1003,7 @@ function rejectLeaveRequest(requestId) {
 
 // Xử lý các action của header
 $(document).ready(function() {
-    console.log('Setting up header actions in leave_management.js');
+    
     
     // Xử lý click "Đăng xuất"
     $(document).on('click', '[data-action="logout"]', function(e) {

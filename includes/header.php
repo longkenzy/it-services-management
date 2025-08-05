@@ -185,9 +185,7 @@ $current_page = basename($_SERVER['PHP_SELF']);
 
                 
                 <!-- Thông báo ngoài header -->
-                <?php if (hasRole('admin')): ?>
-                    <?php include 'notifications.php'; ?>
-                <?php endif; ?>
+                <?php include 'notifications.php'; ?>
                 
                 <!-- User Profile -->
                 <div class="user-profile-wrapper">
