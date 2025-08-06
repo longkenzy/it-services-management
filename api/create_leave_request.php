@@ -227,23 +227,23 @@ try {
             // Bỏ qua lỗi log
         }
         
-        // Tạo thông báo chỉ cho admin (cấp 1) (bỏ qua nếu có lỗi)
+        // Tạo thông báo cho admin và các leader (cấp 1) (bỏ qua nếu có lỗi)
         try {
-            $admin_ids = [];
-            $stmt = $pdo->prepare("SELECT id FROM staffs WHERE role = 'admin'");
+            $admin_leader_ids = [];
+            $stmt = $pdo->prepare("SELECT id FROM staffs WHERE role IN ('admin', 'hr_leader', 'sale_leader', 'it_leader')");
             $stmt->execute();
             while ($admin = $stmt->fetch(PDO::FETCH_ASSOC)) {
-                $admin_ids[] = $admin['id'];
+                $admin_leader_ids[] = $admin['id'];
             }
             
-            // Gửi thông báo cho tất cả admin
-            foreach ($admin_ids as $admin_id) {
+            // Gửi thông báo cho tất cả admin và leader
+            foreach ($admin_leader_ids as $admin_id) {
                 $notification_sql = "INSERT INTO notifications (user_id, title, message, type, related_id) VALUES (?, ?, ?, ?, ?)";
                 $notification_stmt = $pdo->prepare($notification_sql);
                 $notification_stmt->execute([
                     $admin_id,
                     'Đơn nghỉ phép mới cần phê duyệt (Cấp 1)',
-                    "Có đơn nghỉ phép mới từ {$current_user['fullname']} cần phê duyệt. Mã đơn: $request_code (Cấp 1 - Admin)",
+                    "Có đơn nghỉ phép mới từ {$current_user['fullname']} cần phê duyệt. Mã đơn: $request_code (Cấp 1 - Admin/Leader)",
                     'leave_request',
                     $request_id
                 ]);

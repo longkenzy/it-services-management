@@ -27,6 +27,8 @@ try {
     $status = $_GET['status'] ?? '';
     $type = $_GET['type'] ?? '';
     $search = $_GET['search'] ?? '';
+    $dateFrom = $_GET['dateFrom'] ?? '';
+    $dateTo = $_GET['dateTo'] ?? '';
     
     // Xây dựng câu query
     $sql = "SELECT 
@@ -47,6 +49,14 @@ try {
     
     $params = [];
     
+    // Phân quyền xem đơn nghỉ phép
+    // Chỉ admin và HR mới có quyền xem tất cả đơn
+    // Nhân viên thường chỉ xem được đơn của mình
+    if (!in_array($current_user['role'], ['admin', 'hr'])) {
+        $sql .= " AND lr.requester_id = ?";
+        $params[] = $current_user['id'];
+    }
+    
     // Lọc theo trạng thái
     if (!empty($status)) {
         $sql .= " AND lr.status = ?";
@@ -59,23 +69,52 @@ try {
         $params[] = $type;
     }
     
-    // Tìm kiếm
+    // Tìm kiếm theo tên người nghỉ phép
     if (!empty($search)) {
-        $sql .= " AND (lr.request_code LIKE ? OR s.fullname LIKE ? OR lr.reason LIKE ?)";
+        $sql .= " AND s.fullname LIKE ?";
         $searchTerm = "%$search%";
-        $params[] = $searchTerm;
-        $params[] = $searchTerm;
         $params[] = $searchTerm;
     }
     
-    // Cho phép tất cả mọi người xem tất cả đơn nghỉ phép
-    // (Không cần lọc theo người dùng hiện tại)
+    // Lọc theo khoảng thời gian
+    if (!empty($dateFrom)) {
+        $sql .= " AND DATE(lr.start_date) >= ?";
+        $params[] = $dateFrom;
+    }
+    
+    if (!empty($dateTo)) {
+        $sql .= " AND DATE(lr.start_date) <= ?";
+        $params[] = $dateTo;
+    }
     
     $sql .= " ORDER BY lr.created_at DESC";
     
     $stmt = $pdo->prepare($sql);
     $stmt->execute($params);
     $requests = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    
+    // Tính toán số ngày báo trước cho mỗi đơn nghỉ phép
+    $currentDate = new DateTime();
+    $currentDate->setTime(0, 0, 0); // Reset time to start of day for accurate day calculation
+    
+    foreach ($requests as &$request) {
+        if (!empty($request['start_date'])) {
+            $startDate = new DateTime($request['start_date']);
+            $startDate->setTime(0, 0, 0); // Reset time to start of day
+            
+            $interval = $currentDate->diff($startDate);
+            
+            // Nếu ngày bắt đầu đã qua, hiển thị số ngày đã qua (số âm)
+            // Nếu ngày bắt đầu chưa đến, hiển thị số ngày còn lại (số dương)
+            if ($startDate < $currentDate) {
+                $request['notice_days'] = -$interval->days; // Số âm để chỉ ra đã qua
+            } else {
+                $request['notice_days'] = $interval->days; // Số dương để chỉ ra còn lại
+            }
+        } else {
+            $request['notice_days'] = 0;
+        }
+    }
     
     echo json_encode([
         'success' => true,
