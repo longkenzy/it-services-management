@@ -638,6 +638,9 @@ $current_user = getCurrentUser();
                                                         <option value="sale">SALE</option>
                                                         <option value="it">IT</option>
                                                         <option value="leader">LEADER</option>
+                                                        <option value="hr_leader">HR Leader</option>
+                                                        <option value="sale_leader">Sale Leader</option>
+                                                        <option value="it_leader">IT Leader</option>
                                                     </select>
                                                 </div>
                                             </div>

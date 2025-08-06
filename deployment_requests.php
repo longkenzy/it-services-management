@@ -2391,9 +2391,17 @@ function reloadDeploymentRequestsTable() {
                 return;
             }
             
-            // Tìm tất cả cards trong container
-            const cards = mainContainer.querySelectorAll('.card');
-            console.log('Found', cards.length, 'cards');
+            // Tìm tất cả cards trong toàn bộ document (không chỉ trong mainContainer)
+            const allCards = document.querySelectorAll('.card');
+            const cards = Array.from(allCards).filter(card => {
+                // Chỉ lấy cards trong main container hoặc có liên quan đến deployment
+                return mainContainer.contains(card) || 
+                       card.querySelector('table') || 
+                       card.textContent.includes('triển khai') ||
+                       card.textContent.includes('deployment');
+            });
+            console.log('Found', cards.length, 'cards in main container');
+            console.log('Total cards in document:', allCards.length);
             
             // Tìm card chứa bảng deployment requests hoặc thông báo
             let cardContainer = null;
@@ -2405,12 +2413,15 @@ function reloadDeploymentRequestsTable() {
                 console.log('Found table with ID, card container:', cardContainer);
             }
             
-            // Cách 2: Tìm card có chứa bảng
+            // Cách 2: Tìm card có chứa bảng deployment requests
             if (!cardContainer) {
                 for (let card of cards) {
-                    if (card.querySelector('table')) {
+                    const table = card.querySelector('table');
+                    if (table && (table.querySelector('th') && 
+                        (table.querySelector('th').textContent.includes('Mã YC') || 
+                         table.querySelector('th').textContent.includes('Loại HĐ')))) {
                         cardContainer = card;
-                        console.log('Found card with table:', card);
+                        console.log('Found card with deployment table:', card);
                         break;
                     }
                 }
@@ -2431,29 +2442,75 @@ function reloadDeploymentRequestsTable() {
             if (!cardContainer && cards.length > 0) {
                 const pageHeader = mainContainer.querySelector('.page-header');
                 if (pageHeader) {
-                    const nextCard = pageHeader.nextElementSibling;
-                    if (nextCard && nextCard.classList.contains('card')) {
-                        cardContainer = nextCard;
+                    // Tìm card đầu tiên sau page-header
+                    let nextElement = pageHeader.nextElementSibling;
+                    while (nextElement && !nextElement.classList.contains('card')) {
+                        nextElement = nextElement.nextElementSibling;
+                    }
+                    if (nextElement && nextElement.classList.contains('card')) {
+                        cardContainer = nextElement;
                         console.log('Found card after page-header:', cardContainer);
                     } else {
+                        // Tìm card đầu tiên trong danh sách cards đã lọc
                         cardContainer = cards[0];
-                        console.log('Using first card as fallback:', cardContainer);
+                        console.log('Using first filtered card as fallback:', cardContainer);
                     }
                 } else {
+                    // Tìm card đầu tiên trong danh sách cards đã lọc
                     cardContainer = cards[0];
-                    console.log('Using first card as fallback:', cardContainer);
+                    console.log('Using first filtered card as fallback:', cardContainer);
+                }
+            }
+            
+            // Cách 5: Nếu vẫn không tìm thấy, tìm bất kỳ card nào có table
+            if (!cardContainer) {
+                for (let card of allCards) {
+                    if (card.querySelector('table')) {
+                        cardContainer = card;
+                        console.log('Found any card with table:', cardContainer);
+                        break;
+                    }
                 }
             }
             
             if (!cardContainer) {
                 console.error('Card container not found, creating new card');
-                // Tạo card mới nếu không tìm thấy
+                // Tạo card mới nếu không tìm thấy và thêm vào đúng vị trí
                 cardContainer = document.createElement('div');
                 cardContainer.className = 'card';
-                mainContainer.appendChild(cardContainer);
+                cardContainer.style.marginTop = '20px'; // Thêm margin để tránh nhảy lên header
+                
+                // Tìm vị trí đúng để thêm card mới (sau page-header)
+                const pageHeader = mainContainer.querySelector('.page-header');
+                if (pageHeader) {
+                    // Tìm vị trí sau page-header, trước các element khác
+                    let insertPosition = pageHeader.nextElementSibling;
+                    while (insertPosition && !insertPosition.classList.contains('card') && 
+                           !insertPosition.classList.contains('row') && 
+                           !insertPosition.classList.contains('col')) {
+                        insertPosition = insertPosition.nextElementSibling;
+                    }
+                    
+                    if (insertPosition) {
+                        mainContainer.insertBefore(cardContainer, insertPosition);
+                    } else {
+                        // Thêm vào sau page-header
+                        mainContainer.insertBefore(cardContainer, pageHeader.nextElementSibling);
+                    }
+                } else {
+                    // Fallback: thêm vào cuối container thay vì đầu
+                    mainContainer.appendChild(cardContainer);
+                }
             }
             
             console.log('Found card container:', cardContainer);
+            if (cardContainer) {
+                console.log('Card container position:', cardContainer.offsetTop);
+                console.log('Card container classes:', cardContainer.className);
+                console.log('Card container parent:', cardContainer.parentElement);
+            } else {
+                console.log('Card container position: N/A');
+            }
             const currentRole = '<?php echo $current_role; ?>';
             
             if (data.data.length === 0) {
@@ -2468,6 +2525,11 @@ function reloadDeploymentRequestsTable() {
                     </div>
                 </div>
                 `;
+                
+                // Đảm bảo card có margin-top
+                if (!cardContainer.style.marginTop) {
+                    cardContainer.style.marginTop = '20px';
+                }
             } else {
                 console.log('Has data, showing table with', data.data.length, 'records');
                 // Hiển thị bảng khi có dữ liệu
@@ -2527,8 +2589,34 @@ function reloadDeploymentRequestsTable() {
                         table.appendChild(newTbody);
                     }
                 }
+                
+                // Đảm bảo card có margin-top
+                if (!cardContainer.style.marginTop) {
+                    cardContainer.style.marginTop = '20px';
+                }
             }
             console.log('Table reloaded successfully');
+            
+            // Đảm bảo card không bị "nhảy" lên header
+            if (cardContainer) {
+                const cardTop = cardContainer.offsetTop;
+                console.log('Card container position:', cardTop);
+                
+                if (cardTop < 150) {
+                    console.warn('Card container position too high, adjusting...');
+                    // Thêm margin-top để đẩy xuống
+                    const currentMargin = parseInt(cardContainer.style.marginTop) || 0;
+                    cardContainer.style.marginTop = (currentMargin + 30) + 'px';
+                    
+                    // Đảm bảo card không bị che bởi header
+                    cardContainer.style.zIndex = '1';
+                }
+                
+                // Đảm bảo card có khoảng cách với header
+                if (!cardContainer.style.marginTop) {
+                    cardContainer.style.marginTop = '20px';
+                }
+            }
         })
         .catch(error => {
             console.error('Error reloading deployment requests table:', error);

@@ -55,8 +55,8 @@ try {
     $user_role = $current_user['role'];
     $result = false;
     
-    if ($user_role === 'admin') {
-        // Admin chỉ có thể phê duyệt đơn ở trạng thái "Chờ phê duyệt"
+    if ($user_role === 'admin' || $user_role === 'hr_leader' || $user_role === 'sale_leader' || $user_role === 'it_leader') {
+        // Admin và các Leader chỉ có thể phê duyệt đơn ở trạng thái "Chờ phê duyệt"
         if ($current_status !== 'Chờ phê duyệt') {
             echo json_encode(['success' => false, 'message' => 'Đơn nghỉ phép không ở trạng thái chờ phê duyệt']);
             exit;
@@ -64,9 +64,9 @@ try {
         
         if ($action === 'approve') {
             $new_status = 'Admin đã phê duyệt';
-            $approval_message = 'Đơn nghỉ phép đã được admin phê duyệt (chờ HR phê duyệt cuối)';
+            $approval_message = 'Đơn nghỉ phép đã được admin/leader phê duyệt (chờ HR phê duyệt cuối)';
             
-            // Cập nhật thông tin admin
+            // Cập nhật thông tin admin/leader
             $stmt = $pdo->prepare("UPDATE leave_requests SET 
                 status = ?, 
                 admin_approved_by = ?, 
@@ -91,7 +91,7 @@ try {
                         $notification_stmt->execute([
                             $hr_id,
                             'Đơn nghỉ phép cần phê duyệt (Cấp 2)',
-                            "Đơn nghỉ phép {$leave_request['request_code']} đã được admin phê duyệt, cần HR phê duyệt cuối (Cấp 2)",
+                            "Đơn nghỉ phép {$leave_request['request_code']} đã được admin/leader phê duyệt, cần HR phê duyệt cuối (Cấp 2)",
                             'leave_request',
                             $request_id
                         ]);
@@ -103,9 +103,9 @@ try {
             
         } elseif ($action === 'reject') {
             $new_status = 'Từ chối bởi Admin';
-            $approval_message = 'Đơn nghỉ phép đã bị admin từ chối';
+            $approval_message = 'Đơn nghỉ phép đã bị admin/leader từ chối';
             
-            // Cập nhật thông tin admin
+            // Cập nhật thông tin admin/leader
             $stmt = $pdo->prepare("UPDATE leave_requests SET 
                 status = ?, 
                 admin_approved_by = ?, 

@@ -5,12 +5,20 @@
 
 // Biến global để kiểm tra quyền phê duyệt
 let canApprove = false;
-
+let canViewAll = false;
+let currentUserId = null;
 
 // Khởi tạo ngay khi script được load
 if (typeof window.canApprove !== 'undefined') {
     canApprove = window.canApprove;
-    
+}
+
+if (typeof window.canViewAll !== 'undefined') {
+    canViewAll = window.canViewAll;
+}
+
+if (typeof window.currentUserId !== 'undefined') {
+    currentUserId = window.currentUserId;
 }
 
 
@@ -36,8 +44,9 @@ if (typeof jQuery === 'undefined') {
         
         // Event handlers
         $('#createLeaveRequestForm').on('submit', createLeaveRequest);
-        $('#statusFilter, #typeFilter').on('change', filterLeaveRequests);
+        $('#statusFilter, #typeFilter, #dateFromFilter, #dateToFilter').on('change', filterLeaveRequests);
         $('#searchInput').on('input', filterLeaveRequests);
+        $('#clearFilters').on('click', clearAllFilters);
         
         // Date validation
         $('#start_date, #end_date').on('change', validateDates);
@@ -48,6 +57,16 @@ if (typeof jQuery === 'undefined') {
         // Kiểm tra quyền phê duyệt từ biến global
         if (typeof window.canApprove !== 'undefined') {
             canApprove = window.canApprove;
+        }
+        
+        // Kiểm tra quyền xem tất cả đơn
+        if (typeof window.canViewAll !== 'undefined') {
+            canViewAll = window.canViewAll;
+        }
+        
+        // Lấy ID người dùng hiện tại
+        if (typeof window.currentUserId !== 'undefined') {
+            currentUserId = window.currentUserId;
         }
 
         
@@ -101,14 +120,18 @@ function loadLeaveRequests() {
     const statusFilter = $('#statusFilter').val();
     const typeFilter = $('#typeFilter').val();
     const searchInput = $('#searchInput').val();
+    const dateFromFilter = $('#dateFromFilter').val();
+    const dateToFilter = $('#dateToFilter').val();
     
-            jQuery.ajax({
+    jQuery.ajax({
         url: 'api/get_leave_requests.php',
         type: 'GET',
         data: {
             status: statusFilter,
             type: typeFilter,
-            search: searchInput
+            search: searchInput,
+            dateFrom: dateFromFilter,
+            dateTo: dateToFilter
         },
         dataType: 'json',
         success: function(response) {
@@ -134,8 +157,8 @@ function canUserApproveForStatus(status) {
 
     
     if (status === 'Chờ phê duyệt') {
-        // Chỉ admin có thể phê duyệt đơn mới
-        const result = userRole === 'admin';
+        // Admin và các Leader có thể phê duyệt đơn mới
+        const result = userRole === 'admin' || userRole === 'hr_leader' || userRole === 'sale_leader' || userRole === 'it_leader';
         return result;
     } else if (status === 'Admin đã phê duyệt') {
         // Chỉ HR có thể phê duyệt đơn đã được admin phê duyệt
@@ -150,7 +173,7 @@ function canUserApproveForStatus(status) {
  * Kiểm tra quyền phê duyệt (tổng quát)
  */
 function canUserApprove() {
-    return canApprove || window.canApprove || (window.currentUserRole && ['admin', 'hr'].includes(window.currentUserRole));
+    return canApprove || window.canApprove || (window.currentUserRole && ['admin', 'hr', 'hr_leader', 'sale_leader', 'it_leader'].includes(window.currentUserRole));
 }
 
 
@@ -159,17 +182,20 @@ function canUserApprove() {
  * Hiển thị danh sách đơn nghỉ phép
  */
 function displayLeaveRequests(requests) {
-            const tbody = jQuery('#leaveRequestsTableBody');
-        tbody.empty();
-        
-        if (!requests || requests.length === 0) {
-            showEmptyState();
-            return;
-        }
-        
-        hideEmptyState();
-        
-        console.log('Displaying requests:', requests.length, 'items');
+    const tbody = jQuery('#leaveRequestsTableBody');
+    tbody.empty();
+    
+    // Hiển thị thông báo quyền xem
+    showViewPermissionNotice();
+    
+    if (!requests || requests.length === 0) {
+        showEmptyState();
+        return;
+    }
+    
+    hideEmptyState();
+    
+    console.log('Displaying requests:', requests.length, 'items');
     
             requests.forEach((request, index) => {
                 console.log('Processing request', index + 1, ':', request.request_code);
@@ -233,7 +259,7 @@ function displayLeaveRequests(requests) {
                         <div class="text-muted mb-1">${request.handover_name || 'Chưa bàn giao'}</div>
                         <div class="fw-semibold">Báo trước (ngày):</div>
                         <div class="text-muted">
-                            <span class="badge bg-success">${request.notice_days || '0'}</span>
+                            ${getNoticeDaysBadge(request.notice_days)}
                         </div>
                     </div>
                 </td>
@@ -270,6 +296,11 @@ function displayLeaveRequests(requests) {
                             </button>
                         ` : ''}
                         ${approvalButtons}
+                        ${(canUserApprove() || window.currentUserRole === 'hr' || window.currentUserRole === 'admin') && ['Đã phê duyệt', 'HR đã phê duyệt', 'Admin đã phê duyệt', 'Từ chối bởi Admin', 'Từ chối bởi HR', 'Từ chối'].includes(request.status) ? `
+                            <button type="button" class="btn btn-outline-danger" onclick="deleteLeaveRequest(${request.id})" title="Xóa đơn">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        ` : ''}
                     </div>
                 </td>
             </tr>
@@ -500,6 +531,15 @@ function displayLeaveRequestDetails(request) {
                                 <div class="fw-semibold text-dark">
                                     <i class="fas fa-undo text-info me-1"></i>
                                     ${request.formatted_return_date} ${request.return_time}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="info-field">
+                                <label class="text-muted small fw-semibold">Báo trước:</label>
+                                <div class="fw-semibold text-dark">
+                                    <i class="fas fa-clock me-1"></i>
+                                    ${getNoticeDaysBadge(request.notice_days)}
                                 </div>
                             </div>
                         </div>
@@ -738,6 +778,8 @@ function filterLeaveRequests() {
     const status = $('#statusFilter').val();
     const type = $('#typeFilter').val();
     const search = $('#searchInput').val();
+    const dateFrom = $('#dateFromFilter').val();
+    const dateTo = $('#dateToFilter').val();
     
     $.ajax({
         url: 'api/get_leave_requests.php',
@@ -745,7 +787,9 @@ function filterLeaveRequests() {
         data: {
             status: status,
             type: type,
-            search: search
+            search: search,
+            dateFrom: dateFrom,
+            dateTo: dateTo
         },
         dataType: 'json',
         success: function(response) {
@@ -759,6 +803,18 @@ function filterLeaveRequests() {
             showAlert('Có lỗi xảy ra khi lọc đơn nghỉ phép', 'error');
         }
     });
+}
+
+/**
+ * Xóa tất cả bộ lọc
+ */
+function clearAllFilters() {
+    $('#statusFilter').val('');
+    $('#typeFilter').val('');
+    $('#dateFromFilter').val('');
+    $('#dateToFilter').val('');
+    $('#searchInput').val('');
+    filterLeaveRequests();
 }
 
 /**
@@ -862,6 +918,19 @@ function hideLoading() {
  * Hiển thị trạng thái trống
  */
 function showEmptyState() {
+    // Cập nhật thông báo theo quyền người dùng
+    if (canViewAll) {
+        // Admin/HR - có thể xem tất cả đơn
+        $('#emptyStateTitle').text('Chưa có đơn nghỉ phép nào');
+        $('#emptyStateMessage').text('Hiện tại chưa có đơn nghỉ phép nào trong hệ thống');
+        $('#createRequestBtn').show();
+    } else {
+        // Nhân viên thường - chỉ xem đơn của mình
+        $('#emptyStateTitle').text('Chưa có đơn nghỉ phép nào');
+        $('#emptyStateMessage').text('Bạn chưa tạo đơn nghỉ phép nào. Bắt đầu tạo đơn nghỉ phép đầu tiên của bạn');
+        $('#createRequestBtn').show();
+    }
+    
     $('#emptyState').show();
     $('.leave-requests-table').hide();
 }
@@ -872,6 +941,21 @@ function showEmptyState() {
 function hideEmptyState() {
     $('#emptyState').hide();
     $('.leave-requests-table').show();
+}
+
+/**
+ * Hiển thị thông báo quyền xem
+ */
+function showViewPermissionNotice() {
+    if (canViewAll) {
+        // Admin/HR - có thể xem tất cả đơn
+        $('#permissionMessage').text('Bạn đang xem tất cả đơn nghỉ phép trong hệ thống');
+        $('#viewPermissionNotice').show();
+    } else {
+        // Nhân viên thường - chỉ xem đơn của mình
+        $('#permissionMessage').text('Bạn đang xem đơn nghỉ phép của mình');
+        $('#viewPermissionNotice').show();
+    }
 }
 
 /**
@@ -934,6 +1018,28 @@ function formatTime(dateString) {
 }
 
 /**
+ * Tạo badge cho số ngày báo trước
+ */
+function getNoticeDaysBadge(noticeDays) {
+    if (!noticeDays && noticeDays !== 0) {
+        return '<span class="badge bg-secondary">Chưa có</span>';
+    }
+    
+    const days = parseInt(noticeDays);
+    
+    if (days > 0) {
+        // Còn lại số ngày
+        return `<span class="badge bg-success">Còn ${days} ngày</span>`;
+    } else if (days < 0) {
+        // Đã qua số ngày
+        return `<span class="badge bg-warning">Đã qua ${Math.abs(days)} ngày</span>`;
+    } else {
+        // Hôm nay
+        return `<span class="badge bg-info">Hôm nay</span>`;
+    }
+}
+
+/**
  * Phê duyệt đơn nghỉ phép (Admin only)
  */
 function approveLeaveRequest(requestId) {
@@ -941,15 +1047,13 @@ function approveLeaveRequest(requestId) {
         return;
     }
     
-    const notes = prompt('Nhập ghi chú phê duyệt (không bắt buộc):') || '';
-    
     $.ajax({
         url: 'api/approve_leave_request.php',
         type: 'POST',
         data: {
             request_id: requestId,
             action: 'approve',
-            comment: notes
+            comment: ''
         },
         success: function(response) {
             if (response.success) {
@@ -973,19 +1077,13 @@ function rejectLeaveRequest(requestId) {
         return;
     }
     
-    const notes = prompt('Nhập lý do từ chối:') || '';
-    if (!notes) {
-        showAlert('Vui lòng nhập lý do từ chối', 'error');
-        return;
-    }
-    
     $.ajax({
         url: 'api/approve_leave_request.php',
         type: 'POST',
         data: {
             request_id: requestId,
             action: 'reject',
-            comment: notes
+            comment: ''
         },
         success: function(response) {
             if (response.success) {
@@ -997,6 +1095,35 @@ function rejectLeaveRequest(requestId) {
         },
         error: function() {
             showAlert('Có lỗi xảy ra khi từ chối đơn nghỉ phép', 'error');
+        }
+    });
+}
+
+/**
+ * Xóa đơn nghỉ phép
+ */
+function deleteLeaveRequest(requestId) {
+    if (!confirm('Bạn có chắc chắn muốn xóa đơn nghỉ phép này? Hành động này không thể hoàn tác.')) {
+        return;
+    }
+    
+    $.ajax({
+        url: 'api/delete_leave_request.php',
+        type: 'POST',
+        data: {
+            request_id: requestId
+        },
+        dataType: 'json',
+        success: function(response) {
+            if (response.success) {
+                showAlert('Đã xóa đơn nghỉ phép thành công!', 'success');
+                loadLeaveRequests();
+            } else {
+                showAlert(response.message || 'Có lỗi xảy ra khi xóa đơn nghỉ phép', 'error');
+            }
+        },
+        error: function(xhr, status, error) {
+            showAlert('Có lỗi xảy ra khi xóa đơn nghỉ phép', 'error');
         }
     });
 }

@@ -77,6 +77,27 @@ try {
         $request['formatted_hr_approved_at'] = date('d/m/Y H:i', strtotime($request['hr_approved_at']));
     }
     
+    // Tính toán số ngày báo trước
+    $currentDate = new DateTime();
+    $currentDate->setTime(0, 0, 0); // Reset time to start of day for accurate day calculation
+    
+    if (!empty($request['start_date'])) {
+        $startDate = new DateTime($request['start_date']);
+        $startDate->setTime(0, 0, 0); // Reset time to start of day
+        
+        $interval = $currentDate->diff($startDate);
+        
+        // Nếu ngày bắt đầu đã qua, hiển thị số ngày đã qua (số âm)
+        // Nếu ngày bắt đầu chưa đến, hiển thị số ngày còn lại (số dương)
+        if ($startDate < $currentDate) {
+            $request['notice_days'] = -$interval->days; // Số âm để chỉ ra đã qua
+        } else {
+            $request['notice_days'] = $interval->days; // Số dương để chỉ ra còn lại
+        }
+    } else {
+        $request['notice_days'] = 0;
+    }
+    
     echo json_encode([
         'success' => true,
         'data' => $request

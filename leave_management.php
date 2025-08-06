@@ -18,6 +18,9 @@ $page_title = "Quản lý Nghỉ phép";
 
 // Kiểm tra quyền phê duyệt
 $can_approve = in_array($current_user['role'], ['admin', 'hr']);
+
+// Kiểm tra quyền xem tất cả đơn (chỉ admin và HR)
+$can_view_all = in_array($current_user['role'], ['admin', 'hr']);
 ?>
 
 <!DOCTYPE html>
@@ -42,6 +45,53 @@ $can_approve = in_array($current_user['role'], ['admin', 'hr']);
     
     <!-- Favicon -->
     <link rel="icon" type="image/png" href="assets/images/logo.png">
+    
+    <!-- Custom styles for buttons -->
+    <style>
+        .btn-custom-blue {
+            background-color: #3b82f6 !important;
+            border-color: #3b82f6 !important;
+            color: white !important;
+        }
+        .btn-custom-blue:hover {
+            background-color: #2563eb !important;
+            border-color: #2563eb !important;
+            color: white !important;
+        }
+        
+        /* Responsive filter styles */
+        @media (max-width: 768px) {
+            .d-flex.gap-2.flex-wrap {
+                flex-direction: column !important;
+                gap: 0.5rem !important;
+            }
+            .d-flex.gap-2.flex-wrap .form-select,
+            .d-flex.gap-2.flex-wrap .form-control {
+                width: 100% !important;
+            }
+        }
+        
+        /* Date range filter styles */
+        .date-range-container {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .date-range-container .form-control {
+            min-width: 140px;
+        }
+        
+        @media (max-width: 768px) {
+            .date-range-container {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            .date-range-container .form-control {
+                width: 100% !important;
+            }
+        }
+    </style>
 </head>
 <body>
     <?php include 'includes/header.php'; ?>
@@ -59,7 +109,7 @@ $can_approve = in_array($current_user['role'], ['admin', 'hr']);
                                                  <p class="text-muted mb-0">Quản lý và theo dõi các đơn nghỉ phép của nhân viên</p>
                     </div>
                     <div>
-                        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createLeaveRequestModal">
+                        <button type="button" class="btn btn-custom-blue" data-bs-toggle="modal" data-bs-target="#createLeaveRequestModal">
                             <i class="fas fa-plus me-2"></i>
                             Tạo đơn nghỉ phép
                         </button>
@@ -68,44 +118,57 @@ $can_approve = in_array($current_user['role'], ['admin', 'hr']);
                 </div>
             </div>
             
-            <!-- Filters and Search -->
-            <div class="row mb-4">
-                <div class="col-md-8">
-                    <div class="d-flex gap-2">
-                        <select class="form-select" style="width: auto;" id="statusFilter">
-                            <option value="">Tất cả trạng thái</option>
-                            <option value="Chờ phê duyệt">Chờ phê duyệt</option>
-                            <option value="Admin đã phê duyệt">Admin đã phê duyệt</option>
-                            <option value="HR đã phê duyệt">HR đã phê duyệt</option>
-                            <option value="Đã phê duyệt">Đã phê duyệt</option>
-                            <option value="Từ chối bởi Admin">Từ chối bởi Admin</option>
-                            <option value="Từ chối bởi HR">Từ chối bởi HR</option>
-                            <option value="Từ chối">Từ chối</option>
-                        </select>
-                        <select class="form-select" style="width: auto;" id="typeFilter">
-                            <option value="">Tất cả loại nghỉ</option>
-                            <option value="Nghỉ phép năm">Nghỉ phép năm</option>
-                            <option value="Nghỉ ốm">Nghỉ ốm</option>
-                            <option value="Nghỉ việc riêng">Nghỉ việc riêng</option>
-                            <option value="Nghỉ không lương">Nghỉ không lương</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="input-group">
-                        <input type="text" class="form-control" placeholder="Tìm kiếm đơn nghỉ phép..." id="searchInput">
-                        <button class="btn btn-outline-secondary" type="button">
-                            <i class="fas fa-search"></i>
-                        </button>
-                    </div>
-                </div>
-            </div>
+                         <!-- Filters and Search -->
+             <div class="row mb-4">
+                 <div class="col-md-8">
+                     <div class="d-flex gap-2 flex-wrap">
+                         <select class="form-select" style="width: auto;" id="statusFilter">
+                             <option value="">Tất cả trạng thái</option>
+                             <option value="Chờ phê duyệt">Chờ phê duyệt</option>
+                             <option value="Admin đã phê duyệt">Admin đã phê duyệt</option>
+                             <option value="HR đã phê duyệt">HR đã phê duyệt</option>
+                             <option value="Đã phê duyệt">Đã phê duyệt</option>
+                             <option value="Từ chối bởi Admin">Từ chối bởi Admin</option>
+                             <option value="Từ chối bởi HR">Từ chối bởi HR</option>
+                             <option value="Từ chối">Từ chối</option>
+                         </select>
+                         <select class="form-select" style="width: auto;" id="typeFilter">
+                             <option value="">Tất cả loại nghỉ</option>
+                             <option value="Nghỉ phép năm">Nghỉ phép năm</option>
+                             <option value="Nghỉ ốm">Nghỉ ốm</option>
+                             <option value="Nghỉ việc riêng">Nghỉ việc riêng</option>
+                             <option value="Nghỉ không lương">Nghỉ không lương</option>
+                         </select>
+                         <div class="date-range-container">
+                             <input type="date" class="form-control" id="dateFromFilter" placeholder="Từ ngày">
+                             <span class="text-muted">đến</span>
+                             <input type="date" class="form-control" id="dateToFilter" placeholder="Đến ngày">
+                         </div>
+                         <button type="button" class="btn btn-outline-secondary" id="clearFilters" title="Xóa bộ lọc">
+                             <i class="fas fa-times"></i>
+                         </button>
+                     </div>
+                 </div>
+                 <div class="col-md-4 d-flex justify-content-end">
+                     <div class="input-group" style="max-width: 300px;">
+                         <input type="text" class="form-control" placeholder="Tên nhân sự nghỉ" id="searchInput">
+                         <button class="btn btn-outline-secondary" type="button">
+                             <i class="fas fa-search"></i>
+                         </button>
+                     </div>
+                 </div>
+             </div>
             
-            <!-- Leave Requests Table -->
-            <div class="card">
-                <div class="card-body p-0">
-                    <div class="table-responsive">
-                        <table class="table table-hover mb-0 leave-requests-table">
+                         <!-- Leave Requests Table -->
+             <div class="card">
+                 <div class="card-body p-0">
+                     <!-- Thông báo quyền xem -->
+                     <div id="viewPermissionNotice" class="alert alert-info m-3" style="display: none;">
+                         <i class="fas fa-info-circle me-2"></i>
+                         <span id="permissionMessage"></span>
+                     </div>
+                     <div class="table-responsive">
+                         <table class="table table-hover mb-0 leave-requests-table">
                             <thead>
                                 <tr>
                                     <th style="width: 5%;">STT</th>
@@ -135,16 +198,16 @@ $can_approve = in_array($current_user['role'], ['admin', 'hr']);
                 <p class="mt-2 text-muted">Đang tải danh sách đơn nghỉ phép...</p>
             </div>
             
-            <!-- Empty State -->
-            <div id="emptyState" class="text-center py-5" style="display: none;">
-                <i class="fas fa-calendar-times fa-3x text-muted mb-3"></i>
-                <h5 class="text-muted">Chưa có đơn nghỉ phép nào</h5>
-                <p class="text-muted">Bắt đầu tạo đơn nghỉ phép đầu tiên của bạn</p>
-                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createLeaveRequestModal">
-                    <i class="fas fa-plus me-2"></i>
-                    Tạo đơn nghỉ phép
-                </button>
-            </div>
+                         <!-- Empty State -->
+             <div id="emptyState" class="text-center py-5" style="display: none;">
+                 <i class="fas fa-calendar-times fa-3x text-muted mb-3"></i>
+                 <h5 class="text-muted" id="emptyStateTitle">Chưa có đơn nghỉ phép nào</h5>
+                 <p class="text-muted" id="emptyStateMessage">Bắt đầu tạo đơn nghỉ phép đầu tiên của bạn</p>
+                 <button type="button" class="btn btn-custom-blue" data-bs-toggle="modal" data-bs-target="#createLeaveRequestModal" id="createRequestBtn">
+                     <i class="fas fa-plus me-2"></i>
+                     Tạo đơn nghỉ phép
+                 </button>
+             </div>
         </div>
     </div>
     
@@ -402,13 +465,15 @@ $can_approve = in_array($current_user['role'], ['admin', 'hr']);
         }
     </script>
     
-    <script>
-    // Truyền thông tin quyền phê duyệt cho JavaScript
-    window.canApprove = <?php echo json_encode($can_approve); ?>;
-    window.currentUserRole = "<?php echo addslashes($current_user['role']); ?>";
-    
-
-    </script>
+         <script>
+     // Truyền thông tin quyền phê duyệt cho JavaScript
+     window.canApprove = <?php echo json_encode($can_approve); ?>;
+     window.currentUserRole = "<?php echo addslashes($current_user['role']); ?>";
+     window.canViewAll = <?php echo json_encode($can_view_all); ?>;
+     window.currentUserId = <?php echo json_encode($current_user['id']); ?>;
+     
+ 
+     </script>
     
     <script src="assets/js/leave_management.js"></script>
 </body>

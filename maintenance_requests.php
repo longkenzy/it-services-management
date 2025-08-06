@@ -1911,7 +1911,7 @@ document.addEventListener('DOMContentLoaded', function() {
     let partnerData = <?php echo json_encode($partners); ?>;
     let salesData = <?php echo json_encode($sales); ?>;
     
-    // Khởi tạo Select2 cho trường khách hàng
+    // Khởi tạo Select2 cho trường khách hàng (JS chung)
     function initializeSelect2() {
         $('#customer_id').select2({
             theme: 'bootstrap-5',
@@ -2020,7 +2020,6 @@ document.addEventListener('DOMContentLoaded', function() {
         // Xóa inert khi modal hiển thị
         this.removeAttribute('inert');
     });
-    <?php endif; ?>
     
     // Khởi tạo khi modal tạo case hiển thị
     $('#createMaintenanceCaseModal').on('shown.bs.modal', function() {
@@ -3001,5 +3000,59 @@ function showAlert(message, type = 'info') {
 
 <!-- Include maintenance requests JavaScript -->
 <script src="assets/js/maintenance_requests.js?v=<?php echo filemtime('assets/js/maintenance_requests.js'); ?>"></script>
+<?php if (!empty($requests)): ?>
+<script>
+function initializeEditSelect2() {
+    $('#edit_customer_id').select2({
+        theme: 'bootstrap-5',
+        placeholder: '-- Chọn khách hàng --',
+        allowClear: true,
+        width: '100%',
+        dropdownParent: $('#editMaintenanceRequestModal'),
+        language: {
+            noResults: function() {
+                return "Không tìm thấy khách hàng";
+            },
+            searching: function() {
+                return "Đang tìm kiếm...";
+            }
+        }
+    });
+    $('#edit_sale_id').select2({
+        theme: 'bootstrap-5',
+        placeholder: '-- Chọn sale phụ trách --',
+        allowClear: true,
+        width: '100%',
+        dropdownParent: $('#editMaintenanceRequestModal'),
+        language: {
+            noResults: function() {
+                return "Không tìm thấy sale phụ trách";
+            },
+            searching: function() {
+                return "Đang tìm kiếm...";
+            }
+        }
+    });
+}
+// Khởi tạo Select2 khi modal chỉnh sửa hiển thị (chỉ khi modal tồn tại)
+$('#editMaintenanceRequestModal').on('shown.bs.modal', function() {
+    initializeEditSelect2();
+    setupEditCheckboxHandler();
+    // Load danh sách cases bảo trì
+    loadMaintenanceCases();
+});
+// Fix accessibility issue - sử dụng inert attribute
+$('#editMaintenanceRequestModal').on('hidden.bs.modal', function() {
+    // Sử dụng inert thay vì aria-hidden
+    this.setAttribute('inert', '');
+    this.removeAttribute('aria-hidden');
+});
+$('#editMaintenanceRequestModal').on('show.bs.modal', function() {
+    // Xóa inert khi modal hiển thị
+    this.removeAttribute('inert');
+});
+</script>
+<?php endif; ?>
+<?php endif; ?>
 </body>
 </html> 
