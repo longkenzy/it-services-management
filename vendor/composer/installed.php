@@ -3,7 +3,7 @@
         'name' => 'it-services-management/staff-excel-export',
         'pretty_version' => 'dev-main',
         'version' => 'dev-main',
-        'reference' => 'ebc09869fe2ab19b0ad78c4cf2ba5156a83e2f76',
+        'reference' => 'f93dfa57408ea6058c68e0d9811927d730056afc',
         'type' => 'project',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -31,7 +31,7 @@
         'it-services-management/staff-excel-export' => array(
             'pretty_version' => 'dev-main',
             'version' => 'dev-main',
-            'reference' => 'ebc09869fe2ab19b0ad78c4cf2ba5156a83e2f76',
+            'reference' => 'f93dfa57408ea6058c68e0d9811927d730056afc',
             'type' => 'project',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),

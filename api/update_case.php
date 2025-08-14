@@ -34,12 +34,14 @@ try {
     
     // Validate JSON input
     if (json_last_error() !== JSON_ERROR_NONE) {
+        http_response_code(400);
         echo json_encode(['success' => false, 'error' => 'Invalid JSON data']);
         exit;
     }
     
     // Validate required fields
     if (empty($input['case_id'])) {
+        http_response_code(400);
         echo json_encode(['success' => false, 'error' => 'Case ID là bắt buộc']);
         exit;
     }
@@ -53,21 +55,58 @@ try {
     $current_case = $stmt->fetch();
     
     if (!$current_case) {
+        http_response_code(404);
         echo json_encode(['success' => false, 'error' => 'Case không tồn tại']);
         exit;
     }
     
-    // Chuẩn bị dữ liệu cập nhật
+    // Chuẩn bị dữ liệu cập nhật theo phân quyền
     $updates = [];
     $params = [];
     
-    // Các trường có thể cập nhật
-    $updatable_fields = ['requester_id', 'handler_id', 'case_type', 'priority', 
-                        'issue_title', 'issue_description', 'status', 'notes', 
-                        'start_date', 'due_date'];
+    // Kiểm tra quyền của user
+    $is_admin = isAdmin();
+    $can_edit = canEditInternalCase();
+    
+    if (!$can_edit) {
+        http_response_code(403);
+        echo json_encode(['success' => false, 'error' => 'Bạn không có quyền chỉnh sửa case này']);
+        exit;
+    }
+    
+    // Các trường có thể cập nhật theo phân quyền
+    if ($is_admin) {
+        // Admin có thể cập nhật tất cả trường
+        $updatable_fields = ['requester_id', 'handler_id', 'case_type', 'priority', 
+                            'issue_title', 'issue_description', 'status', 'notes', 
+                            'start_date', 'due_date'];
+    } else {
+        // IT staff chỉ có thể cập nhật status, due_date, notes
+        $updatable_fields = ['status', 'due_date', 'notes'];
+    }
     
     foreach ($updatable_fields as $field) {
         if (isset($input[$field])) {
+            // Validate priority field
+            if ($field === 'priority') {
+                $valid_priorities = ['onsite', 'offsite', 'remote'];
+                if (!in_array($input[$field], $valid_priorities)) {
+                    http_response_code(400);
+                    echo json_encode(['success' => false, 'error' => 'Giá trị priority không hợp lệ']);
+                    exit;
+                }
+            }
+            
+            // Validate status field
+            if ($field === 'status') {
+                $valid_statuses = ['pending', 'in_progress', 'completed', 'cancelled'];
+                if (!in_array($input[$field], $valid_statuses)) {
+                    http_response_code(400);
+                    echo json_encode(['success' => false, 'error' => 'Giá trị status không hợp lệ']);
+                    exit;
+                }
+            }
+            
             $updates[] = "$field = ?";
             $params[] = $input[$field];
         }
@@ -82,6 +121,7 @@ try {
         $end = new DateTime($new_due_date);
         
         if ($end <= $start) {
+            http_response_code(400);
             echo json_encode(['success' => false, 'error' => 'Ngày kết thúc phải lớn hơn ngày bắt đầu']);
             exit;
         }
@@ -98,6 +138,7 @@ try {
     }
     
     if (empty($updates)) {
+        http_response_code(400);
         echo json_encode(['success' => false, 'error' => 'Không có dữ liệu để cập nhật']);
         exit;
     }
@@ -109,15 +150,31 @@ try {
     // Cập nhật case
     $sql = "UPDATE internal_cases SET " . implode(', ', $updates) . " WHERE id = ?";
     $stmt = $pdo->prepare($sql);
-    $stmt->execute($params);
+    
+    if (!$stmt->execute($params)) {
+        http_response_code(500);
+        echo json_encode(['success' => false, 'error' => 'Lỗi khi cập nhật case']);
+        exit;
+    }
     
     // Ghi log
-    $log_message = "Cập nhật case: " . $current_case['case_number'];
-    $log_stmt = $pdo->prepare("
-        INSERT INTO user_activity_logs (user_id, activity, details, created_at) 
-        VALUES (?, ?, ?, NOW())
-    ");
-    $log_stmt->execute([$current_user_id, 'update_case', $log_message]);
+    try {
+        $log_message = "Cập nhật case: " . $current_case['case_number'];
+        $log_stmt = $pdo->prepare("
+            INSERT INTO user_activity_logs (user_id, activity, details, ip_address, user_agent, created_at) 
+            VALUES (?, ?, ?, ?, ?, NOW())
+        ");
+        $log_stmt->execute([
+            $current_user_id, 
+            'update_case', 
+            $log_message,
+            $_SERVER['REMOTE_ADDR'] ?? 'unknown',
+            $_SERVER['HTTP_USER_AGENT'] ?? ''
+        ]);
+    } catch (Exception $e) {
+        // Log lỗi nhưng không làm crash API
+        error_log("Failed to log activity: " . $e->getMessage());
+    }
     
     echo json_encode([
         'success' => true,

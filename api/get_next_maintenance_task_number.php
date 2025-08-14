@@ -1,75 +1,44 @@
 <?php
-header('Content-Type: application/json');
+header('Content-Type: application/json; charset=utf-8');
+require_once '../config/db.php';
 
-// Kiểm tra xem có phải chạy từ web không
-if (php_sapi_name() === 'cli') {
-    // Nếu chạy từ command line, tạo mã test
-    $current_year = date('y');
-    $current_month = date('m');
-    $task_code = sprintf("TBT%s%s%03d", $current_year, $current_month, 1);
-    
-    echo json_encode([
-        'success' => true,
-        'task_code' => $task_code
-    ]);
-    exit;
-}
+date_default_timezone_set('Asia/Ho_Chi_Minh');
 
-require_once __DIR__ . '/../includes/session.php';
-require_once __DIR__ . '/../config/db.php';
-
-// Debug: Kiểm tra session
-error_log("Session status: " . (session_status() === PHP_SESSION_ACTIVE ? 'active' : 'not active'));
-error_log("User logged in: " . (isLoggedIn() ? 'yes' : 'no'));
-
-// Khởi tạo session nếu chưa có
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
-
-if (!isLoggedIn()) {
-    echo json_encode(['success' => false, 'message' => 'Chưa đăng nhập']);
-    exit;
-}
+$year = date('y'); // 2 số cuối năm
+$month = date('m'); // 2 số của tháng
+$prefix = "TBT{$year}{$month}";
 
 try {
-    $current_year = date('y');
-    $current_month = date('m');
+    $pdo = getConnection();
     
-    // Tìm mã task cuối cùng trong tháng hiện tại
-    $sql = "SELECT task_code FROM maintenance_tasks 
-            WHERE task_code LIKE ? 
-            ORDER BY task_code DESC 
-            LIMIT 1";
-    
-    $pattern = "TBT{$current_year}{$current_month}%";
-    $stmt = $pdo->prepare($sql);
-    $stmt->execute([$pattern]);
+    // Tìm task number lớn nhất trong tháng hiện tại
+    $stmt = $pdo->prepare("SELECT task_number FROM maintenance_tasks 
+            WHERE task_number LIKE ? 
+            AND MONTH(created_at) = ?
+            AND YEAR(created_at) = ?
+            ORDER BY task_number DESC 
+            LIMIT 1");
+    $stmt->execute([$prefix . '%', intval($month), 2000 + intval($year)]);
     $result = $stmt->fetch();
     
     if ($result) {
-        // Lấy số thứ tự từ mã cuối cùng
-        $last_code = $result['task_code'];
-        $last_number = intval(substr($last_code, -3));
-        $next_number = $last_number + 1;
+        // Lấy 3 số cuối của task number
+        $lastNumber = intval(substr($result['task_number'], -3));
+        $sequence = $lastNumber + 1;
     } else {
-        // Nếu chưa có mã nào trong tháng này
-        $next_number = 1;
+        // Task đầu tiên trong tháng
+        $sequence = 1;
     }
     
-    // Tạo mã mới
-    $task_code = sprintf("TBT%s%s%03d", $current_year, $current_month, $next_number);
-    
+    $task_number = $prefix . str_pad($sequence, 3, '0', STR_PAD_LEFT);
     echo json_encode([
         'success' => true,
-        'task_code' => $task_code
+        'task_number' => $task_number
     ]);
-    
 } catch (Exception $e) {
-    error_log("Error in get_next_maintenance_task_number.php: " . $e->getMessage());
     echo json_encode([
         'success' => false,
-        'message' => 'Có lỗi xảy ra khi tạo mã task'
+        'message' => $e->getMessage()
     ]);
 }
-?> 
+?>

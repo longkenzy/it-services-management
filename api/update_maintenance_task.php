@@ -1,128 +1,104 @@
 <?php
-header('Content-Type: application/json');
-require_once '../includes/session.php';
 require_once '../config/db.php';
+require_once '../includes/session.php';
 
-if (!isLoggedIn()) {
-    echo json_encode(['success' => false, 'message' => 'Chưa đăng nhập']);
+// Check if user is logged in
+if (!isset($_SESSION['user_id'])) {
+    http_response_code(401);
+    echo json_encode(['success' => false, 'message' => 'Unauthorized']);
+    exit;
+}
+
+// Get JSON input
+$input = json_decode(file_get_contents('php://input'), true);
+
+if (!$input) {
+    http_response_code(400);
+    echo json_encode(['success' => false, 'message' => 'Invalid JSON input']);
     exit;
 }
 
 try {
-    $input = json_decode(file_get_contents('php://input'), true);
-    
+    // Validate required fields
     $data = [
         'id' => $input['id'] ?? '',
-        'task_number' => $input['task_number'] ?? '',
-        'task_type' => $input['task_type'] ?? '',
-        'template_name' => $input['template_name'] ?? '',
         'task_description' => $input['task_description'] ?? '',
-        'assignee_id' => $input['assignee_id'] ?? '',
+        'task_type' => $input['task_type'] ?? '',
+        'template_name' => $input['task_template'] ?? '',
+        'assigned_to' => $input['assigned_to'] ?? '',
         'start_date' => $input['start_date'] ?? '',
         'end_date' => $input['end_date'] ?? '',
-        'status' => $input['status'] ?? '',
-        'notes' => $input['notes'] ?? ''
+        'status' => $input['status'] ?? ''
     ];
 
-    // Validation
-    $errors = [];
-    
+    // Validate required fields
     if (empty($data['id'])) {
-        $errors[] = 'ID task không được để trống';
-    }
-    
-    if (empty($data['task_number'])) {
-        $errors[] = 'Mã task không được để trống';
-    }
-    
-    if (empty($data['task_description'])) {
-        $errors[] = 'Tên task không được để trống';
-    }
-    
-    if (empty($data['assignee_id'])) {
-        $errors[] = 'Vui lòng chọn người được giao';
-    }
-    
-    if (empty($data['status'])) {
-        $errors[] = 'Vui lòng chọn trạng thái';
-    }
-
-    // Kiểm tra mã task đã tồn tại chưa (trừ record hiện tại)
-    if (!empty($data['task_number'])) {
-        $stmt = $pdo->prepare("SELECT id FROM maintenance_tasks WHERE task_number = ? AND id != ?");
-        $stmt->execute([$data['task_number'], $data['id']]);
-        if ($stmt->fetch()) {
-            $errors[] = 'Mã task đã tồn tại';
-        }
-    }
-
-    // Kiểm tra người được giao có tồn tại không
-    if (!empty($data['assignee_id'])) {
-        $stmt = $pdo->prepare("SELECT id FROM staffs WHERE id = ? AND status = 'active'");
-        $stmt->execute([$data['assignee_id']]);
-        if (!$stmt->fetch()) {
-            $errors[] = 'Người được giao không tồn tại hoặc không hoạt động';
-        }
-    }
-
-    // Nếu có lỗi validation
-    if (!empty($errors)) {
-        http_response_code(400);
-        echo json_encode(['success' => false, 'error' => implode(', ', $errors)]);
+        echo json_encode(['success' => false, 'message' => 'ID task là bắt buộc']);
         exit;
     }
 
-    // Xử lý ngày tháng
-    $start_date = !empty($data['start_date']) ? $data['start_date'] : null;
-    $end_date = !empty($data['end_date']) ? $data['end_date'] : null;
+    if (empty($data['task_description'])) {
+        echo json_encode(['success' => false, 'message' => 'Tên task là bắt buộc']);
+        exit;
+    }
 
-    // Update database
+    if (empty($data['task_type'])) {
+        echo json_encode(['success' => false, 'message' => 'Loại task là bắt buộc']);
+        exit;
+    }
+
+    // Check if task exists
+    $stmt = $pdo->prepare("SELECT id FROM maintenance_tasks WHERE id = ?");
+    $stmt->execute([$data['id']]);
+    if (!$stmt->fetch()) {
+        echo json_encode(['success' => false, 'message' => 'Task không tồn tại']);
+        exit;
+    }
+
+    // Update task
     $sql = "UPDATE maintenance_tasks SET 
-            task_number = ?, task_type = ?, template_name = ?, task_description = ?, assignee_id = ?, 
-            start_date = ?, end_date = ?, status = ?, notes = ?, updated_at = CURRENT_TIMESTAMP
-            WHERE id = ?";
+        task_description = ?, task_type = ?, template_name = ?, assigned_to = ?, 
+        start_date = ?, end_date = ?, status = ?
+        WHERE id = ?";
 
     $stmt = $pdo->prepare($sql);
-    $result = $stmt->execute([
-        $data['task_number'],
+    $stmt->execute([
+        $data['task_description'],
         $data['task_type'],
         $data['template_name'],
-        $data['task_description'],
-        $data['assignee_id'],
-        $start_date,
-        $end_date,
+        $data['assigned_to'] ?: null, // Convert empty string to null for int column
+        $data['start_date'] ?: null,
+        $data['end_date'] ?: null,
         $data['status'],
-        $data['notes'],
         $data['id']
     ]);
 
-    if ($result) {
-        // Log hoạt động
-        $log_message = "Cập nhật task bảo trì: {$data['task_number']}";
-        $log_sql = "INSERT INTO user_activity_logs (user_id, activity, details, ip_address) VALUES (?, ?, ?, ?)";
-        $log_stmt = $pdo->prepare($log_sql);
-        $log_stmt->execute([
-            getCurrentUserId(),
-            'UPDATE_MAINTENANCE_TASK',
-            $log_message,
-            $_SERVER['REMOTE_ADDR'] ?? 'unknown'
-        ]);
+    // Log activity
+    $activitySql = "INSERT INTO activity_logs (user_id, action, details, ip_address, created_at) VALUES (?, ?, ?, ?, NOW())";
+    $activityStmt = $pdo->prepare($activitySql);
+    $activityStmt->execute([
+        $_SESSION['user_id'],
+        'UPDATE_MAINTENANCE_TASK',
+        json_encode([
+            'task_id' => $data['id'],
+            'task_name' => $data['task_description'],
+            'status' => $data['status']
+        ]),
+        $_SERVER['REMOTE_ADDR']
+    ]);
 
-        echo json_encode([
-            'success' => true,
-            'message' => 'Cập nhật task bảo trì thành công'
-        ]);
-    } else {
-        throw new Exception('Không thể cập nhật task bảo trì');
-    }
+    echo json_encode([
+        'success' => true,
+        'message' => 'Cập nhật task bảo trì thành công'
+    ]);
 
 } catch (PDOException $e) {
     error_log("Database error in update_maintenance_task.php: " . $e->getMessage());
     http_response_code(500);
-    echo json_encode(['success' => false, 'error' => 'Lỗi database: ' . $e->getMessage()]);
+    echo json_encode(['success' => false, 'message' => 'Lỗi cơ sở dữ liệu']);
 } catch (Exception $e) {
     error_log("Error in update_maintenance_task.php: " . $e->getMessage());
     http_response_code(500);
-    echo json_encode(['success' => false, 'error' => 'Có lỗi xảy ra: ' . $e->getMessage()]);
+    echo json_encode(['success' => false, 'message' => 'Có lỗi xảy ra']);
 }
-?> 
+?>

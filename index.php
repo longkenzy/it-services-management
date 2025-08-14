@@ -40,8 +40,6 @@ if (isLoggedIn()) {
     <!-- Alert System CSS -->
     <link rel="stylesheet" href="assets/css/alert.css?v=1">
     
-    <!-- No Border Radius Override -->
-    <link rel="stylesheet" href="assets/css/no-border-radius.css?v=1">
 </head>
 <body>
     <div class="container-fluid">

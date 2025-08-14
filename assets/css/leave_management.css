@@ -4,9 +4,45 @@
  */
 
 /* Leave Management Styles */
+.card {
+    margin: 0;
+    padding: 0;
+}
+
+.card-body {
+    margin: 0;
+    padding: 0;
+}
+
 .leave-requests-table {
     font-size: 0.875rem;
     border-collapse: collapse;
+    margin: 0;
+    padding: 0;
+}
+
+/* Status container styles */
+.status-container {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.status-line {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.75rem;
+}
+
+.status-line small {
+    font-size: 0.7rem;
+    min-width: 60px;
+}
+
+.status-line .badge {
+    font-size: 0.65rem;
+    padding: 0.2rem 0.4rem;
 }
 
 .leave-requests-table th {
@@ -19,6 +55,7 @@
     padding: 0.5rem 0.75rem;
     text-align: center;
     vertical-align: middle;
+    margin: 0;
 }
 
 .leave-requests-table th:last-child {
@@ -31,6 +68,7 @@
     border-right: 1px solid #e9ecef;
     padding: 0.5rem 0.75rem;
     font-size: 0.8rem;
+    margin: 0;
 }
 
 .leave-requests-table td:last-child {

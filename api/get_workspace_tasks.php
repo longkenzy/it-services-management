@@ -55,6 +55,7 @@ try {
                 }
             }
             $data[] = [
+                'id'            => $row['id'] ?? '',
                 'case_code'     => $row['case_code'] ?? '',
                 'level'         => 'Case',
                 'case_type'     => $row['request_type'] ?? '',
@@ -112,6 +113,7 @@ try {
                 }
             }
             $data[] = [
+                'id'            => $row['id'] ?? '',
                 'case_code'     => $row['task_number'] ?? '',
                 'level'         => 'Task',
                 'case_type'     => $row['template_name'] ?? '',
@@ -121,6 +123,152 @@ try {
                 'end_date'      => $row['end_date'] ?? '',
                 'status'        => $row['status'] ?? '',
                 'assigned_to'   => $row['assignee_id'] ?? '',
+            ];
+        }
+    }
+
+    // Xử lý maintenance_cases
+    $maintenance_case_where_conditions = [];
+    $maintenance_case_params = [$user_id];
+    
+    if ($status_filter === 'processing') {
+        $maintenance_case_where_conditions[] = "assigned_to = ? AND status != 'Hoàn thành'";
+    } elseif ($status_filter === 'done_this_month') {
+        $maintenance_case_where_conditions[] = "assigned_to = ? AND status = 'Hoàn thành' AND MONTH(end_date) = MONTH(CURRENT_DATE()) AND YEAR(end_date) = YEAR(CURRENT_DATE())";
+    } elseif ($status_filter === 'done_last_month') {
+        $maintenance_case_where_conditions[] = "assigned_to = ? AND status = 'Hoàn thành' AND (MONTH(end_date) != MONTH(CURRENT_DATE()) OR YEAR(end_date) != YEAR(CURRENT_DATE()))";
+    }
+    
+    if (!empty($maintenance_case_where_conditions)) {
+        $maintenance_case_sql = 'SELECT * FROM maintenance_cases WHERE ' . implode(' AND ', $maintenance_case_where_conditions) . ' ORDER BY start_date DESC';
+        $stmt = $pdo->prepare($maintenance_case_sql);
+        $stmt->execute($maintenance_case_params);
+        $maintenance_cases = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        
+        foreach ($maintenance_cases as $row) {
+            // Lấy customer_id từ maintenance_requests, rồi lấy tên từ partner_companies
+            $customer_name = '';
+            if (!empty($row['maintenance_request_id'])) {
+                $stmt2 = $pdo->prepare('SELECT customer_id FROM maintenance_requests WHERE id = ? LIMIT 1');
+                $stmt2->execute([$row['maintenance_request_id']]);
+                $req = $stmt2->fetch(PDO::FETCH_ASSOC);
+                if ($req && !empty($req['customer_id'])) {
+                    $stmt3 = $pdo->prepare('SELECT name FROM partner_companies WHERE id = ? LIMIT 1');
+                    $stmt3->execute([$req['customer_id']]);
+                    $company = $stmt3->fetch(PDO::FETCH_ASSOC);
+                    if ($company && !empty($company['name'])) {
+                        $customer_name = $company['name'];
+                    }
+                }
+            }
+            $data[] = [
+                'id'            => $row['id'] ?? '',
+                'case_code'     => $row['case_code'] ?? '',
+                'level'         => 'Case Bảo trì',
+                'case_type'     => $row['request_type'] ?? '',
+                'service_type'  => $row['case_description'] ?? '',
+                'customer_name' => $customer_name,
+                'start_date'    => $row['start_date'] ?? '',
+                'end_date'      => $row['end_date'] ?? '',
+                'status'        => $row['status'] ?? '',
+                'assigned_to'   => $row['assigned_to'] ?? '',
+            ];
+        }
+    }
+
+    // Xử lý maintenance_tasks
+    $maintenance_task_where_conditions = [];
+    $maintenance_task_params = [$user_id];
+    
+    if ($status_filter === 'processing') {
+        $maintenance_task_where_conditions[] = "assigned_to = ? AND status != 'Hoàn thành'";
+    } elseif ($status_filter === 'done_this_month') {
+        $maintenance_task_where_conditions[] = "assigned_to = ? AND status = 'Hoàn thành' AND MONTH(end_date) = MONTH(CURRENT_DATE()) AND YEAR(end_date) = YEAR(CURRENT_DATE())";
+    } elseif ($status_filter === 'done_last_month') {
+        $maintenance_task_where_conditions[] = "assigned_to = ? AND status = 'Hoàn thành' AND (MONTH(end_date) != MONTH(CURRENT_DATE()) OR YEAR(end_date) != YEAR(CURRENT_DATE()))";
+    }
+    
+    if (!empty($maintenance_task_where_conditions)) {
+        $maintenance_task_sql = 'SELECT * FROM maintenance_tasks WHERE ' . implode(' AND ', $maintenance_task_where_conditions) . ' ORDER BY start_date DESC';
+        $stmt = $pdo->prepare($maintenance_task_sql);
+        $stmt->execute($maintenance_task_params);
+        $maintenance_tasks = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        
+        foreach ($maintenance_tasks as $row) {
+            // Lấy customer_id từ maintenance_requests qua maintenance_cases
+            $customer_name = '';
+            $maintenance_case_id = $row['maintenance_case_id'] ?? null;
+            if ($maintenance_case_id) {
+                $stmt_case = $pdo->prepare('SELECT maintenance_request_id FROM maintenance_cases WHERE id = ? LIMIT 1');
+                $stmt_case->execute([$maintenance_case_id]);
+                $case = $stmt_case->fetch(PDO::FETCH_ASSOC);
+                if ($case && !empty($case['maintenance_request_id'])) {
+                    $stmt2 = $pdo->prepare('SELECT customer_id FROM maintenance_requests WHERE id = ? LIMIT 1');
+                    $stmt2->execute([$case['maintenance_request_id']]);
+                    $req = $stmt2->fetch(PDO::FETCH_ASSOC);
+                    if ($req && !empty($req['customer_id'])) {
+                        $stmt3 = $pdo->prepare('SELECT name FROM partner_companies WHERE id = ? LIMIT 1');
+                        $stmt3->execute([$req['customer_id']]);
+                        $company = $stmt3->fetch(PDO::FETCH_ASSOC);
+                        if ($company && !empty($company['name'])) {
+                            $customer_name = $company['name'];
+                        }
+                    }
+                }
+            }
+            $data[] = [
+                'id'            => $row['id'] ?? '',
+                'case_code'     => $row['task_number'] ?? '',
+                'level'         => 'Task Bảo trì',
+                'case_type'     => $row['template_name'] ?? '',
+                'service_type'  => $row['task_description'] ?? '',
+                'customer_name' => $customer_name,
+                'start_date'    => $row['start_date'] ?? '',
+                'end_date'      => $row['end_date'] ?? '',
+                'status'        => $row['status'] ?? '',
+                'assigned_to'   => $row['assigned_to'] ?? '',
+            ];
+        }
+    }
+
+    // Xử lý internal_cases
+    $internal_case_where_conditions = [];
+    $internal_case_params = [$user_id];
+    
+    if ($status_filter === 'processing') {
+        $internal_case_where_conditions[] = "handler_id = ? AND status != 'completed'";
+    } elseif ($status_filter === 'done_this_month') {
+        $internal_case_where_conditions[] = "handler_id = ? AND status = 'completed' AND MONTH(completed_at) = MONTH(CURRENT_DATE()) AND YEAR(completed_at) = YEAR(CURRENT_DATE())";
+    } elseif ($status_filter === 'done_last_month') {
+        $internal_case_where_conditions[] = "handler_id = ? AND status = 'completed' AND (MONTH(completed_at) != MONTH(CURRENT_DATE()) OR YEAR(completed_at) != YEAR(CURRENT_DATE()))";
+    }
+    
+    if (!empty($internal_case_where_conditions)) {
+        $internal_case_sql = 'SELECT * FROM internal_cases WHERE ' . implode(' AND ', $internal_case_where_conditions) . ' ORDER BY start_date DESC';
+        $stmt = $pdo->prepare($internal_case_sql);
+        $stmt->execute($internal_case_params);
+        $internal_cases = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        
+        foreach ($internal_cases as $row) {
+            // Map status từ enum sang tiếng Việt
+            $status_map = [
+                'pending' => 'Tiếp nhận',
+                'in_progress' => 'Đang xử lý',
+                'completed' => 'Hoàn thành',
+                'cancelled' => 'Huỷ'
+            ];
+            
+            $data[] = [
+                'id'            => $row['id'] ?? '',
+                'case_code'     => $row['case_number'] ?? '',
+                'level'         => 'Case Nội bộ',
+                'case_type'     => $row['case_type'] ?? '',
+                'service_type'  => $row['issue_description'] ?? '',
+                'customer_name' => 'Nội bộ',
+                'start_date'    => $row['start_date'] ?? '',
+                'end_date'      => $row['due_date'] ?? '',
+                'status'        => $status_map[$row['status']] ?? $row['status'],
+                'assigned_to'   => $row['handler_id'] ?? '',
             ];
         }
     }

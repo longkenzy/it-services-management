@@ -35,9 +35,6 @@ $current_user = getCurrentUser();
     <link rel="stylesheet" href="assets/css/staff.css?v=<?php echo filemtime('assets/css/staff.css'); ?>">
     <link rel="stylesheet" href="assets/css/alert.css?v=<?php echo filemtime('assets/css/alert.css'); ?>">
     
-    <!-- No Border Radius Override -->
-    <link rel="stylesheet" href="assets/css/no-border-radius.css?v=<?php echo filemtime('assets/css/no-border-radius.css'); ?>">
-    
     <!-- Favicon -->
     <link rel="icon" type="image/png" href="assets/images/logo.png">
 </head>

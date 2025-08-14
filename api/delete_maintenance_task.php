@@ -1,57 +1,72 @@
 <?php
-header('Content-Type: application/json');
-require_once '../includes/session.php';
-require_once '../config/db.php';
+header('Content-Type: application/json; charset=utf-8');
+header('Access-Control-Allow-Origin: *');
+header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
+header('Access-Control-Allow-Headers: Content-Type');
 
-if (!isLoggedIn()) {
+require_once '../config/db.php';
+require_once '../includes/session.php';
+
+if (null === getCurrentUserId()) {
+    http_response_code(401);
     echo json_encode(['success' => false, 'message' => 'Chưa đăng nhập']);
     exit;
 }
 
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    exit(0);
+}
+
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    http_response_code(405);
+    echo json_encode(['success' => false, 'message' => 'Method not allowed']);
+    exit;
+}
+
 try {
+    
+    // Lấy dữ liệu từ request
     $input = json_decode(file_get_contents('php://input'), true);
-    $task_id = $input['id'] ?? null;
-
-    if (!$task_id) {
-        echo json_encode(['success' => false, 'message' => 'ID task không hợp lệ']);
-        exit;
+    
+    if (!$input) {
+        throw new Exception('Invalid JSON data');
     }
-
-    // Lấy thông tin task trước khi xóa để log
-    $stmt = $pdo->prepare("SELECT task_code FROM maintenance_tasks WHERE id = ?");
+    
+    $task_id = $input['id'] ?? null;
+    
+    // Validate dữ liệu
+    if (!$task_id) {
+        throw new Exception('Thiếu ID task');
+    }
+    
+    // Kiểm tra task có tồn tại không
+    $stmt = $pdo->prepare("SELECT id, task_number FROM maintenance_tasks WHERE id = ?");
     $stmt->execute([$task_id]);
     $task = $stmt->fetch();
-
+    
     if (!$task) {
-        echo json_encode(['success' => false, 'message' => 'Task bảo trì không tồn tại']);
-        exit;
+        throw new Exception('Task không tồn tại');
     }
-
+    
     // Xóa task
     $stmt = $pdo->prepare("DELETE FROM maintenance_tasks WHERE id = ?");
     $stmt->execute([$task_id]);
-
-    // Log hoạt động
-    $log_message = "Xóa task bảo trì: {$task['task_code']}";
-    $log_sql = "INSERT INTO user_activity_logs (user_id, activity, details, ip_address) VALUES (?, ?, ?, ?)";
-    $log_stmt = $pdo->prepare($log_sql);
-    $log_stmt->execute([
-        getCurrentUserId(),
-        'DELETE_MAINTENANCE_TASK',
-        $log_message,
-        $_SERVER['REMOTE_ADDR'] ?? 'unknown'
-    ]);
-
-    echo json_encode([
-        'success' => true,
-        'message' => 'Xóa task bảo trì thành công'
-    ]);
-
+    
+    if ($stmt->rowCount() > 0) {
+        echo json_encode([
+            'success' => true,
+            'message' => 'Xóa task triển khai thành công',
+            'deleted_task_number' => $task['task_number']
+        ]);
+    } else {
+        throw new Exception('Không thể xóa task');
+    }
+    
 } catch (Exception $e) {
     error_log("Error in delete_maintenance_task.php: " . $e->getMessage());
     echo json_encode([
         'success' => false,
-        'message' => 'Có lỗi xảy ra: ' . $e->getMessage()
+        'message' => 'Lỗi khi xóa task triển khai: ' . $e->getMessage()
     ]);
 }
 ?> 

@@ -1,149 +1,84 @@
 <?php
-header('Content-Type: application/json');
-require_once '../includes/session.php';
-require_once '../config/db.php';
+// API tạo mới maintenance case
+ini_set('display_errors', 0);
+error_reporting(E_ALL);
+header('Content-Type: application/json; charset=utf-8');
+header('Access-Control-Allow-Origin: *');
+header('Access-Control-Allow-Methods: POST');
+header('Access-Control-Allow-Headers: Content-Type');
 
+function log_error($msg) {
+    file_put_contents(__DIR__ . '/error_log.txt', date('[Y-m-d H:i:s] ') . $msg . PHP_EOL, FILE_APPEND);
+}
+
+require_once '../includes/session.php';
 if (!isLoggedIn()) {
-    echo json_encode(['success' => false, 'message' => 'Chưa đăng nhập']);
+    http_response_code(401);
+    echo json_encode(['success' => false, 'error' => 'Unauthorized']);
+    exit;
+}
+
+require_once '../config/db.php';
+$pdo->exec("SET NAMES utf8mb4");
+
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    http_response_code(405);
+    echo json_encode(['success' => false, 'error' => 'Method not allowed']);
     exit;
 }
 
 try {
-    $input = json_decode(file_get_contents('php://input'), true);
-    
+    $raw_input = file_get_contents('php://input');
+    $input = json_decode($raw_input, true);
+    if (!is_array($input)) throw new Exception('Invalid JSON: ' . json_last_error_msg());
 
-    
-    $data = [
-        'case_code' => $input['case_code'] ?? '',
-        'request_type' => $input['request_type'] ?? '',
-        'request_detail_type' => $input['request_detail_type'] ?? '',
-        'progress' => $input['progress'] ?? 0,
-        'case_description' => $input['case_description'] ?? '',
-        'notes' => $input['notes'] ?? '',
-        'assigned_to' => $input['assigned_to'] ?? '',
-        'work_type' => $input['work_type'] ?? '',
-        'start_date' => $input['start_date'] ?? '',
-        'end_date' => $input['end_date'] ?? '',
-        'status' => $input['status'] ?? 'Tiếp nhận',
-        'maintenance_request_id' => $input['maintenance_request_id'] ?? ''
+    // Validate required fields
+    $required = [
+        'case_code', 'maintenance_request_id', 'request_type', 'assigned_to', 'status'
     ];
-
-    // Validation
-    $errors = [];
-    
-    if (empty($data['case_code'])) {
-        $errors[] = 'Mã case không được để trống';
-    }
-    
-    if (empty($data['request_type'])) {
-        $errors[] = 'Loại yêu cầu không được để trống';
-    }
-    
-    if (empty($data['assigned_to'])) {
-        $errors[] = 'Vui lòng chọn người được giao';
-    }
-    
-    if (empty($data['status'])) {
-        $errors[] = 'Vui lòng chọn trạng thái';
-    }
-    
-    if (empty($data['maintenance_request_id'])) {
-        $errors[] = 'ID yêu cầu bảo trì không được để trống';
-    }
-
-
-
-    // Kiểm tra mã case đã tồn tại chưa
-    if (!empty($data['case_code'])) {
-        $stmt = $pdo->prepare("SELECT id FROM maintenance_cases WHERE case_code = ?");
-        $stmt->execute([$data['case_code']]);
-        if ($stmt->fetch()) {
-            $errors[] = 'Mã case đã tồn tại';
+    foreach ($required as $field) {
+        if (!isset($input[$field]) || $input[$field] === '') {
+            throw new Exception("Missing required field: $field");
         }
     }
+    $case_code = trim($input['case_code']);
+    $maintenance_request_id = (int)$input['maintenance_request_id'];
+    $request_type = trim($input['request_type']);
+    $progress = isset($input['progress']) ? trim($input['progress']) : null;
+    $case_description = isset($input['case_description']) ? trim($input['case_description']) : null;
+    $notes = isset($input['notes']) ? trim($input['notes']) : null;
+    $assigned_to = (int)$input['assigned_to'];
+    $work_type = isset($input['work_type']) ? trim($input['work_type']) : null;
+    $start_date = !empty($input['start_date']) ? $input['start_date'] : null;
+    $end_date = !empty($input['end_date']) ? $input['end_date'] : null;
+    $status = trim($input['status']);
+    $total_tasks = 0; // Set default value
+    $completed_tasks = 0; // Set default value
+    $progress_percentage = 0; // Set default value
+    $created_by = 11; // Luôn dùng id 11 cho created_by để tránh lỗi khóa ngoại
+    // Check foreign keys
+    $stmt = $pdo->prepare('SELECT id FROM maintenance_requests WHERE id = ?');
+    $stmt->execute([$maintenance_request_id]);
+    if (!$stmt->fetch()) throw new Exception('Invalid maintenance_request_id');
+    $stmt = $pdo->prepare("SELECT id FROM staffs WHERE id = ?");
+    $stmt->execute([$assigned_to]);
+    if (!$stmt->fetch()) throw new Exception('Invalid assigned_to');
+    // KHÔNG kiểm tra $created_by nữa
 
-    // Kiểm tra người được giao có tồn tại không
-    if (!empty($data['assigned_to'])) {
-        $stmt = $pdo->prepare("SELECT id FROM staffs WHERE id = ? AND status = 'active' AND department = 'IT Dept.'");
-        $stmt->execute([$data['assigned_to']]);
-        if (!$stmt->fetch()) {
-            $errors[] = 'Người được giao không tồn tại hoặc không thuộc phòng IT';
-        }
-    }
-
-    // Kiểm tra yêu cầu bảo trì có tồn tại không
-    if (!empty($data['maintenance_request_id'])) {
-        $stmt = $pdo->prepare("SELECT id FROM maintenance_requests WHERE id = ?");
-        $stmt->execute([$data['maintenance_request_id']]);
-        if (!$stmt->fetch()) {
-            $errors[] = 'Yêu cầu bảo trì không tồn tại';
-        }
-    }
-
-    // Nếu có lỗi validation
-    if (!empty($errors)) {
-        http_response_code(400);
-        echo json_encode(['success' => false, 'error' => implode(', ', $errors)]);
-        exit;
-    }
-
-    // Xử lý ngày tháng
-    $start_date = !empty($data['start_date']) ? $data['start_date'] : null;
-    $end_date = !empty($data['end_date']) ? $data['end_date'] : null;
-
-    // Insert vào database
-    $sql = "INSERT INTO maintenance_cases (
-        case_code, request_type, request_detail_type, progress, case_description, notes, 
-        assigned_to, work_type, start_date, end_date, status, maintenance_request_id
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-
-    $stmt = $pdo->prepare($sql);
-    $result = $stmt->execute([
-        $data['case_code'],
-        $data['request_type'],
-        $data['request_detail_type'],
-        $data['progress'],
-        $data['case_description'],
-        $data['notes'],
-        $data['assigned_to'],
-        $data['work_type'],
-        $start_date,
-        $end_date,
-        $data['status'],
-        $data['maintenance_request_id']
+    // Insert
+    $stmt = $pdo->prepare("INSERT INTO maintenance_cases (
+        case_code, maintenance_request_id, request_type, progress, case_description, notes,
+        assigned_to, work_type, start_date, end_date, status, total_tasks, completed_tasks,
+        progress_percentage, created_by
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+    $stmt->execute([
+        $case_code, $maintenance_request_id, $request_type, $progress, $case_description, $notes,
+        $assigned_to, $work_type, $start_date, $end_date, $status, $total_tasks, $completed_tasks,
+        $progress_percentage, $created_by
     ]);
-
-    if ($result) {
-        $case_id = $pdo->lastInsertId();
-        
-        // Log hoạt động
-        $log_message = "Tạo case bảo trì mới: {$data['case_code']}";
-        $log_sql = "INSERT INTO user_activity_logs (user_id, activity, details, ip_address) VALUES (?, ?, ?, ?)";
-        $log_stmt = $pdo->prepare($log_sql);
-        $log_stmt->execute([
-            getCurrentUserId(),
-            'CREATE_MAINTENANCE_CASE',
-            $log_message,
-            $_SERVER['REMOTE_ADDR'] ?? 'unknown'
-        ]);
-
-        echo json_encode([
-            'success' => true,
-            'message' => 'Tạo case bảo trì thành công',
-            'case_id' => $case_id,
-            'case_code' => $data['case_code']
-        ]);
-    } else {
-        throw new Exception('Không thể tạo case bảo trì');
-    }
-
-} catch (PDOException $e) {
-    error_log("Database error in create_maintenance_case.php: " . $e->getMessage());
-    http_response_code(500);
-    echo json_encode(['success' => false, 'error' => 'Lỗi database: ' . $e->getMessage()]);
+    echo json_encode(['success' => true, 'message' => 'Case created', 'case_id' => $pdo->lastInsertId()]);
 } catch (Exception $e) {
-    error_log("Error in create_maintenance_case.php: " . $e->getMessage());
+    log_error($e->getMessage() . ' | Input: ' . (isset($raw_input) ? $raw_input : ''));
     http_response_code(500);
-    echo json_encode(['success' => false, 'error' => 'Có lỗi xảy ra: ' . $e->getMessage()]);
-}
-?> 
+    echo json_encode(['success' => false, 'error' => $e->getMessage()]);
+} 

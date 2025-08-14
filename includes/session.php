@@ -165,6 +165,46 @@ function isLeader() {
 }
 
 /**
+ * Kiểm tra xem user có phải IT staff không (it, it_leader)
+ * @return bool True nếu là IT staff, False nếu không
+ */
+function isITStaff() {
+    return hasRole(['it', 'it_leader']);
+}
+
+/**
+ * Kiểm tra xem user có quyền truy cập workspace không
+ * @return bool True nếu có quyền truy cập workspace, False nếu không
+ */
+function canAccessWorkspace() {
+    return hasRole(['admin', 'it', 'it_leader']);
+}
+
+/**
+ * Kiểm tra xem user có quyền xem tất cả internal cases không
+ * @return bool True nếu có quyền xem tất cả, False nếu chỉ xem của mình
+ */
+function canViewAllInternalCases() {
+    return hasRole(['admin', 'it', 'it_leader']);
+}
+
+/**
+ * Kiểm tra xem user có quyền chỉnh sửa internal case không
+ * @return bool True nếu có quyền chỉnh sửa, False nếu không
+ */
+function canEditInternalCase() {
+    return hasRole(['admin', 'it', 'it_leader']);
+}
+
+/**
+ * Kiểm tra xem user có quyền xóa internal case không
+ * @return bool True nếu có quyền xóa, False nếu không
+ */
+function canDeleteInternalCase() {
+    return hasRole('admin');
+}
+
+/**
  * Cập nhật thời gian hoạt động cuối cùng
  */
 function updateLastActivity() {

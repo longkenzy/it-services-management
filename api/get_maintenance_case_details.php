@@ -1,51 +1,68 @@
 <?php
 header('Content-Type: application/json');
 require_once '../includes/session.php';
-require_once '../config/db.php';
 
 if (!isLoggedIn()) {
-    echo json_encode(['success' => false, 'message' => 'Chưa đăng nhập']);
+    http_response_code(401);
+    echo json_encode(['success' => false, 'error' => 'Unauthorized']);
     exit;
 }
 
-$case_id = $_GET['id'] ?? null;
+require_once '../config/db.php';
 
-if (!$case_id) {
-    echo json_encode(['success' => false, 'message' => 'ID case không hợp lệ']);
+if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
+    http_response_code(405);
+    echo json_encode(['success' => false, 'error' => 'Method not allowed']);
     exit;
 }
 
 try {
-    $sql = "SELECT 
-                mc.*,
-                mr.request_code,
-                s.fullname as assigned_to_name
-            FROM maintenance_cases mc
-            LEFT JOIN maintenance_requests mr ON mc.maintenance_request_id = mr.id
-            LEFT JOIN staffs s ON mc.assigned_to = s.id
-            WHERE mc.id = ?";
+    $case_id = isset($_GET['id']) ? intval($_GET['id']) : 0;
     
-    $stmt = $pdo->prepare($sql);
+    if ($case_id <= 0) {
+        echo json_encode(['success' => false, 'error' => 'Invalid case ID']);
+        exit;
+    }
+    
+    // Lấy chi tiết maintenance case với thông tin nhân sự và request
+    $stmt = $pdo->prepare("
+        SELECT 
+            mc.*, 
+            mc.maintenance_request_id, 
+            mr.request_code,
+            s.fullname as assigned_to_name,
+            creator.fullname as created_by_name
+        FROM maintenance_cases mc
+        LEFT JOIN maintenance_requests mr ON mc.maintenance_request_id = mr.id
+        LEFT JOIN staffs s ON mc.assigned_to = s.id
+        LEFT JOIN staffs creator ON mc.created_by = creator.id
+        WHERE mc.id = ?
+    ");
+    
     $stmt->execute([$case_id]);
     $case = $stmt->fetch(PDO::FETCH_ASSOC);
     
     if (!$case) {
-        echo json_encode(['success' => false, 'message' => 'Case bảo trì không tồn tại']);
+        echo json_encode(['success' => false, 'error' => 'Case not found']);
         exit;
     }
-    
-
     
     echo json_encode([
         'success' => true,
         'data' => $case
     ]);
     
-} catch (Exception $e) {
-    error_log("Error in get_maintenance_case_details.php: " . $e->getMessage());
+} catch (PDOException $e) {
+    http_response_code(500);
     echo json_encode([
         'success' => false,
-        'message' => 'Có lỗi xảy ra khi lấy thông tin case bảo trì'
+        'error' => 'Database error: ' . $e->getMessage()
+    ]);
+} catch (Exception $e) {
+    http_response_code(500);
+    echo json_encode([
+        'success' => false,
+        'error' => 'Server error: ' . $e->getMessage()
     ]);
 }
-?> 
+?>

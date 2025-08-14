@@ -59,11 +59,11 @@ try {
     
     // Lấy dữ liệu từ form
     $start_date = $_POST['start_date'] ?? '';
-    $start_time = $_POST['start_time'] ?? '08:00';
+    $start_time = $_POST['start_time'] ?? '08:30';
     $end_date = $_POST['end_date'] ?? '';
-    $end_time = $_POST['end_time'] ?? '17:00';
+    $end_time = $_POST['end_time'] ?? '18:00';
     $return_date = $_POST['return_date'] ?? '';
-    $return_time = $_POST['return_time'] ?? '08:00';
+    $return_time = $_POST['return_time'] ?? '08:30';
     $leave_days = $_POST['leave_days'] ?? '';
     $leave_type = $_POST['leave_type'] ?? '';
     $reason = $_POST['reason'] ?? '';
@@ -227,29 +227,98 @@ try {
             // Bỏ qua lỗi log
         }
         
-        // Tạo thông báo cho admin và các leader (cấp 1) (bỏ qua nếu có lỗi)
+        // Tạo thông báo cho admin và leader
         try {
-            $admin_leader_ids = [];
-            $stmt = $pdo->prepare("SELECT id FROM staffs WHERE role IN ('admin', 'hr_leader', 'sale_leader', 'it_leader')");
-            $stmt->execute();
-            while ($admin = $stmt->fetch(PDO::FETCH_ASSOC)) {
-                $admin_leader_ids[] = $admin['id'];
+            $notification_sql = "INSERT INTO notifications (user_id, title, message, type, related_id) VALUES (?, ?, ?, ?, ?)";
+            $notification_stmt = $pdo->prepare($notification_sql);
+            
+            // Lấy thông tin phòng ban của người yêu cầu
+            $requester_dept_sql = "SELECT department FROM staffs WHERE id = ?";
+            $requester_dept_stmt = $pdo->prepare($requester_dept_sql);
+            $requester_dept_stmt->execute([$current_user['id']]);
+            $requester_dept = $requester_dept_stmt->fetchColumn();
+            
+            // Gửi thông báo theo phòng ban
+            if ($requester_dept && strpos($requester_dept, 'HR') !== false) {
+                // HR: gửi cho hr_leader
+                $leader_ids = [];
+                $stmt = $pdo->prepare("SELECT id FROM staffs WHERE role = 'hr_leader'");
+                $stmt->execute();
+                while ($leader = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                    $leader_ids[] = $leader['id'];
+                }
+                
+                foreach ($leader_ids as $leader_id) {
+                    $notification_stmt->execute([
+                        $leader_id,
+                        'Đơn nghỉ phép mới cần phê duyệt',
+                        "Có đơn nghỉ phép mới từ phòng HR: {$request_code}. Vui lòng phê duyệt.",
+                        'leave_request',
+                        $request_id
+                    ]);
+                }
+                
+            } elseif ($requester_dept && strpos($requester_dept, 'IT') !== false) {
+                // IT: gửi cho it_leader
+                $leader_ids = [];
+                $stmt = $pdo->prepare("SELECT id FROM staffs WHERE role = 'it_leader'");
+                $stmt->execute();
+                while ($leader = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                    $leader_ids[] = $leader['id'];
+                }
+                
+                foreach ($leader_ids as $leader_id) {
+                    $notification_stmt->execute([
+                        $leader_id,
+                        'Đơn nghỉ phép IT mới cần phê duyệt',
+                        "Có đơn nghỉ phép mới từ phòng IT: {$request_code}. Vui lòng phê duyệt (Cấp 1).",
+                        'leave_request',
+                        $request_id
+                    ]);
+                }
+                
+            } elseif ($requester_dept && strpos($requester_dept, 'SALE') !== false) {
+                // SALE: gửi cho sale_leader
+                $leader_ids = [];
+                $stmt = $pdo->prepare("SELECT id FROM staffs WHERE role = 'sale_leader'");
+                $stmt->execute();
+                while ($leader = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                    $leader_ids[] = $leader['id'];
+                }
+                
+                foreach ($leader_ids as $leader_id) {
+                    $notification_stmt->execute([
+                        $leader_id,
+                        'Đơn nghỉ phép SALE mới cần phê duyệt',
+                        "Có đơn nghỉ phép mới từ phòng SALE: {$request_code}. Vui lòng phê duyệt (Cấp 1).",
+                        'leave_request',
+                        $request_id
+                    ]);
+                }
+                
+            } else {
+                // Các phòng ban khác: gửi cho admin
+                $admin_ids = [];
+                $stmt = $pdo->prepare("SELECT id FROM staffs WHERE role = 'admin'");
+                $stmt->execute();
+                while ($admin = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                    $admin_ids[] = $admin['id'];
+                }
+                
+                foreach ($admin_ids as $admin_id) {
+                    $notification_stmt->execute([
+                        $admin_id,
+                        'Đơn nghỉ phép mới cần phê duyệt',
+                        "Có đơn nghỉ phép mới: {$request_code}. Vui lòng phê duyệt.",
+                        'leave_request',
+                        $request_id
+                    ]);
+                }
             }
             
-            // Gửi thông báo cho tất cả admin và leader
-            foreach ($admin_leader_ids as $admin_id) {
-                $notification_sql = "INSERT INTO notifications (user_id, title, message, type, related_id) VALUES (?, ?, ?, ?, ?)";
-                $notification_stmt = $pdo->prepare($notification_sql);
-                $notification_stmt->execute([
-                    $admin_id,
-                    'Đơn nghỉ phép mới cần phê duyệt (Cấp 1)',
-                    "Có đơn nghỉ phép mới từ {$current_user['fullname']} cần phê duyệt. Mã đơn: $request_code (Cấp 1 - Admin/Leader)",
-                    'leave_request',
-                    $request_id
-                ]);
-            }
         } catch (Exception $e) {
             // Bỏ qua lỗi notification
+            error_log("Error sending notification: " . $e->getMessage());
         }
         
         // Commit transaction

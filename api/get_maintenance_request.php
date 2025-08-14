@@ -3,7 +3,8 @@ header('Content-Type: application/json');
 require_once '../includes/session.php';
 require_once '../config/db.php';
 
-if (!isLoggedIn()) {
+if (null === getCurrentUserId()) {
+    http_response_code(401);
     echo json_encode(['success' => false, 'message' => 'Chưa đăng nhập']);
     exit;
 }
@@ -17,24 +18,24 @@ if (!$request_id) {
 
 try {
     $sql = "SELECT 
-                mr.*,
+                dr.*,
                 pc.name as customer_name,
                 pc.contact_person,
                 pc.contact_phone,
                 sale.fullname as sale_name,
                 creator.fullname as created_by_name
-            FROM maintenance_requests mr
-            LEFT JOIN partner_companies pc ON mr.customer_id = pc.id
-            LEFT JOIN staffs sale ON mr.sale_id = sale.id
-            LEFT JOIN staffs creator ON mr.created_by = creator.id
-            WHERE mr.id = ?";
+            FROM maintenance_requests dr
+            LEFT JOIN partner_companies pc ON dr.customer_id = pc.id
+            LEFT JOIN staffs sale ON dr.sale_id = sale.id
+            LEFT JOIN staffs creator ON dr.created_by = creator.id
+            WHERE dr.id = ?";
     
     $stmt = $pdo->prepare($sql);
     $stmt->execute([$request_id]);
     $request = $stmt->fetch(PDO::FETCH_ASSOC);
     
     if (!$request) {
-        echo json_encode(['success' => false, 'message' => 'Yêu cầu bảo trì không tồn tại']);
+        echo json_encode(['success' => false, 'message' => 'Yêu cầu triển khai không tồn tại']);
         exit;
     }
     
@@ -47,7 +48,7 @@ try {
     error_log("Error in get_maintenance_request.php: " . $e->getMessage());
     echo json_encode([
         'success' => false,
-        'message' => 'Có lỗi xảy ra khi lấy thông tin yêu cầu bảo trì'
+        'message' => 'Có lỗi xảy ra khi lấy thông tin yêu cầu triển khai'
     ]);
 }
 ?> 

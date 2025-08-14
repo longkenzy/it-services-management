@@ -4,6 +4,109 @@ require_once 'includes/session.php';
 requireLogin();
 require_once 'config/db.php';
 
+// Xử lý AJAX request để trả về modal content
+if (isset($_GET['ajax']) && $_GET['ajax'] === '1') {
+    define('AJAX_REQUEST', true);
+    
+    // Set headers cho AJAX response
+    header('Content-Type: text/html; charset=utf-8');
+    header('Cache-Control: no-cache, must-revalidate');
+    
+    $modal = $_GET['modal'] ?? '';
+    $id = $_GET['id'] ?? '';
+    
+    // Debug: Log thông tin request
+    error_log("AJAX Request - Modal: $modal, ID: $id");
+    
+    // Debug: Log đường dẫn file
+    $modalFile = '';
+    if ($modal === 'editDeploymentCase') {
+        $modalFile = 'includes/modals/edit_deployment_case_modal.php';
+    } elseif ($modal === 'editDeploymentTask') {
+        $modalFile = 'includes/modals/edit_deployment_task_modal.php';
+    } elseif ($modal === 'editMaintenanceCase') {
+        $modalFile = 'includes/modals/edit_maintenance_case_modal.php';
+    } elseif ($modal === 'editMaintenanceTask') {
+        $modalFile = 'includes/modals/edit_maintenance_task_modal.php';
+    } elseif ($modal === 'editInternalCase') {
+        $modalFile = 'includes/modals/edit_internal_case_modal.php';
+    }
+    error_log("Modal type: $modal, Modal file path: $modalFile, exists: " . (file_exists($modalFile) ? 'YES' : 'NO'));
+    
+    // Chỉ trả về modal content, không phải toàn bộ trang
+    if ($modal === 'editDeploymentCase') {
+        // Trả về modal edit deployment case
+        if (file_exists('includes/modals/edit_deployment_case_modal.php')) {
+            error_log("Including edit_deployment_case_modal.php");
+            ob_start();
+            include 'includes/modals/edit_deployment_case_modal.php';
+            $output = ob_get_clean();
+            error_log("Output length: " . strlen($output));
+            echo $output;
+        } else {
+            echo '<div class="alert alert-danger">File modal không tồn tại</div>';
+        }
+        exit;
+    } elseif ($modal === 'editDeploymentTask') {
+        // Trả về modal edit deployment task
+        if (file_exists('includes/modals/edit_deployment_task_modal.php')) {
+            error_log("Including edit_deployment_task_modal.php");
+            ob_start();
+            include 'includes/modals/edit_deployment_task_modal.php';
+            $output = ob_get_clean();
+            error_log("Output length: " . strlen($output));
+            echo $output;
+        } else {
+            echo '<div class="alert alert-danger">File modal không tồn tại</div>';
+        }
+        exit;
+    } elseif ($modal === 'editMaintenanceCase') {
+        // Trả về modal edit maintenance case
+        if (file_exists('includes/modals/edit_maintenance_case_modal.php')) {
+            error_log("Including edit_maintenance_case_modal.php");
+            ob_start();
+            include 'includes/modals/edit_maintenance_case_modal.php';
+            $output = ob_get_clean();
+            error_log("Output length: " . strlen($output));
+            echo $output;
+        } else {
+            echo '<div class="alert alert-danger">File modal không tồn tại</div>';
+        }
+        exit;
+    } elseif ($modal === 'editMaintenanceTask') {
+        // Trả về modal edit maintenance task
+        if (file_exists('includes/modals/edit_maintenance_task_modal.php')) {
+            error_log("Including edit_maintenance_task_modal.php");
+            ob_start();
+            include 'includes/modals/edit_maintenance_task_modal.php';
+            $output = ob_get_clean();
+            error_log("Output length: " . strlen($output));
+            echo $output;
+        } else {
+            echo '<div class="alert alert-danger">File modal không tồn tại</div>';
+        }
+        exit;
+    } elseif ($modal === 'editInternalCase') {
+        // Trả về modal edit internal case
+        if (file_exists('includes/modals/edit_internal_case_modal.php')) {
+            error_log("Including edit_internal_case_modal.php");
+            ob_start();
+            include 'includes/modals/edit_internal_case_modal.php';
+            $output = ob_get_clean();
+            error_log("Output length: " . strlen($output));
+            echo $output;
+        } else {
+            echo '<div class="alert alert-danger">File modal không tồn tại</div>';
+        }
+        exit;
+    }
+    
+    // Nếu không tìm thấy modal, trả về lỗi
+    http_response_code(404);
+    echo '<div class="alert alert-danger">Modal không tìm thấy</div>';
+    exit;
+}
+
 // Lấy role user hiện tại
 $current_role = isset($_SESSION['role']) ? $_SESSION['role'] : (function_exists('getCurrentUserRole') ? getCurrentUserRole() : null);
 
@@ -207,442 +310,58 @@ if (isset($_SESSION['user_id'])) {
         .modal-backdrop {
             z-index: 1040 !important;
         }
+        
+        /* Consistent badge styling */
+        .badge {
+            border-radius: 0.375rem !important;
+            font-size: 0.75rem !important;
+            font-weight: 500 !important;
+            padding: 0.35rem 0.65rem !important;
+        }
+        
+        /* Consistent button styling */
+        .btn {
+            border-radius: 4px !important;
+        }
+        
+        .btn-sm {
+            border-radius: 4px !important;
+        }
+        
+        .btn-outline-warning,
+        .btn-outline-danger,
+        .btn-outline-primary {
+            border-radius: 4px !important;
+        }
+        
+        .badge.bg-success {
+            background-color: #28a745 !important;
+        }
+        
+        .badge.bg-warning {
+            background-color: #ffc107 !important;
+            color: #212529 !important;
+        }
+        
+        .badge.bg-danger {
+            background-color: #dc3545 !important;
+        }
+        
+        .badge.bg-secondary {
+            background-color: #6c757d !important;
+        }
+        
+        /* Căn trái nội dung cột khách hàng */
+        .customer-info {
+            text-align: left;
+        }
     </style>
     <link rel="stylesheet" href="assets/css/dashboard.css?v=<?php echo filemtime('assets/css/dashboard.css'); ?>">
     <link rel="stylesheet" href="assets/css/alert.css?v=<?php echo filemtime('assets/css/alert.css'); ?>">
-    <link rel="stylesheet" href="assets/css/no-border-radius.css?v=<?php echo filemtime('assets/css/no-border-radius.css'); ?>">
+    <link rel="stylesheet" href="assets/css/deployment_requests.css?v=<?php echo filemtime('assets/css/deployment_requests.css'); ?>">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <style>
-        /* ===== MODAL STYLES ===== */
-        /* Override Bootstrap modal-fullscreen */
-        #addDeploymentRequestModal .modal-dialog,
-        #editDeploymentRequestModal .modal-dialog,
-        #createDeploymentCaseModal .modal-dialog,
-        #editDeploymentCaseModal .modal-dialog,
-        #createDeploymentTaskModal .modal-dialog,
-        #editDeploymentTaskModal .modal-dialog {
-            max-width: none;
-            width: calc(100vw - 40px);
-            margin: 80px auto 20px auto;
-            height: calc(100vh - 120px);
-        }
-        
-        .deployment-request-modal {
-            border-radius: 0;
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-            width: 100%;
-        }
-        
 
-        
-        .deployment-request-modal .modal-header {
-            background: #5bc0de;
-            color: black;
-            border-bottom:2px solid #dee2e6;
-            padding: 0.75rem 1.5rem;
-        }
-        
-        .deployment-request-modal .modal-title {
-            font-weight: 600;
-            font-size: 1.1rem;
-        }
-        
-        .deployment-request-modal .modal-body {
-            flex: 1;
-            padding: 1.5rem;
-            background-color: #f8f9fa;
-            max-height: 70vh;
-            overflow-y: auto;
-        }
-        
-        .deployment-request-modal .modal-footer {
-            background-color: #f8f9fa;
-            border-top:2px solid #dee2e6;
-            padding: 0.75rem 1.5rem;
-        }
-        
-        /* ===== FORM STYLES ===== */
-        .deployment-request-modal .form-label {
-            font-weight: 600;
-            color: #495057;
-            margin-bottom: 0.25rem;
-            font-size: 1rem;
-        }
-        
-        .deployment-request-modal .form-control,
-        .deployment-request-modal .form-select {
-            border:2px solid #e9ecef;
-            padding: 0.6rem 0.8rem;
-            font-size: 1rem;
-            height: 48px;
-            transition: all 0.3s ease;
-        }
-        
-        .deployment-request-modal .form-control:focus,
-        .deployment-request-modal .form-select:focus {
-            border-color: #07f;
-            box-shadow: 0 0.2rem rgba(0,123,255,0.25);
-        }
-        
-        .deployment-request-modal .form-control[readonly] {
-            background-color: #f8f9fa;
-            color: #6c757d;
-        }
-        
-        .deployment-request-modal .form-control:disabled {
-            background-color: #e9ecef;
-            color: #6c757d;
-            cursor: not-allowed;
-            opacity: 0.6;
-        }
-        
-        /* ===== CHECKBOX STYLES ===== */
-        .deployment-request-modal .form-check {
-            margin-top: 0.25rem;
-        }
-        
-        .deployment-request-modal .form-check-input {
-            border:2px solid #e9ecef;
-        }
-        
-        .deployment-request-modal .form-check-input:checked {
-            background-color: #07f;
-            border-color: #7c7c7c;
-        }
-        
-        .deployment-request-modal .form-check-label {
-            font-size: 0.95rem;
-            color: #6c757d;
-            margin-left: 0.25rem;
-        }
-        
-        /* ===== TEXTAREA STYLES ===== */
-        .deployment-request-modal textarea.form-control {
-            resize: vertical;
-            min-height: 100px;
-            height: 100px;
-        }
-        
-        /* ===== BUTTON STYLES ===== */
-        .deployment-request-modal .btn {
-            padding: 0.5rem 1rem;
-            font-weight: 600;
-            border-radius: 0;
-            font-size: 1rem;
-        }
-        
-        .deployment-request-modal .btn-primary {
-            background: linear-gradient(135deg, #07ff 0%, #0056b3 100);
-            border: none;
-            box-shadow: 0 4px 15px rgba(0, 123, 255, 0.3);
-        }
-        
-        .deployment-request-modal .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(0, 123, 255, 0.4);
-        }
-        
-        .deployment-request-modal .btn-secondary {
-            background: linear-gradient(135deg, #6c757d 0%, #545b62 100);
-            border: none;
-        }
-        
-        /* ===== FORM GROUP SPACING ===== */
-        .deployment-request-modal .mb-3 {
-            margin-bottom: 0.75rem;
-        }
-        
-        .deployment-request-modal .row.g-4 {
-            --bs-gutter-x: 1em;
-            --bs-gutter-y: 0.5rem;
-        }
-        
-        /* ===== RESPONSIVE STYLES ===== */
-        @media (max-width: 768px) {
-            #addDeploymentRequestModal .modal-dialog,
-            #editDeploymentRequestModal .modal-dialog {
-                width: calc(100vw - 20px);
-                margin: 70px auto 10px auto; /* Top margin 70px để tránh header trên mobile */
-                height: calc(100vh - 100px); /* Trừ đi chiều cao header và margin trên mobile */
-            }
-            
-            .deployment-request-modal {
-                height: 100%;
-            }
-            
-            #editDeploymentRequestModal .deployment-request-modal {
-                height: 100%;
-            }
-            
-            .deployment-request-modal .modal-body {
-                padding: 0.75em;
-            }
-            
-            #editDeploymentRequestModal .deployment-request-modal .modal-body {
-                padding: 0.75em;
-            }
-            
-            .deployment-request-modal .row {
-                margin: 0;
-            }
-            
-            #editDeploymentRequestModal .deployment-request-modal .row {
-                margin: 0;
-            }
-            
-            .deployment-request-modal .col-md-6 {
-                padding: 0;
-                margin-bottom: 0.5em;
-            }
-            
-            #editDeploymentRequestModal .deployment-request-modal .col-md-6 {
-                padding: 0;
-                margin-bottom: 0.5em;
-            }
-        }
-        
-        /* ===== SCROLLBAR STYLES ===== */
-        .deployment-request-modal .modal-body::-webkit-scrollbar {
-            width: 8px;
-        }
-        
-        .deployment-request-modal .modal-body::-webkit-scrollbar-track {
-            background: #f1f1f1;
-        }
-        
-        .deployment-request-modal .modal-body::-webkit-scrollbar-thumb {
-            background: #c1c1c1;
-            border-radius: 4px;
-        }
-        
-        .deployment-request-modal .modal-body::-webkit-scrollbar-thumb:hover {
-            background: #a8a8a8;
-        }
-        
-        /* ===== CARD STYLES ===== */
-        .card-body {
-            padding: 0 !important;
-        }
-        
-        /* ===== PAGE HEADER STYLES ===== */
-        .page-header {
-            margin-bottom: 2rem;
-        }
-        
-        .page-title {
-            font-size: 1.75rem;
-            font-weight: 700;
-            color: #2c3e50;
-            margin-bottom: 0.5rem;
-        }
-        
-        .page-title i {
-            color: #28a745;
-        }
-        
-        /* ===== TABLE STYLES ===== */
-        .table th {
-            font-weight: 600;
-            color: #495057;
-            border-bottom: 2px solid #dee2e6;
-            padding: 0.75rem;
-            font-size: 0.8rem;
-        }
-        
-        .table td {
-            padding: 0.5rem;
-            vertical-align: middle;
-            font-size: 0.8rem;
-        }
-        
-        .table-light th,
-        .table-light td {
-            text-align: center;
-            vertical-align: middle;
-        }
-        
-        /* Căn giữa các cột cụ thể */
-        .table td:nth-child(4),  /* Phụ trách */
-        .table td:nth-child(7),  /* Trạng thái YC */
-        .table td:nth-child(8),  /* Tổng số case */
-        .table td:nth-child(9),  /* Tổng số task */
-        .table td:nth-child(11) { /* Trạng thái triển khai */
-            text-align: center;
-            vertical-align: middle;
-        }
-        
-        .badge {
-            font-size: 0.7rem;
-            padding: 0.4rem 0.6rem;
-        }
-        
-        /* ===== ACTION BUTTONS ===== */
-        .btn-sm {
-            padding: 0.375rem 0.75rem;
-            font-size: 0.8rem;
-            margin: 0 0.25rem;
-        }
-        
-        .btn-outline-primary:hover,
-        .btn-outline-warning:hover,
-        .btn-outline-danger:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-        }
-        
-        /* ===== TABLE STYLES ===== */
-        .table th {
-            font-weight: 600;
-            color: #495057;
-            background-color: #9ECAD6;
-            border-bottom: 2px solid #dee2e6;
-            border-right: 1px solid #dee2e6;
-            padding: 0.5rem;
-            font-size: 0.8rem;
-            letter-spacing: 0.5px;
-        }
-        
-        .table th:last-child {
-            border-right: none;
-        }
-        
-        .table td {
-            padding: 0.5rem;
-            vertical-align: middle;
-            font-size: 0.8rem;
-            border-right: 1px solid #dee2e6;
-        }
-        
-        .table td:last-child {
-            border-right: none;
-        }
-        
-        .table-light th,
-        .table-light td {
-            text-align: center;
-            vertical-align: middle;
-        }
-        
-        /* Căn giữa các cột cụ thể */
-        .table td:nth-child(4),  /* Phụ trách */
-        .table td:nth-child(7),  /* Trạng thái YC */
-        .table td:nth-child(8),  /* Tổng số case */
-        .table td:nth-child(9),  /* Tổng số task */
-        .table td:nth-child(11) { /* Trạng thái triển khai */
-            text-align: center;
-            vertical-align: middle;
-        }
-        
-        .customer-info {
-            line-height: 1.4;
-        }
-        
-        .contract-info {
-            line-height: 1.3;
-        }
-        
-        .progress {
-            border-radius: 10px;
-            overflow: hidden;
-        }
-        
-        .progress-bar {
-            font-size: 0.65rem;
-            line-height: 18px;
-            font-weight: 600;
-        }
-        
-        .badge {
-            font-size: 0.7rem;
-            padding: 0.4rem 0.6rem;
-        }
-        
-        .btn-group .btn {
-            margin: 0 6px;
-        }
-        
-        /* Giảm kích thước icon trong cột thao tác */
-        .btn-group .btn i {
-            font-size: 0.75rem;
-            padding: 4px;
-        }
-        
-        /* Override padding cho button outline warning */
-        .btn-outline-warning {
-            padding: 4px !important;
-        }
-        
-        /* Override padding cho button outline danger */
-        .btn-outline-danger {
-            padding: 4px !important;
-        }
-        
-        /* Làm cho button edit và delete có hình vuông */
-        .btn-group .btn.btn-sm {
-            width: 32px;
-            height: 32px;
-            padding: 0 !important;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 4px;
-        }
-        
-        /* Đảm bảo icon trong button vuông */
-        .btn-group .btn.btn-sm i {
-            font-size: 0.8rem;
-            margin: 0;
-            padding: 0;
-        }
-        
-        /* ===== TRẠNG THÁI TRIỂN KHAI STYLES ===== */
-        /* Trạng thái hoàn thành */
-        .badge.bg-success {
-            background-color: #5cb85c !important;
-            color: #fff !important;
-        }
-        
-        /* Trạng thái tiếp nhận */
-        .badge.bg-secondary {
-            background-color: #f0ad4e !important;
-            color: #fff !important;
-        }
-        
-        /* Trạng thái đang xử lý */
-        .badge.bg-warning {
-            background-color: #5bc0de !important;
-            color: #fff !important;
-        }
-        
-        /* Trạng thái huỷ */
-        .badge.bg-danger {
-            background-color: #d9534f !important;
-            color: #fff !important;
-        }
-        .btn-outline-danger {
-            padding: 4px !important;
-        }
-        
-        /* Responsive table */
-        @media (max-width: 1200px) {
-            .table-responsive {
-                font-size: 0.75rem;
-            }
-            
-            .table th,
-            .table td {
-                padding: 0.5rem;
-            }
-        }
-        
-        /* Đảm bảo modal tạo task hiển thị trên cùng */
-        #createDeploymentTaskModal {
-            z-index: 1060 !important;
-        }
-    </style>
 </head>
 <body>
 <?php include 'includes/header.php'; ?>
@@ -658,6 +377,10 @@ if (isset($_SESSION['user_id'])) {
                     <p class="text-muted mb-0">Quản lý các yêu cầu triển khai dự án và hệ thống</p>
                 </div>
                 <div class="col-auto">
+                    <button class="btn btn-success me-2" id="exportExcelBtn" title="Xuất Excel">
+                        <i class="fas fa-file-excel me-2"></i>
+                        Xuất Excel
+                    </button>
                     <?php if ($current_role !== 'user'): ?>
                     <button class="btn btn-primary" id="createRequestBtn" data-bs-toggle="modal" data-bs-target="#addDeploymentRequestModal">
                         <i class="fas fa-plus me-2"></i>
@@ -675,13 +398,13 @@ if (isset($_SESSION['user_id'])) {
                     <table class="table table-hover mb-0">
                         <thead class="table-light">
                             <tr>
+                                <th>STT</th>
                                 <th>Mã YC</th>
                                 <th>Loại HĐ</th>
                                 <th>Khách hàng</th>
                                 <th>Phụ trách</th>
                                 <th>Thời hạn triển khai</th>
                                 <th>Ghi chú</th>
-                                <th>Trạng thái YC</th>
                                 <th>Tổng số case</th>
                                 <th>Tổng số task</th>
                                 <th>Tiến độ (%)</th>
@@ -690,8 +413,11 @@ if (isset($_SESSION['user_id'])) {
                             </tr>
                         </thead>
                         <tbody id="deployment-requests-table">
-                                <?php foreach ($requests as $request): ?>
+                                <?php foreach ($requests as $index => $request): ?>
                                 <tr>
+                                    <td class="text-center">
+                                        <?php echo $index + 1; ?>
+                                    </td>
                                     <td>
                                         <strong class="text-primary"><?php echo htmlspecialchars($request['request_code']); ?></strong>
                                     </td>
@@ -737,9 +463,6 @@ if (isset($_SESSION['user_id'])) {
                                         <?php else: ?>
                                             <span class="text-muted">-</span>
                                         <?php endif; ?>
-                                    </td>
-                                    <td>
-                                        <span class="text-dark"><?php echo htmlspecialchars($request['deployment_status']); ?></span>
                                     </td>
                                     <td>
                                         <span class="text-dark"><?php echo $request['total_cases'] ?? 0; ?></span>
@@ -1006,6 +729,7 @@ if (isset($_SESSION['user_id'])) {
 <!-- Select2 JS -->
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script src="assets/js/alert.js?v=<?php echo filemtime('assets/js/alert.js'); ?>"></script>
+<script src="assets/js/deployment_requests.js?v=<?php echo filemtime('assets/js/deployment_requests.js'); ?>"></script>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
@@ -2539,13 +2263,13 @@ function reloadDeploymentRequestsTable() {
                         <table class="table table-hover mb-0">
                             <thead class="table-light">
                                 <tr>
+                                    <th>STT</th>
                                     <th>Mã YC</th>
                                     <th>Loại HĐ</th>
                                     <th>Khách hàng</th>
                                     <th>Phụ trách</th>
                                     <th>Thời hạn triển khai</th>
                                     <th>Ghi chú</th>
-                                    <th>Trạng thái YC</th>
                                     <th>Tổng số case</th>
                                     <th>Tổng số task</th>
                                     <th>Tiến độ (%)</th>
@@ -2554,17 +2278,17 @@ function reloadDeploymentRequestsTable() {
                                 </tr>
                             </thead>
                             <tbody id="deployment-requests-table">
-                                ${data.data.map(request => {
+                                ${data.data.map((request, index) => {
                                     const deleteButton = currentRole !== 'user' ? `<button class="btn btn-sm btn-outline-danger" onclick="deleteRequest(${request.id})" title="Xóa"><i class="fas fa-trash"></i></button>` : '';
                                     return `
                                     <tr>
+                                        <td class="text-center">${index + 1}</td>
                                         <td><strong class="text-primary">${request.request_code || ''}</strong></td>
                                         <td><div class="contract-info"><div class="fw-bold">${request.contract_type || 'N/A'}</div><small class="text-muted">${request.request_detail_type || 'N/A'}</small></div></td>
                                         <td><div class="customer-info"><div class="fw-bold">${request.customer_name || 'N/A'}</div><small class="text-muted"><i class='fas fa-user me-1'></i>${request.contact_person || 'N/A'}</small><br><small class="text-muted"><i class='fas fa-phone me-1'></i>${request.contact_phone || 'N/A'}</small></div></td>
                                         <td><span class="text-dark">${request.sale_name || 'N/A'}</span></td>
                                         <td>${request.expected_start ? `<div class='text-wrap' style='white-space: pre-line;'><strong>Từ</strong><br>${formatDateForDisplay(request.expected_start)}<br><strong>Đến</strong><br>${request.expected_end ? formatDateForDisplay(request.expected_end) : '(Chưa xác định)'}</div>` : '<span class="text-muted">Chưa có</span>'}</td>
                                         <td>${request.requester_notes ? `<div class='text-wrap' style='max-width: 200px; white-space: pre-wrap; word-wrap: break-word;'>${request.requester_notes}</div>` : '<span class="text-muted">-</span>'}</td>
-                                        <td><span class="text-dark">${request.deployment_status || ''}</span></td>
                                         <td><span class="text-dark">${request.total_cases || 0}</span></td>
                                         <td><span class="text-dark">${request.total_tasks || 0}</span></td>
                                         <td><div class="progress" style="width: 80px; height: 20px;"><div class="progress-bar bg-warning" style="width: ${request.progress_percentage || 0}%" title="${request.progress_percentage || 0}%"><small>${request.progress_percentage || 0}%</small></div></div></td>
@@ -3690,6 +3414,44 @@ $('#createDeploymentCaseModal').on('show.bs.modal', function () {
     $('#contact_person').val('');
     $('#contact_phone').val('');
 });
+
+// Auto-open modal khi có parameter từ workspace
+document.addEventListener('DOMContentLoaded', function() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const openEditModal = urlParams.get('open_edit_modal');
+    const caseId = urlParams.get('case_id');
+    const taskId = urlParams.get('task_id');
+    
+    if (openEditModal === '1') {
+        if (caseId) {
+            // Tìm và mở modal edit case
+            setTimeout(() => {
+                const editButtons = document.querySelectorAll('[onclick*="editDeploymentCase"]');
+                for (let button of editButtons) {
+                    const onclick = button.getAttribute('onclick');
+                    if (onclick && onclick.includes(caseId)) {
+                        button.click();
+                        break;
+                    }
+                }
+            }, 1000);
+        } else if (taskId) {
+            // Tìm và mở modal edit task
+            setTimeout(() => {
+                const editButtons = document.querySelectorAll('[onclick*="editDeploymentTask"]');
+                for (let button of editButtons) {
+                    const onclick = button.getAttribute('onclick');
+                    if (onclick && onclick.includes(taskId)) {
+                        button.click();
+                        break;
+                    }
+                }
+            }, 1000);
+        }
+    }
+});
+
+
 </script>
 <script src="assets/js/dashboard.js?v=<?php echo filemtime('assets/js/dashboard.js'); ?>"></script>
 </body>
