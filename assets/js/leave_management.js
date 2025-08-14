@@ -21,8 +21,6 @@ if (typeof window.currentUserId !== 'undefined') {
     currentUserId = window.currentUserId;
 }
 
-
-
 // Đảm bảo jQuery đã được load trước khi chạy
 if (typeof jQuery === 'undefined') {
     console.error('jQuery is not loaded! Please check script loading order.');
@@ -68,11 +66,6 @@ if (typeof jQuery === 'undefined') {
         if (typeof window.currentUserId !== 'undefined') {
             currentUserId = window.currentUserId;
         }
-
-        
-
-        
-
     });
 }
 
@@ -150,20 +143,27 @@ function loadLeaveRequests() {
 }
 
 /**
- * Kiểm tra quyền phê duyệt theo trạng thái
+ * Kiểm tra quyền phê duyệt theo trạng thái và phòng ban
  */
-function canUserApproveForStatus(status) {
+function canUserApproveForStatus(status, request) {
     const userRole = window.currentUserRole;
-
+    const requesterDepartment = request.requester_department || request.department;
     
     if (status === 'Chờ phê duyệt') {
-        // Admin và các Leader có thể phê duyệt đơn mới
-        const result = userRole === 'admin' || userRole === 'hr_leader' || userRole === 'sale_leader' || userRole === 'it_leader';
-        return result;
-    } else if (status === 'Admin đã phê duyệt') {
-        // Chỉ HR có thể phê duyệt đơn đã được admin phê duyệt
-        const result = userRole === 'hr';
-        return result;
+        // Kiểm tra theo phòng ban
+        if (requesterDepartment && requesterDepartment.includes('HR')) {
+            return userRole === 'hr_leader';
+        } else if (requesterDepartment && requesterDepartment.includes('IT')) {
+            return userRole === 'it_leader';
+        } else if (requesterDepartment && requesterDepartment.includes('SALE')) {
+            return userRole === 'sale_leader';
+        } else {
+            // Các phòng ban khác: admin
+            return userRole === 'admin';
+        }
+    } else if (status === 'IT Leader đã phê duyệt' || status === 'Sale Leader đã phê duyệt' || status === 'Admin đã phê duyệt') {
+        // Cấp 2: Chỉ HR có thể phê duyệt
+        return userRole === 'hr';
     }
     
     return false;
@@ -185,9 +185,6 @@ function displayLeaveRequests(requests) {
     const tbody = jQuery('#leaveRequestsTableBody');
     tbody.empty();
     
-    // Hiển thị thông báo quyền xem
-    showViewPermissionNotice();
-    
     if (!requests || requests.length === 0) {
         showEmptyState();
         return;
@@ -196,10 +193,12 @@ function displayLeaveRequests(requests) {
     hideEmptyState();
     
     console.log('Displaying requests:', requests.length, 'items');
+    console.log('Table body element:', tbody);
+    console.log('Table body HTML before:', tbody.html());
     
             requests.forEach((request, index) => {
                 console.log('Processing request', index + 1, ':', request.request_code);
-        const canApproveThisRequest = canUserApproveForStatus(request.status);
+        const canApproveThisRequest = canUserApproveForStatus(request.status, request);
         
         const approvalButtons = canApproveThisRequest ? `
             <button type="button" class="btn btn-outline-success" onclick="approveLeaveRequest(${request.id})" title="Phê duyệt">
@@ -209,8 +208,6 @@ function displayLeaveRequests(requests) {
                 <i class="fas fa-times"></i>
             </button>
         ` : '';
-        
-
         
         const row = `
             <tr>
@@ -280,21 +277,13 @@ function displayLeaveRequests(requests) {
                     </div>
                 </td>
                 <td>
-                    ${getStatusBadge(request.status)}
+                    ${getStatusBadge(request.status, request)}
                 </td>
                 <td>
                     <div class="btn-group btn-group-sm">
                         <button type="button" class="btn btn-outline-info" onclick="viewLeaveRequest(${request.id})" title="Xem chi tiết">
                             <i class="fas fa-eye"></i>
                         </button>
-                        ${request.status === 'Chờ phê duyệt' ? `
-                            <button type="button" class="btn btn-outline-warning" onclick="editLeaveRequest(${request.id})" title="Chỉnh sửa">
-                                <i class="fas fa-edit"></i>
-                            </button>
-                            <button type="button" class="btn btn-outline-danger" onclick="cancelLeaveRequest(${request.id})" title="Hủy đơn">
-                                <i class="fas fa-times"></i>
-                            </button>
-                        ` : ''}
                         ${approvalButtons}
                         ${(canUserApprove() || window.currentUserRole === 'hr' || window.currentUserRole === 'admin') && ['Đã phê duyệt', 'HR đã phê duyệt', 'Admin đã phê duyệt', 'Từ chối bởi Admin', 'Từ chối bởi HR', 'Từ chối'].includes(request.status) ? `
                             <button type="button" class="btn btn-outline-danger" onclick="deleteLeaveRequest(${request.id})" title="Xóa đơn">
@@ -310,6 +299,7 @@ function displayLeaveRequests(requests) {
     });
     
     console.log('Total rows added:', requests.length);
+    console.log('Table body HTML after:', tbody.html());
 }
 
 /**
@@ -871,13 +861,13 @@ function calculateEndDate() {
         
         // Tự động set thời gian mặc định nếu chưa có
         if (!$('#start_time').val()) {
-            $('#start_time').val('08:00');
+            $('#start_time').val('08:30');
         }
         if (!$('#end_time').val()) {
-            $('#end_time').val('17:00');
+            $('#end_time').val('18:00');
         }
         if (!$('#return_time').val()) {
-            $('#return_time').val('08:00');
+            $('#return_time').val('08:30');
         }
     }
 }
@@ -901,6 +891,7 @@ function validateReturnDate() {
  * Hiển thị loading
  */
 function showLoading() {
+    console.log('Showing loading state...');
     $('#loadingState').show();
     $('.leave-requests-table').hide();
     $('#emptyState').hide();
@@ -910,6 +901,7 @@ function showLoading() {
  * Ẩn loading
  */
 function hideLoading() {
+    console.log('Hiding loading state...');
     $('#loadingState').hide();
     $('.leave-requests-table').show();
 }
@@ -918,6 +910,7 @@ function hideLoading() {
  * Hiển thị trạng thái trống
  */
 function showEmptyState() {
+    console.log('Showing empty state...');
     // Cập nhật thông báo theo quyền người dùng
     if (canViewAll) {
         // Admin/HR - có thể xem tất cả đơn
@@ -943,37 +936,79 @@ function hideEmptyState() {
     $('.leave-requests-table').show();
 }
 
-/**
- * Hiển thị thông báo quyền xem
- */
-function showViewPermissionNotice() {
-    if (canViewAll) {
-        // Admin/HR - có thể xem tất cả đơn
-        $('#permissionMessage').text('Bạn đang xem tất cả đơn nghỉ phép trong hệ thống');
-        $('#viewPermissionNotice').show();
-    } else {
-        // Nhân viên thường - chỉ xem đơn của mình
-        $('#permissionMessage').text('Bạn đang xem đơn nghỉ phép của mình');
-        $('#viewPermissionNotice').show();
-    }
-}
+
 
 /**
- * Tạo badge trạng thái
+ * Tạo badge trạng thái với 2 dòng
  */
-function getStatusBadge(status) {
-    const statusClasses = {
-        'Chờ phê duyệt': 'bg-warning',
-        'Admin đã phê duyệt': 'bg-info',
-        'HR đã phê duyệt': 'bg-success',
-        'Đã phê duyệt': 'bg-success',
-        'Từ chối bởi Admin': 'bg-danger',
-        'Từ chối bởi HR': 'bg-danger',
-        'Từ chối': 'bg-danger'
+function getStatusBadge(status, request) {
+    let adminStatus = 'Chưa duyệt';
+    let hrStatus = 'Chưa duyệt';
+
+    if (status === 'Chờ phê duyệt') {
+        adminStatus = 'Chưa duyệt';
+        hrStatus = 'Chưa duyệt';
+    } else if (status === 'IT Leader đã phê duyệt') {
+        adminStatus = 'Đã duyệt';
+        hrStatus = 'Chưa duyệt';
+    } else if (status === 'Sale Leader đã phê duyệt') {
+        adminStatus = 'Đã duyệt';
+        hrStatus = 'Chưa duyệt';
+    } else if (status === 'Admin đã phê duyệt') {
+        adminStatus = 'Đã duyệt';
+        hrStatus = 'Chưa duyệt';
+    } else if (status === 'HR đã phê duyệt' || status === 'Đã phê duyệt') {
+        adminStatus = 'Đã duyệt';
+        hrStatus = 'Đã duyệt';
+    } else if (status === 'Từ chối bởi IT Leader') {
+        adminStatus = 'Đã từ chối';
+        hrStatus = 'Chưa duyệt';
+    } else if (status === 'Từ chối bởi Sale Leader') {
+        adminStatus = 'Đã từ chối';
+        hrStatus = 'Chưa duyệt';
+    } else if (status === 'Từ chối bởi Admin') {
+        adminStatus = 'Đã từ chối';
+        hrStatus = 'Chưa duyệt';
+    } else if (status === 'Từ chối bởi HR') {
+        adminStatus = 'Đã duyệt';
+        hrStatus = 'Đã từ chối';
+    } else if (status === 'Từ chối') {
+        adminStatus = 'Đã từ chối';
+        hrStatus = 'Chưa duyệt';
+    }
+
+    const getStatusColor = (status) => {
+        if (status === 'Đã duyệt') return 'text-success';
+        if (status === 'Đã từ chối') return 'text-danger';
+        return 'text-warning';
     };
+
+    // Xác định tên cấp duyệt theo phòng ban
+    let level1Name = 'Cấp trên';
+    let level2Name = 'HR';
     
-    const statusClass = statusClasses[status] || 'bg-secondary';
-    return `<span class="badge ${statusClass}">${status}</span>`;
+    const requesterDepartment = request.requester_department || request.department;
+    if (requesterDepartment && requesterDepartment.includes('IT')) {
+        level1Name = 'IT Leader';
+    } else if (requesterDepartment && requesterDepartment.includes('SALE')) {
+        level1Name = 'Sale Leader';
+    } else if (requesterDepartment && requesterDepartment.includes('HR')) {
+        level1Name = 'HR Leader';
+        level2Name = 'HR';
+    }
+
+    return `
+        <div class="status-container">
+            <div class="status-line">
+                <small class="text-muted">${level1Name}:</small>
+                <span class="badge ${getStatusColor(adminStatus)}">${adminStatus}</span>
+            </div>
+            <div class="status-line">
+                <small class="text-muted">${level2Name}:</small>
+                <span class="badge ${getStatusColor(hrStatus)}">${hrStatus}</span>
+            </div>
+        </div>
+    `;
 }
 
 /**
@@ -1028,14 +1063,14 @@ function getNoticeDaysBadge(noticeDays) {
     const days = parseInt(noticeDays);
     
     if (days > 0) {
-        // Còn lại số ngày
-        return `<span class="badge bg-success">Còn ${days} ngày</span>`;
+        // Số ngày còn lại
+        return `<span class="badge bg-success">${days} ngày</span>`;
     } else if (days < 0) {
-        // Đã qua số ngày
-        return `<span class="badge bg-warning">Đã qua ${Math.abs(days)} ngày</span>`;
+        // Số ngày đã qua
+        return `<span class="badge bg-warning">${Math.abs(days)} ngày</span>`;
     } else {
         // Hôm nay
-        return `<span class="badge bg-info">Hôm nay</span>`;
+        return `<span class="badge bg-info">0 ngày</span>`;
     }
 }
 

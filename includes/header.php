@@ -88,7 +88,8 @@ $current_page = basename($_SERVER['PHP_SELF']);
                         </a>
                     </li>
 
-                    <!-- Workspace -->
+                    <!-- Workspace - Chỉ hiển thị cho role it, it_leader và admin -->
+                    <?php if (canAccessWorkspace()): ?>
                     <li class="nav-item">
                         <a class="nav-link fw-semibold <?php echo $current_page === 'workspace.php' ? 'active' : ''; ?>" 
                            href="workspace.php" id="workspaceLink">
@@ -96,6 +97,7 @@ $current_page = basename($_SERVER['PHP_SELF']);
                             Workspace
                         </a>
                     </li>
+                    <?php endif; ?>
                     
                     <!-- Dropdown Công việc -->
                     <li class="nav-item dropdown">
@@ -109,24 +111,24 @@ $current_page = basename($_SERVER['PHP_SELF']);
                             <li>
                                 <a class="dropdown-item" href="internal_cases.php">
                                     <i class="fas fa-ticket-alt me-2 text-primary"></i>
-                                    IT TICKET
+                                    IT Ticket
                                 </a>
                             </li>
                             <li class="dropdown-submenu">
                                 <a class="dropdown-item dropdown-toggle d-flex justify-content-between align-items-center" href="#" id="projectDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                    <span><i class="fas fa-project-diagram me-2 text-success"></i>DỰ ÁN</span>
+                                    <span><i class="fas fa-project-diagram me-2 text-success"></i>Dự án</span>
                                 </a>
                                 <ul class="dropdown-menu" aria-labelledby="projectDropdown">
                                     <li>
                                         <a class="dropdown-item" href="deployment_requests.php">
                                             <i class="fas fa-rocket me-2 text-success"></i>
-                                            TRIỂN KHAI
+                                            Triển khai
                                         </a>
                                     </li>
                                     <li>
                                         <a class="dropdown-item" href="maintenance_requests.php">
                                             <i class="fas fa-wrench me-2 text-warning"></i>
-                                            BẢO TRÌ
+                                            Bảo trì
                                         </a>
                                     </li>
                                 </ul>

@@ -1,139 +1,102 @@
 <?php
-// Prevent caching
-header('Cache-Control: no-cache, no-store, must-revalidate');
-header('Pragma: no-cache');
-header('Expires: 0');
-header('Content-Type: application/json');
-require_once '../includes/session.php';
 require_once '../config/db.php';
+require_once '../includes/session.php';
 
-if (!isLoggedIn()) {
-    echo json_encode(['success' => false, 'message' => 'Chưa đăng nhập']);
+header('Content-Type: application/json');
+
+$current_user_id = getCurrentUserId();
+if (!$current_user_id) {
+    http_response_code(401);
+    echo json_encode(['error' => 'Unauthorized']);
+    exit;
+}
+
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    http_response_code(405);
+    echo json_encode(['error' => 'Method not allowed']);
+    exit;
+}
+
+$input = json_decode(file_get_contents('php://input'), true);
+
+// Debug logging
+
+if (!$input) {
+    http_response_code(400);
+    echo json_encode(['error' => 'Invalid JSON']);
+    exit;
+}
+
+$request_id = $input['id'] ?? null;
+$fields = [
+    'request_code', 'po_number', 'no_contract_po', 'contract_type', 'request_detail_type',
+    'email_subject_customer', 'email_subject_internal', 'expected_start', 'expected_end',
+    'customer_id', 'contact_person', 'contact_phone', 'sale_id', 'requester_notes',
+    'maintenance_manager', 'maintenance_status'
+];
+
+$data = [];
+foreach ($fields as $field) {
+    $value = trim($input[$field] ?? '');
+    // Handle date fields - convert empty string to null
+    if (in_array($field, ['expected_start', 'expected_end']) && empty($value)) {
+        $data[$field] = null;
+    } else {
+        $data[$field] = $value;
+    }
+}
+
+// Validation
+$errors = [];
+if (empty($data['request_code']) || empty($data['customer_id']) || empty($data['sale_id']) || empty($data['maintenance_status'])) {
+    $errors[] = 'Vui lòng nhập đầy đủ các trường bắt buộc.';
+}
+
+// Validate foreign keys exist
+if (!empty($data['customer_id'])) {
+    $customer_check = $pdo->prepare("SELECT id FROM partner_companies WHERE id = ?");
+    $customer_check->execute([$data['customer_id']]);
+    if (!$customer_check->fetch()) {
+        $errors[] = 'Khách hàng không tồn tại.';
+    }
+}
+
+if (!empty($data['sale_id'])) {
+    $sale_check = $pdo->prepare("SELECT id FROM staffs WHERE id = ? AND (department != 'IT Dept.' OR department IS NULL) AND (resigned != 1 OR resigned IS NULL)");
+    $sale_check->execute([$data['sale_id']]);
+    if (!$sale_check->fetch()) {
+        $errors[] = 'Sale phụ trách không tồn tại hoặc không hoạt động.';
+    }
+}
+
+if (!empty($errors)) {
+    http_response_code(400);
+    echo json_encode(['error' => implode(', ', $errors)]);
     exit;
 }
 
 try {
-    $input = json_decode(file_get_contents('php://input'), true);
+    $pdo->beginTransaction();
     
-    // Debug: Log input data
-    error_log("Update maintenance request input: " . json_encode($input));
-    
-    $data = [
-        'id' => $input['id'] ?? '',
-        'request_code' => $input['request_code'] ?? '',
-        'po_number' => $input['po_number'] ?? '',
-        'no_contract_po' => $input['no_contract_po'] ?? 0,
-        'contract_type' => $input['contract_type'] ?? '',
-        'request_detail_type' => $input['request_detail_type'] ?? '',
-        'email_subject_customer' => $input['email_subject_customer'] ?? '',
-        'email_subject_internal' => $input['email_subject_internal'] ?? '',
-        'expected_start' => $input['expected_start'] ?? '',
-        'expected_end' => $input['expected_end'] ?? '',
-        'customer_id' => $input['customer_id'] ?? '',
-        'contact_person' => $input['contact_person'] ?? '',
-        'contact_phone' => $input['contact_phone'] ?? '',
-        'sale_id' => $input['sale_id'] ?? '',
-        'requester_notes' => $input['requester_notes'] ?? '',
-        'maintenance_manager' => $input['maintenance_manager'] ?? '',
-        'maintenance_status' => $input['maintenance_status'] ?? ''
-    ];
-
-    // Validation
-    $errors = [];
-    
-    // Debug: Log each field for validation
-    error_log("Validating ID: " . $data['id']);
-    error_log("Validating request_code: " . $data['request_code']);
-    error_log("Validating customer_id: " . $data['customer_id']);
-    error_log("Validating sale_id: " . $data['sale_id']);
-    error_log("Validating maintenance_status: " . $data['maintenance_status']);
-    
-    if (empty($data['id'])) {
-        $errors[] = 'ID yêu cầu không được để trống';
-    }
-    
-    if (empty($data['request_code'])) {
-        $errors[] = 'Mã yêu cầu không được để trống';
-    }
-    
-    if (empty($data['customer_id'])) {
-        $errors[] = 'Vui lòng chọn khách hàng';
-    }
-    
-    // Tạm thời bỏ validation sale_id vì có thể không có sale nào
-    // if (empty($data['sale_id'])) {
-    //     $errors[] = 'Vui lòng chọn sale phụ trách';
-    // }
-    
-    if (empty($data['maintenance_status'])) {
-        $errors[] = 'Vui lòng chọn trạng thái bảo trì';
-    }
-
-    // Kiểm tra mã yêu cầu đã tồn tại chưa (trừ record hiện tại)
-    if (!empty($data['request_code'])) {
-        $stmt = $pdo->prepare("SELECT id FROM maintenance_requests WHERE request_code = ? AND id != ?");
-        $stmt->execute([$data['request_code'], $data['id']]);
-        if ($stmt->fetch()) {
-            $errors[] = 'Mã yêu cầu đã tồn tại';
-        }
-    }
-
-    // Kiểm tra khách hàng có tồn tại không
-    if (!empty($data['customer_id'])) {
-        $stmt = $pdo->prepare("SELECT id FROM partner_companies WHERE id = ?");
-        $stmt->execute([$data['customer_id']]);
-        if (!$stmt->fetch()) {
-            $errors[] = 'Khách hàng không tồn tại';
-        }
-    }
-
-    // Kiểm tra sale có tồn tại không
-    if (!empty($data['sale_id'])) {
-        $stmt = $pdo->prepare("SELECT id FROM staffs WHERE id = ? AND department = 'SALE Dept.' AND status = 'active'");
-        $stmt->execute([$data['sale_id']]);
-        if (!$stmt->fetch()) {
-            $errors[] = 'Sale phụ trách không tồn tại hoặc không hoạt động';
-        }
-    }
-
-    // Nếu có lỗi validation
-    if (!empty($errors)) {
-        error_log("Validation errors: " . implode(', ', $errors));
-        http_response_code(400);
-        echo json_encode(['success' => false, 'error' => implode(', ', $errors)]);
-        exit;
-    }
-    
-    // Đảm bảo chỉ có một response
-    if (headers_sent()) {
-        error_log("Headers already sent in update_maintenance_request.php");
-        exit;
-    }
-
-    // Xử lý ngày tháng
-    $expected_start = !empty($data['expected_start']) ? $data['expected_start'] : null;
-    $expected_end = !empty($data['expected_end']) ? $data['expected_end'] : null;
-
-    // Update database
     $sql = "UPDATE maintenance_requests SET 
-            request_code = ?, po_number = ?, no_contract_po = ?, contract_type = ?, 
-            request_detail_type = ?, email_subject_customer = ?, email_subject_internal = ?, 
-            expected_start = ?, expected_end = ?, customer_id = ?, contact_person = ?, 
-            contact_phone = ?, sale_id = ?, requester_notes = ?, maintenance_manager = ?, 
-            maintenance_status = ?, updated_at = CURRENT_TIMESTAMP
+                request_code = ?, po_number = ?, no_contract_po = ?, contract_type = ?, 
+                request_detail_type = ?, email_subject_customer = ?, email_subject_internal = ?, 
+                expected_start = ?, expected_end = ?, customer_id = ?, contact_person = ?, 
+                contact_phone = ?, sale_id = ?, requester_notes = ?, maintenance_manager = ?, 
+                maintenance_status = ?, updated_at = NOW()
             WHERE id = ?";
-
+    
     $stmt = $pdo->prepare($sql);
-    $result = $stmt->execute([
+    $stmt->execute([
         $data['request_code'],
         $data['po_number'],
-        $data['no_contract_po'],
+        !empty($data['no_contract_po']) ? 1 : 0,
         $data['contract_type'],
         $data['request_detail_type'],
         $data['email_subject_customer'],
         $data['email_subject_internal'],
-        $expected_start,
-        $expected_end,
+        $data['expected_start'],
+        $data['expected_end'],
         $data['customer_id'],
         $data['contact_person'],
         $data['contact_phone'],
@@ -141,41 +104,27 @@ try {
         $data['requester_notes'],
         $data['maintenance_manager'],
         $data['maintenance_status'],
-        $data['id']
+        $request_id
     ]);
-
-    if ($result) {
-        // Log hoạt động
-        $log_message = "Cập nhật yêu cầu bảo trì: {$data['request_code']}";
-        $log_sql = "INSERT INTO user_activity_logs (user_id, activity, details, ip_address) VALUES (?, ?, ?, ?)";
-        $log_stmt = $pdo->prepare($log_sql);
-        $log_stmt->execute([
-            getCurrentUserId(),
-            'UPDATE_MAINTENANCE_REQUEST',
-            $log_message,
-            $_SERVER['REMOTE_ADDR'] ?? 'unknown'
-        ]);
-
-        // Đảm bảo chỉ có một response
-        if (!headers_sent()) {
-            http_response_code(200);
-            echo json_encode([
-                'success' => true,
-                'message' => 'Cập nhật yêu cầu bảo trì thành công'
-            ]);
-        }
-        exit;
-    } else {
-        throw new Exception('Không thể cập nhật yêu cầu bảo trì');
-    }
-
+    
+    // Log activity
+    $activity_sql = "INSERT INTO user_activity_logs (user_id, activity, details, created_at) 
+                     VALUES (?, ?, ?, NOW())";
+    $activity_stmt = $pdo->prepare($activity_sql);
+    $activity_stmt->execute([
+        getCurrentUserId(),
+        'UPDATE maintenance_requests',
+        'Updated maintenance request: ' . $data['request_code'] . ' (ID: ' . $request_id . ')'
+    ]);
+    
+    $pdo->commit();
+    
+    echo json_encode(['success' => true, 'message' => 'Cập nhật yêu cầu triển khai thành công!']);
+    
 } catch (PDOException $e) {
+    $pdo->rollBack();
     error_log("Database error in update_maintenance_request.php: " . $e->getMessage());
     http_response_code(500);
-    echo json_encode(['success' => false, 'error' => 'Lỗi database: ' . $e->getMessage()]);
-} catch (Exception $e) {
-    error_log("Error in update_maintenance_request.php: " . $e->getMessage());
-    http_response_code(500);
-    echo json_encode(['success' => false, 'error' => 'Có lỗi xảy ra: ' . $e->getMessage()]);
+    echo json_encode(['error' => 'Database error: ' . $e->getMessage()]);
 }
 ?> 

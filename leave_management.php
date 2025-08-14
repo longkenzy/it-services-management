@@ -17,10 +17,10 @@ $current_user = getCurrentUser();
 $page_title = "Quản lý Nghỉ phép";
 
 // Kiểm tra quyền phê duyệt
-$can_approve = in_array($current_user['role'], ['admin', 'hr']);
+$can_approve = in_array($current_user['role'], ['admin', 'hr', 'hr_leader', 'it_leader', 'sale_leader']);
 
-// Kiểm tra quyền xem tất cả đơn (chỉ admin và HR)
-$can_view_all = in_array($current_user['role'], ['admin', 'hr']);
+// Kiểm tra quyền xem tất cả đơn (admin, HR và các leader)
+$can_view_all = in_array($current_user['role'], ['admin', 'hr', 'hr_leader', 'it_leader', 'sale_leader']);
 ?>
 
 <!DOCTYPE html>
@@ -39,9 +39,6 @@ $can_view_all = in_array($current_user['role'], ['admin', 'hr']);
     <link rel="stylesheet" href="assets/css/table-improvements.css?v=<?php echo filemtime('assets/css/table-improvements.css'); ?>">
     <link rel="stylesheet" href="assets/css/alert.css?v=<?php echo filemtime('assets/css/alert.css'); ?>">
     <link rel="stylesheet" href="assets/css/leave_management.css?v=<?php echo filemtime('assets/css/leave_management.css'); ?>">
-    
-    <!-- No Border Radius Override -->
-    <link rel="stylesheet" href="assets/css/no-border-radius.css?v=<?php echo filemtime('assets/css/no-border-radius.css'); ?>">
     
     <!-- Favicon -->
     <link rel="icon" type="image/png" href="assets/images/logo.png">
@@ -106,20 +103,19 @@ $can_view_all = in_array($current_user['role'], ['admin', 'hr']);
                             <i class="fas fa-calendar-alt text-primary me-3"></i>
                             <?php echo $page_title; ?>
                         </h1>
-                                                 <p class="text-muted mb-0">Quản lý và theo dõi các đơn nghỉ phép của nhân viên</p>
+                        <p class="text-muted mb-0">Quản lý và theo dõi các đơn nghỉ phép của nhân viên</p>
                     </div>
                     <div>
                         <button type="button" class="btn btn-custom-blue" data-bs-toggle="modal" data-bs-target="#createLeaveRequestModal">
                             <i class="fas fa-plus me-2"></i>
                             Tạo đơn nghỉ phép
                         </button>
-                        
                     </div>
                 </div>
             </div>
             
-                         <!-- Filters and Search -->
-             <div class="row mb-4">
+            <!-- Filters and Search -->
+            <div class="row mb-4">
                  <div class="col-md-8">
                      <div class="d-flex gap-2 flex-wrap">
                          <select class="form-select" style="width: auto;" id="statusFilter">
@@ -159,8 +155,8 @@ $can_view_all = in_array($current_user['role'], ['admin', 'hr']);
                  </div>
              </div>
             
-                         <!-- Leave Requests Table -->
-             <div class="card">
+            <!-- Leave Requests Table -->
+            <div class="card">
                  <div class="card-body p-0">
                      <!-- Thông báo quyền xem -->
                      <div id="viewPermissionNotice" class="alert alert-info m-3" style="display: none;">
@@ -198,8 +194,8 @@ $can_view_all = in_array($current_user['role'], ['admin', 'hr']);
                 <p class="mt-2 text-muted">Đang tải danh sách đơn nghỉ phép...</p>
             </div>
             
-                         <!-- Empty State -->
-             <div id="emptyState" class="text-center py-5" style="display: none;">
+            <!-- Empty State -->
+            <div id="emptyState" class="text-center py-5" style="display: none;">
                  <i class="fas fa-calendar-times fa-3x text-muted mb-3"></i>
                  <h5 class="text-muted" id="emptyStateTitle">Chưa có đơn nghỉ phép nào</h5>
                  <p class="text-muted" id="emptyStateMessage">Bắt đầu tạo đơn nghỉ phép đầu tiên của bạn</p>

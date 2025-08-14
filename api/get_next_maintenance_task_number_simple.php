@@ -1,49 +1,54 @@
 <?php
-header('Content-Type: application/json');
-header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
-header('Access-Control-Allow-Headers: Content-Type');
+require_once '../config/db.php';
+require_once '../includes/session.php';
 
-require_once __DIR__ . '/../config/db.php';
+// Check if user is logged in
+if (!isset($_SESSION['user_id'])) {
+    http_response_code(401);
+    echo json_encode(['success' => false, 'message' => 'Unauthorized']);
+    exit;
+}
 
 try {
-    $current_year = date('y');
-    $current_month = date('m');
+    // Get the current year and month
+    $currentYear = date('Y');
+    $currentMonth = date('m');
     
-    // Tìm mã task cuối cùng trong tháng hiện tại
+    // Get the last task number for current year/month
     $sql = "SELECT task_number FROM maintenance_tasks 
             WHERE task_number LIKE ? 
             ORDER BY task_number DESC 
             LIMIT 1";
     
-    $pattern = "TBT{$current_year}{$current_month}%";
+    $pattern = "TASK{$currentYear}{$currentMonth}%";
     $stmt = $pdo->prepare($sql);
     $stmt->execute([$pattern]);
-    $result = $stmt->fetch();
+    $lastTask = $stmt->fetch(PDO::FETCH_ASSOC);
     
-    if ($result) {
-        // Lấy số thứ tự từ mã cuối cùng
-        $last_code = $result['task_number'];
-        $last_number = intval(substr($last_code, -3));
-        $next_number = $last_number + 1;
+    if ($lastTask) {
+        // Extract the number part and increment
+        $lastNumber = intval(substr($lastTask['task_number'], -3));
+        $nextNumber = $lastNumber + 1;
     } else {
-        // Nếu chưa có mã nào trong tháng này
-        $next_number = 1;
+        // First task for this year/month
+        $nextNumber = 1;
     }
     
-    // Tạo mã mới
-    $task_code = sprintf("TBT%s%s%03d", $current_year, $current_month, $next_number);
+    // Format the new task number
+    $taskCode = sprintf("TASK%s%s%03d", $currentYear, $currentMonth, $nextNumber);
     
     echo json_encode([
         'success' => true,
-        'task_code' => $task_code
+        'task_number' => $taskCode
     ]);
     
+} catch (PDOException $e) {
+    error_log("Database error in get_next_maintenance_task_number_simple.php: " . $e->getMessage());
+    http_response_code(500);
+    echo json_encode(['success' => false, 'message' => 'Lỗi cơ sở dữ liệu']);
 } catch (Exception $e) {
     error_log("Error in get_next_maintenance_task_number_simple.php: " . $e->getMessage());
-    echo json_encode([
-        'success' => false,
-        'message' => 'Có lỗi xảy ra khi tạo mã task: ' . $e->getMessage()
-    ]);
+    http_response_code(500);
+    echo json_encode(['success' => false, 'message' => 'Có lỗi xảy ra']);
 }
-?> 
+?>

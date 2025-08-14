@@ -72,29 +72,53 @@ try {
     // Ignore table creation errors
 }
 
-// Lấy danh sách case nội bộ từ database
+// Lấy danh sách case nội bộ từ database theo phân quyền
 $cases = [];
 try {
-    $sql = "SELECT 
-                ic.id,
-                ic.case_number,
-                ic.case_type,
-                ic.priority,
-                ic.issue_title,
-                ic.issue_description,
-                ic.status,
-                ic.created_at,
-                ic.start_date,
-                ic.due_date,
-                requester.fullname as requester_name,
-                handler.fullname as handler_name
-            FROM internal_cases ic
-            LEFT JOIN staffs requester ON ic.requester_id = requester.id
-            LEFT JOIN staffs handler ON ic.handler_id = handler.id
-            ORDER BY ic.created_at ASC";
-    
-    $stmt = $pdo->prepare($sql);
-    $stmt->execute();
+    // Nếu có quyền xem tất cả cases (admin, it, it_leader)
+    if (canViewAllInternalCases()) {
+        $sql = "SELECT 
+                    ic.id,
+                    ic.case_number,
+                    ic.case_type,
+                    ic.priority,
+                    ic.issue_title,
+                    ic.issue_description,
+                    ic.status,
+                    ic.created_at,
+                    ic.start_date,
+                    ic.due_date,
+                    requester.fullname as requester_name,
+                    handler.fullname as handler_name
+                FROM internal_cases ic
+                LEFT JOIN staffs requester ON ic.requester_id = requester.id
+                LEFT JOIN staffs handler ON ic.handler_id = handler.id
+                ORDER BY ic.created_at ASC";
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute();
+    } else {
+        // Chỉ xem cases của chính mình
+        $sql = "SELECT 
+                    ic.id,
+                    ic.case_number,
+                    ic.case_type,
+                    ic.priority,
+                    ic.issue_title,
+                    ic.issue_description,
+                    ic.status,
+                    ic.created_at,
+                    ic.start_date,
+                    ic.due_date,
+                    requester.fullname as requester_name,
+                    handler.fullname as handler_name
+                FROM internal_cases ic
+                LEFT JOIN staffs requester ON ic.requester_id = requester.id
+                LEFT JOIN staffs handler ON ic.handler_id = handler.id
+                WHERE ic.requester_id = ?
+                ORDER BY ic.created_at ASC";
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute([$current_user['id']]);
+    }
     $cases = $stmt->fetchAll();
 } catch (PDOException $e) {
     // Bảng có thể chưa tồn tại, sẽ tạo sau
@@ -121,9 +145,6 @@ $flash_messages = getFlashMessages();
     <!-- Custom CSS -->
     <link rel="stylesheet" href="assets/css/dashboard.css?v=<?php echo filemtime('assets/css/dashboard.css'); ?>">
     <link rel="stylesheet" href="assets/css/alert.css?v=<?php echo filemtime('assets/css/alert.css'); ?>">
-    
-    <!-- No Border Radius Override -->
-    <link rel="stylesheet" href="assets/css/no-border-radius.css?v=<?php echo filemtime('assets/css/no-border-radius.css'); ?>">
     
     <!-- Tooltip CSS -->
     <style>
@@ -385,6 +406,10 @@ $flash_messages = getFlashMessages();
                                             <option value="current_month" selected>Tháng này (ngày bắt đầu)</option>
                                             <option value="last_month">Tháng trước (ngày bắt đầu)</option>
                                         </select>
+                                        <button class="btn btn-success btn-sm" id="exportExcelBtn" title="Xuất Excel">
+                                            <i class="fas fa-file-excel me-1"></i>
+                                            Xuất Excel
+                                        </button>
                                     </div>
                                 </div>
                             </div>
@@ -507,6 +532,7 @@ $flash_messages = getFlashMessages();
                                                                     title="Xem chi tiết" data-id="<?php echo $case['id']; ?>">
                                                                 <i class="fas fa-eye"></i>
                                                             </button>
+                                                            <?php if (canEditInternalCase()): ?>
                                                             <button type="button" class="btn btn-sm btn-outline-secondary" 
                                                                     title="Chỉnh sửa"
                                                                     onclick="editCase(<?php echo $case['id']; ?>)">
@@ -519,11 +545,14 @@ $flash_messages = getFlashMessages();
                                                                 <i class="fas fa-check"></i>
                                                             </button>
                                                             <?php endif; ?>
+                                                            <?php endif; ?>
+                                                            <?php if (canDeleteInternalCase()): ?>
                                                             <button type="button" class="btn btn-sm btn-outline-danger" 
                                                                     title="Xóa"
                                                                     onclick="deleteCase(<?php echo $case['id']; ?>)">
                                                                 <i class="fas fa-trash"></i>
                                                             </button>
+                                                            <?php endif; ?>
                                                         </div>
                                                     </td>
                                                 </tr>
@@ -821,9 +850,14 @@ $flash_messages = getFlashMessages();
                                             <label class="form-label mb-0 fw-semibold">Người yêu cầu <span class="text-danger">*</span></label>
                                         </div>
                                         <div class="col-8">
+                                            <?php if (isAdmin()): ?>
                                             <select class="form-select" id="editRequesterId" name="requester_id" required>
                                                 <option value="" class="placeholder-option">Chọn nhân sự</option>
                                             </select>
+                                            <?php else: ?>
+                                            <input type="text" class="form-control" id="editRequesterName" readonly>
+                                            <input type="hidden" id="editRequesterId" name="requester_id">
+                                            <?php endif; ?>
                                         </div>
                                     </div>
                                 </div>
@@ -860,9 +894,14 @@ $flash_messages = getFlashMessages();
                                             <label class="form-label mb-0 fw-semibold">Người xử lý <span class="text-danger">*</span></label>
                                         </div>
                                         <div class="col-8">
+                                            <?php if (isAdmin()): ?>
                                             <select class="form-select" id="editHandlerId" name="handler_id" required>
                                                 <option value="" class="placeholder-option">Chọn nhân sự</option>
                                             </select>
+                                            <?php else: ?>
+                                            <input type="text" class="form-control" id="editHandlerName" readonly>
+                                            <input type="hidden" id="editHandlerId" name="handler_id">
+                                            <?php endif; ?>
                                         </div>
                                     </div>
                                 </div>
@@ -874,9 +913,14 @@ $flash_messages = getFlashMessages();
                                             <label class="form-label mb-0 fw-semibold">Loại case <span class="text-danger">*</span></label>
                                         </div>
                                         <div class="col-8">
+                                            <?php if (isAdmin()): ?>
                                             <select class="form-select" id="editCaseType" name="case_type" required>
                                                 <option value="" class="placeholder-option">Chọn loại case</option>
                                             </select>
+                                            <?php else: ?>
+                                            <input type="text" class="form-control" id="editCaseTypeName" readonly>
+                                            <input type="hidden" id="editCaseType" name="case_type">
+                                            <?php endif; ?>
                                         </div>
                                     </div>
                                 </div>
@@ -893,11 +937,16 @@ $flash_messages = getFlashMessages();
                                             </label>
                                         </div>
                                         <div class="col-8">
+                                            <?php if (isAdmin()): ?>
                                             <select class="form-select" id="editPriority" name="priority">
                                                 <option value="onsite">Onsite</option>
                                                 <option value="offsite">Offsite</option>
                                                 <option value="remote">Remote</option>
                                             </select>
+                                            <?php else: ?>
+                                            <input type="text" class="form-control" id="editPriorityName" readonly>
+                                            <input type="hidden" id="editPriority" name="priority">
+                                            <?php endif; ?>
                                         </div>
                                     </div>
                                 </div>
@@ -917,8 +966,13 @@ $flash_messages = getFlashMessages();
                                             </label>
                                         </div>
                                         <div class="col-8">
+                                            <?php if (isAdmin()): ?>
                                             <input type="text" class="form-control" id="editIssueTitle" name="issue_title" 
                                                    placeholder="Nhập tiêu đề vụ việc" required>
+                                            <?php else: ?>
+                                            <input type="text" class="form-control" id="editIssueTitle" readonly>
+                                            <input type="hidden" name="issue_title">
+                                            <?php endif; ?>
                                         </div>
                                     </div>
                                 </div>
@@ -935,8 +989,13 @@ $flash_messages = getFlashMessages();
                                             </label>
                                         </div>
                                         <div class="col-8">
+                                            <?php if (isAdmin()): ?>
                                             <textarea class="form-control" id="editIssueDescription" name="issue_description" 
                                                       rows="3" placeholder="Mô tả chi tiết vấn đề..." required></textarea>
+                                            <?php else: ?>
+                                            <textarea class="form-control" id="editIssueDescription" rows="3" readonly></textarea>
+                                            <input type="hidden" name="issue_description">
+                                            <?php endif; ?>
                                         </div>
                                     </div>
                                 </div>
@@ -948,7 +1007,12 @@ $flash_messages = getFlashMessages();
                                             <label class="form-label mb-0 fw-semibold">Bắt đầu</label>
                                         </div>
                                         <div class="col-8">
+                                            <?php if (isAdmin()): ?>
                                             <input type="datetime-local" class="form-control" id="editStartDate" name="start_date">
+                                            <?php else: ?>
+                                            <input type="text" class="form-control" id="editStartDateDisplay" readonly>
+                                            <input type="hidden" id="editStartDate" name="start_date">
+                                            <?php endif; ?>
                                         </div>
                                     </div>
                                 </div>
@@ -1043,9 +1107,7 @@ $flash_messages = getFlashMessages();
                                             <label class="form-label mb-0 fw-semibold">Người yêu cầu <span class="text-danger">*</span></label>
                                         </div>
                                         <div class="col-8">
-                                            <select class="form-select" id="viewRequesterId" name="requester_id" disabled>
-                                                <option value="" class="placeholder-option">Chọn nhân sự</option>
-                                            </select>
+                                            <input type="text" class="form-control" id="viewRequesterName" readonly>
                                         </div>
                                     </div>
                                 </div>
@@ -1078,9 +1140,7 @@ $flash_messages = getFlashMessages();
                                             <label class="form-label mb-0 fw-semibold">Người xử lý <span class="text-danger">*</span></label>
                                         </div>
                                         <div class="col-8">
-                                            <select class="form-select" id="viewHandlerId" name="handler_id" disabled>
-                                                <option value="" class="placeholder-option">Chọn nhân sự</option>
-                                            </select>
+                                            <input type="text" class="form-control" id="viewHandlerName" readonly>
                                         </div>
                                     </div>
                                 </div>
@@ -1091,9 +1151,7 @@ $flash_messages = getFlashMessages();
                                             <label class="form-label mb-0 fw-semibold">Loại case <span class="text-danger">*</span></label>
                                         </div>
                                         <div class="col-8">
-                                            <select class="form-select" id="viewCaseType" name="case_type" disabled>
-                                                <option value="" class="placeholder-option">Chọn loại case</option>
-                                            </select>
+                                            <input type="text" class="form-control" id="viewCaseTypeName" readonly>
                                         </div>
                                     </div>
                                 </div>
@@ -1109,11 +1167,7 @@ $flash_messages = getFlashMessages();
                                             </label>
                                         </div>
                                         <div class="col-8">
-                                            <select class="form-select" id="viewPriority" name="priority" disabled>
-                                                <option value="onsite">Onsite</option>
-                                                <option value="offsite">Offsite</option>
-                                                <option value="remote">Remote</option>
-                                            </select>
+                                            <input type="text" class="form-control" id="viewPriorityName" readonly>
                                         </div>
                                     </div>
                                 </div>
@@ -1161,7 +1215,7 @@ $flash_messages = getFlashMessages();
                                             <label class="form-label mb-0 fw-semibold">Bắt đầu</label>
                                         </div>
                                         <div class="col-8">
-                                            <input type="datetime-local" class="form-control" id="viewStartDate" name="start_date" readonly>
+                                            <input type="text" class="form-control" id="viewStartDate" name="start_date" readonly>
                                         </div>
                                     </div>
                                 </div>
@@ -1172,7 +1226,7 @@ $flash_messages = getFlashMessages();
                                             <label class="form-label mb-0 fw-semibold">Kết thúc</label>
                                         </div>
                                         <div class="col-8">
-                                            <input type="datetime-local" class="form-control" id="viewDueDate" name="due_date" readonly>
+                                            <input type="text" class="form-control" id="viewDueDate" name="due_date" readonly>
                                         </div>
                                     </div>
                                 </div>
@@ -1183,12 +1237,7 @@ $flash_messages = getFlashMessages();
                                             <label class="form-label mb-0 fw-semibold">Trạng thái <span class="text-danger">*</span></label>
                                         </div>
                                         <div class="col-8">
-                                            <select class="form-select" id="viewStatus" name="status" disabled>
-                                                <option value="pending">Tiếp nhận</option>
-                                                <option value="in_progress">Đang xử lý</option>
-                                                <option value="completed">Hoàn thành</option>
-                                                <option value="cancelled">Huỷ</option>
-                                            </select>
+                                            <input type="text" class="form-control" id="viewStatusName" readonly>
                                         </div>
                                     </div>
                                 </div>
@@ -1208,7 +1257,9 @@ $flash_messages = getFlashMessages();
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                        <?php if (canEditInternalCase()): ?>
                         <button type="button" class="btn btn-primary" id="btnViewToEditCase"><i class="fas fa-edit me-2"></i>Chỉnh sửa</button>
+                        <?php endif; ?>
                     </div>
                 </form>
             </div>
@@ -1225,6 +1276,47 @@ $flash_messages = getFlashMessages();
     <script src="assets/js/alert.js?v=<?php echo filemtime('assets/js/alert.js'); ?>"></script>
     
     <script>
+    // Global function to re-index STT column for visible rows
+    window.reindexSTT = function() {
+        var visibleIndex = 1;
+        $('tbody tr:visible').each(function() {
+            var firstCell = $(this).find('td:first');
+            firstCell.text(visibleIndex);
+            visibleIndex++;
+        });
+    }
+    
+    // Global function to show empty state when table is empty
+    window.showEmptyState = function() {
+        // Hide the table container
+        $('.table-responsive').hide();
+        
+        // Show empty state message
+        var emptyStateHtml = '<div class="text-center py-5" id="emptyStateMessage">' +
+            '<div class="mb-4">' +
+                '<i class="fas fa-inbox fa-5x text-muted opacity-50"></i>' +
+            '</div>' +
+            '<h4 class="text-muted mb-3">Chưa có case nội bộ nào</h4>' +
+            '<p class="text-muted mb-4">Bắt đầu bằng cách tạo case nội bộ đầu tiên của bạn</p>' +
+            '<button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createCaseModal">' +
+                '<i class="fas fa-plus me-2"></i>' +
+                'Tạo Case đầu tiên' +
+            '</button>' +
+        '</div>';
+        
+        // Insert empty state after the table container
+        $('.table-responsive').after(emptyStateHtml);
+    }
+    
+    // Global function to hide empty state when table has data
+    window.hideEmptyState = function() {
+        // Show the table container
+        $('.table-responsive').show();
+        
+        // Remove empty state message if it exists
+        $('#emptyStateMessage').remove();
+    }
+    
     $(document).ready(function() {
         // Flash messages
         <?php if (!empty($flash_messages)): ?>
@@ -1550,10 +1642,16 @@ $flash_messages = getFlashMessages();
         // Apply default filter on page load
         applyFilters();
         
+        // Check if table is empty on initial load
+        if ($('tbody tr').length === 0) {
+            showEmptyState();
+        }
+        
         // Combined filter function
         function applyFilters() {
             var selectedStatus = $('#statusFilter').val();
             var selectedMonth = $('#monthFilter').val();
+            var visibleRows = 0;
             
             $('tbody tr').each(function() {
                 var row = $(this);
@@ -1565,6 +1663,7 @@ $flash_messages = getFlashMessages();
                 
                 if (statusMatch && monthMatch) {
                     row.show();
+                    visibleRows++;
                 } else {
                     row.hide();
                 }
@@ -1572,17 +1671,16 @@ $flash_messages = getFlashMessages();
             
             // Re-index STT column for visible rows
             reindexSTT();
+            
+            // Check if no rows are visible after filtering
+            if (visibleRows === 0) {
+                showEmptyState();
+            } else {
+                hideEmptyState();
+            }
         }
         
-        // Function to re-index STT column for visible rows
-        function reindexSTT() {
-            var visibleIndex = 1;
-            $('tbody tr:visible').each(function() {
-                var firstCell = $(this).find('td:first');
-                firstCell.text(visibleIndex);
-                visibleIndex++;
-            });
-        }
+
         
         // Helper function to check if date is in selected range
         function isDateInRange(dateString, range) {
@@ -1607,6 +1705,10 @@ $flash_messages = getFlashMessages();
 
     });
     
+    // Cache cho staff list và case types để tránh gọi API nhiều lần
+    var cachedStaffList = null;
+    var cachedCaseTypes = null;
+    
     // Case management functions
     function editCase(id) {
         $.ajax({
@@ -1629,20 +1731,35 @@ $flash_messages = getFlashMessages();
     }
     
     function loadEditCaseData(caseData) {
-        return Promise.all([
-            loadStaffListForEdit(),
-            loadCaseTypesForEdit()
-        ]).then(function() {
+        // Chỉ load staff list và case types nếu chưa có cache
+        var promises = [];
+        
+        if (!cachedStaffList) {
+            promises.push(loadStaffListForEdit());
+        }
+        
+        if (!cachedCaseTypes) {
+            promises.push(loadCaseTypesForEdit());
+        }
+        
+        if (promises.length > 0) {
+            Promise.all(promises).then(function() {
+                populateEditForm(caseData);
+                $('#editCaseModal').modal('show');
+            }).catch(function(error) {
+                showError('Không thể tải dữ liệu cần thiết');
+                throw error;
+            });
+        } else {
+            // Nếu đã có cache, populate ngay lập tức
             populateEditForm(caseData);
             $('#editCaseModal').modal('show');
-        }).catch(function(error) {
-            showError('Không thể tải dữ liệu cần thiết');
-            throw error;
-        });
+        }
     }
     
     function loadStaffListForEdit() {
         return new Promise(function(resolve, reject) {
+            // Load tất cả staff cho requester
             $.ajax({
                 url: 'api/get_staff_list.php?all=1',
                 type: 'GET',
@@ -1651,30 +1768,38 @@ $flash_messages = getFlashMessages();
                 },
                 success: function(response) {
                     if (response.success) {
+                        cachedStaffList = response.data;
                         var options = '<option value="">Chọn nhân sự</option>';
                         response.data.forEach(function(staff) {
                             options += '<option value="' + staff.id + '" data-position="' + staff.position + '">' + 
                                       staff.fullname + '</option>';
                         });
                         $('#editRequesterId').html(options);
-                    }
-                }
-            });
-            $.ajax({
-                url: 'api/get_staff_list.php',
-                type: 'GET',
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest'
-                },
-                success: function(response) {
-                    if (response.success) {
-                        var options = '<option value="">Chọn nhân sự</option>';
-                        response.data.forEach(function(staff) {
-                            options += '<option value="' + staff.id + '" data-position="' + staff.position + '">' + 
-                                      staff.fullname + '</option>';
+                        
+                        // Load IT staff cho handler
+                        $.ajax({
+                            url: 'api/get_staff_list.php',
+                            type: 'GET',
+                            headers: {
+                                'X-Requested-With': 'XMLHttpRequest'
+                            },
+                            success: function(response2) {
+                                if (response2.success) {
+                                    var options2 = '<option value="">Chọn nhân sự</option>';
+                                    response2.data.forEach(function(staff) {
+                                        options2 += '<option value="' + staff.id + '" data-position="' + staff.position + '">' + 
+                                                  staff.fullname + '</option>';
+                                    });
+                                    $('#editHandlerId').html(options2);
+                                    resolve();
+                                } else {
+                                    reject(response2.error);
+                                }
+                            },
+                            error: function() {
+                                reject('Lỗi khi tải danh sách nhân sự IT');
+                            }
                         });
-                        $('#editHandlerId').html(options);
-                        resolve();
                     } else {
                         reject(response.error);
                     }
@@ -1696,6 +1821,7 @@ $flash_messages = getFlashMessages();
                 },
                 success: function(response) {
                     if (response.success) {
+                        cachedCaseTypes = response.data;
                         var options = '<option value="">Chọn loại case</option>';
                         response.data.forEach(function(caseType) {
                             if (caseType.status === 'active') {
@@ -1720,33 +1846,75 @@ $flash_messages = getFlashMessages();
         $('#editCaseId').val(caseData.id);
         $('#editCaseNumber').val(caseData.case_number);
         
-        // Select fields
-        $('#editRequesterId').val(caseData.requester_id);
-        $('#editHandlerId').val(caseData.handler_id);
-        $('#editCaseType').val(caseData.case_type);
-        $('#editPriority').val(caseData.priority || 'onsite');
-        $('#editStatus').val(caseData.status);
+        // Check user role to determine what fields can be edited
+        var isAdmin = <?php echo isAdmin() ? 'true' : 'false'; ?>;
         
-        // Text fields
-        $('#editIssueTitle').val(caseData.issue_title);
-        $('#editIssueDescription').val(caseData.issue_description);
-        $('#editNotes').val(caseData.notes || '');
-        
-        // Date fields (format cho datetime-local input)
-        if (caseData.start_date) {
-            var startDate = new Date(caseData.start_date);
-            $('#editStartDate').val(formatDateTimeLocal(startDate));
+        if (isAdmin) {
+            // Admin can edit all fields
+            $('#editRequesterId').val(caseData.requester_id);
+            $('#editHandlerId').val(caseData.handler_id);
+            $('#editCaseType').val(caseData.case_type);
+            $('#editPriority').val(caseData.priority || 'onsite');
+            $('#editIssueTitle').val(caseData.issue_title);
+            $('#editIssueDescription').val(caseData.issue_description);
+            
+            // Date fields (format cho datetime-local input)
+            if (caseData.start_date) {
+                var startDate = new Date(caseData.start_date);
+                $('#editStartDate').val(formatDateTimeLocal(startDate));
+            }
+            
+            if (caseData.due_date) {
+                var dueDate = new Date(caseData.due_date);
+                $('#editDueDate').val(formatDateTimeLocal(dueDate));
+            }
+            
+            // Update requester position
+            var selectedRequester = $('#editRequesterId option:selected');
+            var requesterPosition = selectedRequester.data('position') || '';
+            $('#editRequesterPosition').val(requesterPosition);
+        } else {
+            // Non-admin users can only edit status, due_date, and notes
+            // Set readonly fields with display values
+            $('#editRequesterName').val(caseData.requester_name || 'N/A');
+            $('#editRequesterId').val(caseData.requester_id);
+            $('#editHandlerName').val(caseData.handler_name || 'Chưa phân công');
+            $('#editHandlerId').val(caseData.handler_id);
+            $('#editCaseTypeName').val(caseData.case_type || 'N/A');
+            $('#editCaseType').val(caseData.case_type);
+            $('#editPriorityName').val(caseData.priority || 'onsite');
+            $('#editPriority').val(caseData.priority || 'onsite');
+            $('#editIssueTitle').val(caseData.issue_title || 'N/A');
+            $('#editIssueDescription').val(caseData.issue_description || 'N/A');
+            
+            // Display start date as text
+            if (caseData.start_date) {
+                var startDate = new Date(caseData.start_date);
+                $('#editStartDateDisplay').val(formatDateTimeDisplay(startDate));
+                $('#editStartDate').val(formatDateTimeLocal(startDate));
+            }
         }
         
+        // All users can edit these fields
+        $('#editStatus').val(caseData.status);
+        $('#editNotes').val(caseData.notes || '');
+        
+        // Due date - all users can edit
         if (caseData.due_date) {
             var dueDate = new Date(caseData.due_date);
             $('#editDueDate').val(formatDateTimeLocal(dueDate));
         }
+    }
+    
+    function formatDateTimeDisplay(date) {
+        // Format date for display (DD/MM/YYYY HH:MM)
+        var day = String(date.getDate()).padStart(2, '0');
+        var month = String(date.getMonth() + 1).padStart(2, '0');
+        var year = date.getFullYear();
+        var hours = String(date.getHours()).padStart(2, '0');
+        var minutes = String(date.getMinutes()).padStart(2, '0');
         
-        // Update requester position
-        var selectedRequester = $('#editRequesterId option:selected');
-        var requesterPosition = selectedRequester.data('position') || '';
-        $('#editRequesterPosition').val(requesterPosition);
+        return day + '/' + month + '/' + year + ' ' + hours + ':' + minutes;
     }
     
     function formatDateTimeLocal(date) {
@@ -1817,6 +1985,11 @@ $flash_messages = getFlashMessages();
                             $(this).remove();
                             // Re-index STT column sau khi xóa
                             reindexSTT();
+                            
+                            // Kiểm tra nếu bảng trống thì hiển thị empty state
+                            if ($('tbody tr').length === 0) {
+                                showEmptyState();
+                            }
                         });
                     } else {
                         showError(response.error || 'Có lỗi xảy ra khi xóa case');
@@ -2026,6 +2199,8 @@ $flash_messages = getFlashMessages();
                     // Close modal and reload page after 2 seconds
                     setTimeout(function() {
                         $('#createCaseModal').modal('hide');
+                        // Hide empty state if it exists (in case we're not reloading)
+                        hideEmptyState();
                         location.reload();
                     }, 2000);
                 } else {
@@ -2198,64 +2373,69 @@ $flash_messages = getFlashMessages();
     });
 
     function fillViewCaseForm(caseData) {
-        $.ajax({
-            url: 'api/get_staff_list.php?all=1',
-            type: 'GET',
-            headers: { 'X-Requested-With': 'XMLHttpRequest' },
-            success: function(response) {
-                if (response.success) {
-                    var options = '<option value="">Chọn nhân sự</option>';
-                    response.data.forEach(function(staff) {
-                        options += '<option value="' + staff.id + '" data-position="' + staff.position + '">' + staff.fullname + '</option>';
-                    });
-                    $('#viewRequesterId').html(options).val(caseData.requester_id);
-                    // Cập nhật chức danh
-                    var selected = $('#viewRequesterId option:selected');
-                    $('#viewRequesterPosition').val(selected.data('position') || '');
-                }
-            }
-        });
-        $.ajax({
-            url: 'api/get_staff_list.php',
-            type: 'GET',
-            headers: { 'X-Requested-With': 'XMLHttpRequest' },
-            success: function(response) {
-                if (response.success) {
-                    var options = '<option value="">Chọn nhân sự</option>';
-                    response.data.forEach(function(staff) {
-                        options += '<option value="' + staff.id + '" data-position="' + staff.position + '">' + staff.fullname + '</option>';
-                    });
-                    $('#viewHandlerId').html(options).val(caseData.handler_id);
-                }
-            }
-        });
-        $.ajax({
-            url: 'api/case_types.php?type=internal&action=list',
-            type: 'GET',
-            headers: { 'X-Requested-With': 'XMLHttpRequest' },
-            success: function(response) {
-                if (response.success) {
-                    var options = '<option value="">Chọn loại case</option>';
-                    response.data.forEach(function(caseType) {
-                        if (caseType.status === 'active') {
-                            options += '<option value="' + caseType.name + '">' + caseType.name + '</option>';
-                        }
-                    });
-                    $('#viewCaseType').html(options).val(caseData.case_type);
-                }
-            }
-        });
-        // Các trường còn lại
-        var transferredName = 'Trần Nguyễn Anh Khoa';
-        $('#viewTransferredBy').val(transferredName);
-        $('#viewPriority').val(caseData.priority || 'onsite');
+        
+        // Populate các trường readonly với dữ liệu từ caseData
+        $('#viewCaseNumber').val(caseData.case_number || '');
+        $('#viewRequesterName').val(caseData.requester_name || 'N/A');
+        $('#viewRequesterPosition').val(caseData.requester_position || 'N/A');
+        $('#viewTransferredBy').val('Trần Nguyễn Anh Khoa'); // Giá trị cố định
+        $('#viewHandlerName').val(caseData.handler_name || 'Chưa phân công');
+        $('#viewCaseTypeName').val(caseData.case_type || 'N/A');
+        
+        // Map priority values
+        var priorityMap = {
+            'onsite': 'Onsite',
+            'offsite': 'Offsite', 
+            'remote': 'Remote'
+        };
+        $('#viewPriorityName').val(priorityMap[caseData.priority] || 'Onsite');
+        
         $('#viewIssueTitle').val(caseData.issue_title || '');
         $('#viewIssueDescription').val(caseData.issue_description || '');
-        $('#viewStartDate').val(caseData.start_date ? formatDateTimeLocal(new Date(caseData.start_date)) : '');
-        $('#viewDueDate').val(caseData.due_date ? formatDateTimeLocal(new Date(caseData.due_date)) : '');
-        $('#viewStatus').val(caseData.status || 'pending');
+        
+        // Format dates for display
+        if (caseData.start_date) {
+            try {
+                var startDate = new Date(caseData.start_date);
+                if (!isNaN(startDate.getTime())) {
+                    var formattedStartDate = formatDateTimeDisplay(startDate);
+                    $('#viewStartDate').val(formattedStartDate);
+                } else {
+                    $('#viewStartDate').val('Chưa có');
+                }
+            } catch (error) {
+                $('#viewStartDate').val('Chưa có');
+            }
+        } else {
+            $('#viewStartDate').val('Chưa có');
+        }
+        
+        if (caseData.due_date) {
+            try {
+                var dueDate = new Date(caseData.due_date);
+                if (!isNaN(dueDate.getTime())) {
+                    var formattedDueDate = formatDateTimeDisplay(dueDate);
+                    $('#viewDueDate').val(formattedDueDate);
+                } else {
+                    $('#viewDueDate').val('Chưa có');
+                }
+            } catch (error) {
+                $('#viewDueDate').val('Chưa có');
+            }
+        } else {
+            $('#viewDueDate').val('Chưa có');
+        }
+        
+        // Map status values
+        var statusMap = {
+            'pending': 'Tiếp nhận',
+            'in_progress': 'Đang xử lý',
+            'completed': 'Hoàn thành',
+            'cancelled': 'Huỷ'
+        };
+        $('#viewStatusName').val(statusMap[caseData.status] || 'Tiếp nhận');
+        
         $('#viewNotes').val(caseData.notes || '');
-        $('#viewCaseNumber').val(caseData.case_number || '');
     }
     
     // ===== FOCUS MANAGEMENT FOR ACCESSIBILITY ===== //
@@ -2286,6 +2466,67 @@ $flash_messages = getFlashMessages();
         var modal = $(e.target);
         // Blur tất cả focusable elements trong modal
         modal.find(':focus').blur();
+    });
+    
+    // ===== EXCEL EXPORT FUNCTIONALITY ===== //
+    
+    // Xử lý click nút xuất Excel
+    $(document).on('click', '#exportExcelBtn', function(e) {
+        e.preventDefault();
+        exportInternalCasesToExcel();
+    });
+    
+    function exportInternalCasesToExcel() {
+        // Lấy các filter hiện tại
+        var statusFilter = $('#statusFilter').val();
+        var monthFilter = $('#monthFilter').val();
+        
+        // Hiển thị loading
+        var originalText = $('#exportExcelBtn').html();
+        $('#exportExcelBtn').prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-1"></i>Đang xuất...');
+        
+        // Tạo URL với các tham số filter
+        var exportUrl = 'api/export_internal_cases.php?';
+        if (statusFilter) {
+            exportUrl += 'status=' + encodeURIComponent(statusFilter) + '&';
+        }
+        if (monthFilter) {
+            exportUrl += 'month=' + encodeURIComponent(monthFilter) + '&';
+        }
+        
+        // Tạo một iframe ẩn để download file
+        var iframe = document.createElement('iframe');
+        iframe.style.display = 'none';
+        iframe.src = exportUrl;
+        document.body.appendChild(iframe);
+        
+        // Xóa iframe sau khi download
+        setTimeout(function() {
+            document.body.removeChild(iframe);
+            $('#exportExcelBtn').prop('disabled', false).html(originalText);
+            showSuccess('Đã xuất file Excel thành công!');
+        }, 2000);
+    }
+    
+    // Auto-open modal khi có parameter từ workspace
+    document.addEventListener('DOMContentLoaded', function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const openEditModal = urlParams.get('open_edit_modal');
+        const caseId = urlParams.get('case_id');
+        
+        if (openEditModal === '1' && caseId) {
+            // Tìm và mở modal edit case
+            setTimeout(() => {
+                const editButtons = document.querySelectorAll('[onclick*="editInternalCase"]');
+                for (let button of editButtons) {
+                    const onclick = button.getAttribute('onclick');
+                    if (onclick && onclick.includes(caseId)) {
+                        button.click();
+                        break;
+                    }
+                }
+            }, 1000);
+        }
     });
     </script>
 </body>

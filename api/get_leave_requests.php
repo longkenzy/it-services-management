@@ -50,11 +50,21 @@ try {
     $params = [];
     
     // Phân quyền xem đơn nghỉ phép
-    // Chỉ admin và HR mới có quyền xem tất cả đơn
+    // Admin, HR và các leader có quyền xem đơn theo phòng ban
     // Nhân viên thường chỉ xem được đơn của mình
-    if (!in_array($current_user['role'], ['admin', 'hr'])) {
+    if (!in_array($current_user['role'], ['admin', 'hr', 'hr_leader', 'it_leader', 'sale_leader'])) {
         $sql .= " AND lr.requester_id = ?";
         $params[] = $current_user['id'];
+    } else {
+        // Các leader chỉ xem được đơn của phòng ban mình
+        if ($current_user['role'] === 'hr_leader') {
+            $sql .= " AND s.department LIKE '%HR%'";
+        } elseif ($current_user['role'] === 'it_leader') {
+            $sql .= " AND s.department LIKE '%IT%'";
+        } elseif ($current_user['role'] === 'sale_leader') {
+            $sql .= " AND s.department LIKE '%SALE%'";
+        }
+        // Admin và HR có thể xem tất cả đơn
     }
     
     // Lọc theo trạng thái

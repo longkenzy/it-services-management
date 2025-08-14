@@ -1,51 +1,61 @@
 <?php
 header('Content-Type: application/json');
 require_once '../includes/session.php';
-require_once '../config/db.php';
 
 if (!isLoggedIn()) {
-    echo json_encode(['success' => false, 'message' => 'Chưa đăng nhập']);
+    http_response_code(401);
+    echo json_encode(['success' => false, 'error' => 'Unauthorized']);
+    exit;
+}
+
+require_once '../config/db.php';
+
+if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
+    http_response_code(405);
+    echo json_encode(['success' => false, 'error' => 'Method not allowed']);
     exit;
 }
 
 try {
-    $current_year = date('y');
-    $current_month = date('m');
+    // Lấy năm và tháng hiện tại
+    $year = date('y'); // 2 số cuối năm
+    $month = date('m'); // Tháng hiện tại
+    $prefix = "BT{$year}{$month}";
     
-    // Tìm mã yêu cầu cuối cùng trong tháng hiện tại
-    $sql = "SELECT request_code FROM maintenance_requests 
-            WHERE request_code LIKE ? 
-            ORDER BY request_code DESC 
-            LIMIT 1";
-    
-    $pattern = "YC{$current_year}{$current_month}%";
-    $stmt = $pdo->prepare($sql);
-    $stmt->execute([$pattern]);
-    $result = $stmt->fetch();
+    // Tìm số thứ tự cao nhất trong tháng hiện tại
+    $stmt = $pdo->prepare("
+        SELECT request_code
+        FROM maintenance_requests 
+        WHERE request_code LIKE ?
+        ORDER BY request_code DESC
+        LIMIT 1
+    ");
+    $stmt->execute([$prefix . '%']);
+    $result = $stmt->fetch(PDO::FETCH_ASSOC);
     
     if ($result) {
-        // Lấy số thứ tự từ mã cuối cùng
-        $last_code = $result['request_code'];
-        $last_number = intval(substr($last_code, -3));
-        $next_number = $last_number + 1;
+        // Lấy 3 chữ số cuối từ mã yêu cầu cuối cùng
+        $lastCode = $result['request_code'];
+        $lastSequence = intval(substr($lastCode, -3));
+        $nextSequence = $lastSequence + 1;
     } else {
         // Nếu chưa có mã nào trong tháng này
-        $next_number = 1;
+        $nextSequence = 1;
     }
     
-    // Tạo mã mới
-    $request_code = sprintf("YC%s%s%03d", $current_year, $current_month, $next_number);
+    $requestCode = $prefix . str_pad($nextSequence, 3, '0', STR_PAD_LEFT);
     
     echo json_encode([
         'success' => true,
-        'request_code' => $request_code
+        'sequence' => $nextSequence,
+        'request_code' => $requestCode
     ]);
     
 } catch (Exception $e) {
-    error_log("Error in get_next_maintenance_request_number.php: " . $e->getMessage());
+    http_response_code(500);
     echo json_encode([
         'success' => false,
-        'message' => 'Có lỗi xảy ra khi tạo mã yêu cầu'
+        'error' => 'Server error: ' . $e->getMessage()
     ]);
 }
 ?> 

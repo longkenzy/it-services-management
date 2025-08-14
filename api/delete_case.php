@@ -51,12 +51,11 @@ try {
         exit;
     }
     
-    // Kiểm tra quyền xóa (có thể thêm logic phân quyền ở đây)
-    // Ví dụ: chỉ cho phép người tạo hoặc admin xóa
-    // if ($case['requester_id'] != $current_user_id && $current_user_role != 'admin') {
-    //     echo json_encode(['error' => 'Bạn không có quyền xóa case này']);
-    //     exit;
-    // }
+    // Kiểm tra quyền xóa - chỉ admin mới có quyền xóa
+    if (!canDeleteInternalCase()) {
+        echo json_encode(['error' => 'Bạn không có quyền xóa case này']);
+        exit;
+    }
     
     // Xóa case
     $deleteStmt = $pdo->prepare("DELETE FROM internal_cases WHERE id = ?");

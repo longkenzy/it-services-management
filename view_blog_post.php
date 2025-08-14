@@ -79,7 +79,6 @@ $page_title = $post['title'];
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <!-- Custom CSS -->
     <link href="assets/css/dashboard.css" rel="stylesheet">
-    <link href="assets/css/no-border-radius.css" rel="stylesheet">
     
     <style>
         .blog-post-container {

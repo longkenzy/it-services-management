@@ -1,0 +1,125 @@
+/* Custom Loading Animation - Ripple Effect */
+.loader {
+  --cell-size: 52px;
+  --cell-spacing: 1px;
+  --cells: 3;
+  --total-size: calc(var(--cells) * (var(--cell-size) + 2 * var(--cell-spacing)));
+  display: flex;
+  flex-wrap: wrap;
+  width: var(--total-size);
+  height: var(--total-size);
+  margin: 0 auto;
+}
+
+.cell {
+  flex: 0 0 var(--cell-size);
+  margin: var(--cell-spacing);
+  background-color: transparent;
+  box-sizing: border-box;
+  border-radius: 4px;
+  animation: 1.5s ripple ease infinite;
+}
+
+.cell.d-1 {
+  animation-delay: 100ms;
+}
+
+.cell.d-2 {
+  animation-delay: 200ms;
+}
+
+.cell.d-3 {
+  animation-delay: 300ms;
+}
+
+.cell.d-4 {
+  animation-delay: 400ms;
+}
+
+.cell:nth-child(1) {
+  --cell-color: #3b82f6;
+}
+
+.cell:nth-child(2) {
+  --cell-color: #3b82f6;
+}
+
+.cell:nth-child(3) {
+  --cell-color: #3b82f6;
+}
+
+.cell:nth-child(4) {
+  --cell-color: #3b82f6;
+}
+
+.cell:nth-child(5) {
+  --cell-color: #3b82f6;
+}
+
+.cell:nth-child(6) {
+  --cell-color: #3b82f6;
+}
+
+.cell:nth-child(7) {
+  --cell-color: #3b82f6;
+}
+
+.cell:nth-child(8) {
+  --cell-color: #3b82f6;
+}
+
+.cell:nth-child(9) {
+  --cell-color: #3b82f6;
+}
+
+/*Animation*/
+@keyframes ripple {
+  0% {
+    background-color: transparent;
+  }
+
+  30% {
+    background-color: var(--cell-color);
+  }
+
+  60% {
+    background-color: transparent;
+  }
+
+  100% {
+    background-color: transparent;
+  }
+}
+
+/* Loading container styles */
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+}
+
+.loading-text {
+  margin-top: 1rem;
+  color: #6c757d;
+  font-size: 0.875rem;
+}
+
+/* Small loader variant */
+.loader-sm {
+  --cell-size: 20px;
+  --cell-spacing: 1px;
+}
+
+/* Medium loader variant */
+.loader-md {
+  --cell-size: 35px;
+  --cell-spacing: 1px;
+}
+
+/* Large loader variant */
+.loader-lg {
+  --cell-size: 70px;
+  --cell-spacing: 2px;
+}

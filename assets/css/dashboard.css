@@ -117,7 +117,6 @@ body {
 
 .dropdown-menu-custom .dropdown-item {
     padding: 0.75rem 1.25rem;
-    border-radius: 0;
     transition: all 0.3s ease;
     color: #495057;
 }
@@ -584,7 +583,6 @@ button:focus-visible,
 
 #changePasswordModal .form-control {
     border: 2px solid #e9ecef;
-    border-radius: 0;
     padding: 0.75rem 1rem;
     font-size: 0.95rem;
     transition: all 0.3s ease;
@@ -649,7 +647,6 @@ button:focus-visible,
 /* Alert styling */
 #changePasswordModal .alert {
     border: none;
-    border-radius: 0;
     padding: 1rem;
     margin-bottom: 0;
 }
@@ -668,7 +665,6 @@ button:focus-visible,
 
 /* Button styling */
 #changePasswordModal .btn {
-    border-radius: 0;
     padding: 0.75rem 1.5rem;
     font-weight: 600;
     transition: all 0.3s ease;
@@ -970,10 +966,10 @@ button:focus-visible,
 }
 
 .internal-cases-table .case-number {
-    font-family: 'Courier New', monospace;
-    font-weight: 600;
+
+    font-weight: 500;
     color: #007bff;
-    font-size: 0.9rem;
+    font-size: 0.8rem;
 }
 
 /* Điều chỉnh chiều rộng các cột bảng nội bộ cho đều nhau */

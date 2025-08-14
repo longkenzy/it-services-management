@@ -1,119 +1,73 @@
 <?php
-header('Content-Type: application/json; charset=utf-8');
-header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
-header('Access-Control-Allow-Headers: Content-Type');
+/**
+ * API cập nhật deployment task
+ * File: api/update_deployment_task.php
+ */
 
 require_once '../config/db.php';
+require_once '../includes/session.php';
 
-if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
-    exit(0);
+header('Content-Type: application/json');
+
+// Kiểm tra đăng nhập
+if (null === getCurrentUserId()) {
+    http_response_code(401);
+    echo json_encode(['success' => false, 'message' => 'Chưa đăng nhập']);
+    exit;
 }
 
+// Chỉ cho phép POST
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
-    echo json_encode(['success' => false, 'message' => 'Method not allowed']);
+    echo json_encode(['success' => false, 'message' => 'Method không được phép']);
     exit;
 }
 
 try {
-    $pdo = getConnection();
+    $id = $_POST['id'] ?? '';
+    $task_description = $_POST['task_description'] ?? '';
+    $notes = $_POST['notes'] ?? '';
+    $start_date = $_POST['start_date'] ?? '';
+    $end_date = $_POST['end_date'] ?? '';
+    $status = $_POST['status'] ?? '';
     
-    // Lấy dữ liệu từ request
-    $input = json_decode(file_get_contents('php://input'), true);
-    
-    if (!$input) {
-        throw new Exception('Invalid JSON data');
+    if (empty($id)) {
+        throw new Exception('ID task không được để trống');
     }
     
-    $task_id = $input['id'] ?? null;
-    $task_type = $input['task_type'] ?? null;
-    $template_name = $input['template_name'] ?? null;
-    $task_description = $input['task_description'] ?? null;
-    $start_date = $input['start_date'] ?? null;
-    $end_date = $input['end_date'] ?? null;
-    $assignee_id = $input['assignee_id'] ?? null;
-    $status = $input['status'] ?? null;
-    
-    // Xử lý các trường ngày tháng - chuyển chuỗi rỗng thành NULL
-    if (empty($start_date)) {
-        $start_date = null;
-    }
-    if (empty($end_date)) {
-        $end_date = null;
-    }
-    
-    // Validate dữ liệu
-    if (!$task_id) {
-        throw new Exception('Thiếu ID task');
-    }
-    
-    if (!$task_type || !$task_description) {
-        throw new Exception('Thiếu thông tin bắt buộc');
-    }
-    
-    // Kiểm tra task có tồn tại không
-    $stmt = $pdo->prepare("SELECT id, task_number FROM deployment_tasks WHERE id = ?");
-    $stmt->execute([$task_id]);
-    $task = $stmt->fetch();
-    
-    if (!$task) {
-        throw new Exception('Task không tồn tại');
-    }
-    
-    // Cập nhật task
+    // Cập nhật deployment task
     $sql = "UPDATE deployment_tasks SET 
-                task_type = ?,
-                template_name = ?,
-                task_description = ?,
-                start_date = ?,
-                end_date = ?,
-                assignee_id = ?,
-                status = ?,
-                updated_at = CURRENT_TIMESTAMP
+            task_description = ?, 
+            notes = ?, 
+            start_date = ?, 
+            end_date = ?, 
+            status = ?,
+            updated_at = NOW()
             WHERE id = ?";
     
     $stmt = $pdo->prepare($sql);
-    $stmt->execute([
-        $task_type,
-        $template_name,
+    $result = $stmt->execute([
         $task_description,
+        $notes,
         $start_date,
         $end_date,
-        $assignee_id,
         $status,
-        $task_id
+        $id
     ]);
     
-    if ($stmt->rowCount() > 0) {
-        // Lấy thông tin task đã cập nhật
-        $sql = "SELECT 
-                    dt.id, dt.deployment_case_id, dt.task_number, dt.task_type, dt.template_name, 
-                    dt.task_description, dt.start_date, dt.end_date, dt.assignee_id, dt.status, 
-                    dt.created_at, dt.updated_at,
-                    s.fullname as assignee_name
-                FROM deployment_tasks dt
-                LEFT JOIN staffs s ON dt.assignee_id = s.id
-                WHERE dt.id = ?";
-        
-        $stmt = $pdo->prepare($sql);
-        $stmt->execute([$task_id]);
-        $updated_task = $stmt->fetch(PDO::FETCH_ASSOC);
-        
+    if ($result) {
         echo json_encode([
             'success' => true,
-            'message' => 'Cập nhật task triển khai thành công',
-            'data' => $updated_task
+            'message' => 'Cập nhật task thành công'
         ]);
     } else {
         throw new Exception('Không thể cập nhật task');
     }
     
 } catch (Exception $e) {
-    error_log("Error in update_deployment_task.php: " . $e->getMessage());
+    http_response_code(400);
     echo json_encode([
         'success' => false,
-        'message' => 'Lỗi khi cập nhật task triển khai: ' . $e->getMessage()
+        'message' => $e->getMessage()
     ]);
-}
-?> 
+} 

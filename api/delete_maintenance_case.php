@@ -1,73 +1,88 @@
 <?php
+// Bảo vệ file khỏi truy cập trực tiếp (chỉ cho phép từ cùng domain)
+if (!isset($_SERVER['HTTP_REFERER']) || !str_contains($_SERVER['HTTP_REFERER'], $_SERVER['HTTP_HOST'])) {
+    if (!isset($_SERVER['HTTP_X_REQUESTED_WITH']) || $_SERVER['HTTP_X_REQUESTED_WITH'] !== 'XMLHttpRequest') {
+        http_response_code(403);
+        exit('Access denied.');
+    }
+}
 header('Content-Type: application/json');
+header('Access-Control-Allow-Origin: *');
+header('Access-Control-Allow-Methods: POST, DELETE');
+header('Access-Control-Allow-Headers: Content-Type');
+
 require_once '../includes/session.php';
+
+// Kiểm tra đăng nhập
+if (!isLoggedIn()) {
+    http_response_code(401);
+    echo json_encode(['error' => 'Unauthorized']);
+    exit;
+}
+
 require_once '../config/db.php';
 
-if (!isLoggedIn()) {
-    echo json_encode(['success' => false, 'message' => 'Chưa đăng nhập']);
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    http_response_code(405);
+    echo json_encode(['error' => 'Method not allowed']);
     exit;
 }
 
 try {
     $input = json_decode(file_get_contents('php://input'), true);
-    $case_id = $input['id'] ?? null;
+    
+    // Validate JSON input
+    if (json_last_error() !== JSON_ERROR_NONE) {
+        echo json_encode(['success' => false, 'error' => 'Invalid JSON data']);
+        exit;
+    }
+    
+    $id = $input['id'] ?? null;
+    if (empty($id)) {
+        echo json_encode(['success' => false, 'error' => 'ID case là bắt buộc']);
+        exit;
+    }
+    $current_user_id = getCurrentUserId();
 
-    if (!$case_id) {
-        echo json_encode(['success' => false, 'message' => 'ID case không hợp lệ']);
+    // Lấy thông tin case trước khi xóa
+    $stmt = $pdo->prepare("SELECT * FROM maintenance_cases WHERE id = ?");
+    $stmt->execute([$id]);
+    $case = $stmt->fetch();
+    if (!$case) {
+        echo json_encode(['success' => false, 'error' => 'Case không tồn tại']);
         exit;
     }
 
-    // Bắt đầu transaction
-    $pdo->beginTransaction();
+    // Xóa case
+    $deleteStmt = $pdo->prepare("DELETE FROM maintenance_cases WHERE id = ?");
+    $deleteStmt->execute([$id]);
 
-    try {
-        // Lấy thông tin case trước khi xóa để log
-        $stmt = $pdo->prepare("SELECT case_code FROM maintenance_cases WHERE id = ?");
-        $stmt->execute([$case_id]);
-        $case = $stmt->fetch();
-
-        if (!$case) {
-            throw new Exception('Case bảo trì không tồn tại');
-        }
-
-        // Xóa các tasks liên quan trước
-        $stmt = $pdo->prepare("DELETE FROM maintenance_tasks WHERE maintenance_case_id = ?");
-        $stmt->execute([$case_id]);
-
-        // Xóa case
-        $stmt = $pdo->prepare("DELETE FROM maintenance_cases WHERE id = ?");
-        $stmt->execute([$case_id]);
-
-        // Commit transaction
-        $pdo->commit();
-
-        // Log hoạt động
-        $log_message = "Xóa case bảo trì: {$case['case_code']}";
-        $log_sql = "INSERT INTO user_activity_logs (user_id, activity, details, ip_address) VALUES (?, ?, ?, ?)";
-        $log_stmt = $pdo->prepare($log_sql);
-        $log_stmt->execute([
-            getCurrentUserId(),
-            'DELETE_MAINTENANCE_CASE',
-            $log_message,
-            $_SERVER['REMOTE_ADDR'] ?? 'unknown'
-        ]);
+    if ($deleteStmt->rowCount() > 0) {
+        // Ghi log
+        $log_message = "Xóa case triển khai: " . $case['case_code'] . " - " . ($case['case_description'] ?? '');
+        $log_stmt = $pdo->prepare("
+            INSERT INTO user_activity_logs (user_id, activity, details, created_at)
+            VALUES (?, ?, ?, NOW())
+        ");
+        $log_stmt->execute([$current_user_id, 'delete_maintenance_case', $log_message]);
 
         echo json_encode([
             'success' => true,
-            'message' => 'Xóa case bảo trì thành công'
+            'message' => 'Xóa case triển khai thành công',
+            'deleted_case' => [
+                'id' => $case['id'],
+                'case_code' => $case['case_code'],
+                'case_description' => $case['case_description']
+            ]
         ]);
-
-    } catch (Exception $e) {
-        // Rollback nếu có lỗi
-        $pdo->rollBack();
-        throw $e;
+    } else {
+        echo json_encode(['success' => false, 'error' => 'Không thể xóa case triển khai']);
     }
-
-} catch (Exception $e) {
-    error_log("Error in delete_maintenance_case.php: " . $e->getMessage());
+} catch (PDOException $e) {
+    http_response_code(500);
     echo json_encode([
         'success' => false,
-        'message' => 'Có lỗi xảy ra: ' . $e->getMessage()
+        'error' => 'Database error: ' . $e->getMessage()
     ]);
 }
 ?> 

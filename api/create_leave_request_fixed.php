@@ -59,11 +59,11 @@ try {
     
     // Lấy dữ liệu từ form
     $start_date = $_POST['start_date'] ?? '';
-    $start_time = $_POST['start_time'] ?? '08:00';
+    $start_time = $_POST['start_time'] ?? '08:30';
     $end_date = $_POST['end_date'] ?? '';
-    $end_time = $_POST['end_time'] ?? '17:00';
+    $end_time = $_POST['end_time'] ?? '18:00';
     $return_date = $_POST['return_date'] ?? '';
-    $return_time = $_POST['return_time'] ?? '08:00';
+    $return_time = $_POST['return_time'] ?? '08:30';
     $leave_days = $_POST['leave_days'] ?? '';
     $leave_type = $_POST['leave_type'] ?? '';
     $reason = $_POST['reason'] ?? '';

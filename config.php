@@ -106,9 +106,6 @@ $flash_messages = getFlashMessages();
     <link rel="stylesheet" href="assets/css/alert.css?v=<?php echo filemtime('assets/css/alert.css'); ?>">
     <link rel="stylesheet" href="assets/css/table-improvements.css?v=<?php echo filemtime('assets/css/table-improvements.css'); ?>">
     
-    <!-- No Border Radius Override -->
-    <link rel="stylesheet" href="assets/css/no-border-radius.css?v=<?php echo filemtime('assets/css/no-border-radius.css'); ?>">
-    
     <!-- Inline editing CSS -->
     <style>
         /* Inline editing styles */
@@ -724,7 +721,7 @@ $flash_messages = getFlashMessages();
                                                             <td><?php echo $index + 1; ?></td>
                                                             <td>
                                                                 <div class="fw-semibold">
-                                                                    <?php echo htmlspecialchars($type['name']); ?>
+                                                                    <?php echo htmlspecialchars($type['type_name'] ?? ''); ?>
                                                                 </div>
                                                             </td>
                                                             <td>
@@ -735,7 +732,7 @@ $flash_messages = getFlashMessages();
                                                                         <i class="fas fa-edit"></i>
                                                                     </button>
                                                                     <button type="button" class="btn btn-sm btn-outline-danger" 
-                                                                            onclick="deleteCaseType(<?php echo $type['id']; ?>, '<?php echo htmlspecialchars($type['name']); ?>', 'maintenance')"
+                                                                            onclick="deleteCaseType(<?php echo $type['id']; ?>, '<?php echo htmlspecialchars($type['type_name'] ?? ''); ?>', 'maintenance')"
                                                                             title="Xóa">
                                                                         <i class="fas fa-trash"></i>
                                                                     </button>
