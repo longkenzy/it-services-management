@@ -2306,7 +2306,7 @@ $flash_messages = getFlashMessages();
         
         // Submit via AJAX
         $.ajax({
-            url: 'api/update_case.php',
+            url: 'api/update_case_simple.php',
             type: 'POST',
             headers: {
                 'X-Requested-With': 'XMLHttpRequest'
@@ -2314,19 +2314,25 @@ $flash_messages = getFlashMessages();
             contentType: 'application/json',
             data: JSON.stringify(formData),
             success: function(response) {
+                console.log('API Response:', response);
                 if (response.success) {
                     showSuccess('Cập nhật case thành công!');
                     
-                    // Close modal and reload page after 2 seconds
+                    // Close modal after 1 second
                     setTimeout(function() {
                         $('#editCaseModal').modal('hide');
-                        location.reload();
-                    }, 2000);
+                        
+                        // Update the table row with new data
+                        updateTableRow(formData.case_id, formData);
+                    }, 1000);
                 } else {
                     showError(response.error || 'Có lỗi xảy ra khi cập nhật case');
                 }
             },
             error: function(xhr, status, error) {
+                console.log('AJAX Error:', xhr.responseText);
+                console.log('Status:', status);
+                console.log('Error:', error);
                 showError('Có lỗi xảy ra khi kết nối server. Vui lòng thử lại.');
             },
             complete: function() {
@@ -2334,6 +2340,65 @@ $flash_messages = getFlashMessages();
                 submitBtn.prop('disabled', false).html(originalText);
             }
         });
+    }
+    
+    // ===== JS: UPDATE TABLE ROW ===== //
+    function updateTableRow(caseId, formData) {
+        // Find the table row for this case
+        var row = $('tr[data-case-id="' + caseId + '"]');
+        if (row.length === 0) {
+            // If row not found, reload the page as fallback
+            location.reload();
+            return;
+        }
+        
+        // Update status column
+        if (formData.status) {
+            var statusText = '';
+            
+            switch(formData.status) {
+                case 'pending':
+                    statusText = 'Tiếp nhận';
+                    break;
+                case 'in_progress':
+                    statusText = 'Đang xử lý';
+                    break;
+                case 'completed':
+                    statusText = 'Hoàn thành';
+                    break;
+                case 'cancelled':
+                    statusText = 'Huỷ';
+                    break;
+                default:
+                    statusText = 'Không xác định';
+            }
+            
+            // Update status text and class
+            var statusSpan = row.find('.case-status');
+            statusSpan.removeClass('status-pending status-in_progress status-completed status-cancelled')
+                     .addClass('status-' + formData.status)
+                     .text(statusText);
+        }
+        
+        // Update notes column if provided (if it exists in the table)
+        if (formData.notes !== undefined) {
+            var notesCell = row.find('.case-notes');
+            if (notesCell.length > 0) {
+                notesCell.text(formData.notes || '');
+            }
+        }
+        
+        // Update the updated_at column if it exists
+        var updatedAtCell = row.find('.updated-at');
+        if (updatedAtCell.length > 0) {
+            var now = new Date();
+            var formattedDate = now.getDate().toString().padStart(2, '0') + '/' + 
+                               (now.getMonth() + 1).toString().padStart(2, '0') + '/' + 
+                               now.getFullYear() + ' ' +
+                               now.getHours().toString().padStart(2, '0') + ':' + 
+                               now.getMinutes().toString().padStart(2, '0');
+            updatedAtCell.text(formattedDate);
+        }
     }
     
     // ===== JS: XEM CHI TIẾT CASE ===== //

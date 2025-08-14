@@ -704,9 +704,14 @@ if (isset($_SESSION['user_id'])) {
                         Xuất Excel
                     </button>
                     <?php if ($current_role !== 'user'): ?>
-                    <button class="btn btn-primary" id="createRequestBtn" data-bs-toggle="modal" data-bs-target="#addmaintenanceRequestModal">
-                        <i class="fas fa-plus me-2"></i>
-                        Tạo Yêu cầu bảo trì
+                    <button class="button" id="createRequestBtn" data-bs-toggle="modal" data-bs-target="#addmaintenanceRequestModal">
+                        <span class="button_lg">
+                            <span class="button_sl"></span>
+                            <span class="button_text">
+                                <i class="fas fa-plus me-2"></i>
+                                Tạo Yêu cầu bảo trì
+                            </span>
+                        </span>
                     </button>
                     <?php endif; ?>
                 </div>

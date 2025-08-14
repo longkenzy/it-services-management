@@ -1,16 +1,22 @@
 <?php
-// Bảo vệ file khỏi truy cập trực tiếp (chỉ cho phép từ cùng domain)
-if (!isset($_SERVER['HTTP_REFERER']) || !str_contains($_SERVER['HTTP_REFERER'], $_SERVER['HTTP_HOST'])) {
-    // Cho phép truy cập từ AJAX requests
-    if (!isset($_SERVER['HTTP_X_REQUESTED_WITH']) || $_SERVER['HTTP_X_REQUESTED_WITH'] !== 'XMLHttpRequest') {
-        http_response_code(403);
-        exit('Access denied.');
-    }
-}
+// Set headers first
 header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Methods: POST, PUT');
-header('Access-Control-Allow-Headers: Content-Type');
+header('Access-Control-Allow-Methods: POST, PUT, OPTIONS');
+header('Access-Control-Allow-Headers: Content-Type, X-Requested-With');
+
+// Handle preflight OPTIONS request
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    http_response_code(200);
+    exit;
+}
+
+// Bảo vệ file khỏi truy cập trực tiếp (chỉ cho phép từ POST requests)
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    http_response_code(405);
+    echo json_encode(['success' => false, 'error' => 'Method not allowed']);
+    exit;
+}
 
 require_once '../includes/session.php';
 
@@ -21,21 +27,37 @@ if (!isLoggedIn()) {
     exit;
 }
 
+// Debug: Check if session is working
+if (!isset($_SESSION['user_id'])) {
+    http_response_code(401);
+    echo json_encode(['success' => false, 'error' => 'Session not found']);
+    exit;
+}
+
 require_once '../config/db.php';
 
-if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    http_response_code(405);
-    echo json_encode(['success' => false, 'error' => 'Method not allowed']);
+// Check if database connection is available
+if (!isset($pdo)) {
+    http_response_code(500);
+    echo json_encode(['success' => false, 'error' => 'Database connection not available']);
     exit;
 }
 
 try {
-    $input = json_decode(file_get_contents('php://input'), true);
+    $raw_input = file_get_contents('php://input');
+    
+    if (empty($raw_input)) {
+        http_response_code(400);
+        echo json_encode(['success' => false, 'error' => 'No input data received']);
+        exit;
+    }
+    
+    $input = json_decode($raw_input, true);
     
     // Validate JSON input
     if (json_last_error() !== JSON_ERROR_NONE) {
         http_response_code(400);
-        echo json_encode(['success' => false, 'error' => 'Invalid JSON data']);
+        echo json_encode(['success' => false, 'error' => 'Invalid JSON data: ' . json_last_error_msg()]);
         exit;
     }
     

@@ -382,9 +382,14 @@ if (isset($_SESSION['user_id'])) {
                         Xuất Excel
                     </button>
                     <?php if ($current_role !== 'user'): ?>
-                    <button class="btn btn-primary" id="createRequestBtn" data-bs-toggle="modal" data-bs-target="#addDeploymentRequestModal">
-                        <i class="fas fa-plus me-2"></i>
-                        Tạo yêu cầu triển khai
+                    <button class="button" id="createRequestBtn" data-bs-toggle="modal" data-bs-target="#addDeploymentRequestModal">
+                        <span class="button_lg">
+                            <span class="button_sl"></span>
+                            <span class="button_text">
+                                <i class="fas fa-plus me-2"></i>
+                                Tạo yêu cầu triển khai
+                            </span>
+                        </span>
                     </button>
                     <?php endif; ?>
                 </div>
@@ -1488,6 +1493,24 @@ document.addEventListener('DOMContentLoaded', function() {
                     } else {
                         alert('Cập nhật case triển khai thành công!');
                     }
+                    
+                    // Hiển thị thông báo auto update nếu có
+                    if (data.auto_updated_items && data.auto_updated_items.length > 0) {
+                        let autoUpdateMessage = 'Hệ thống đã tự động cập nhật: ';
+                        data.auto_updated_items.forEach(item => {
+                            if (item.type === 'deployment_request') {
+                                autoUpdateMessage += `Yêu cầu triển khai #${item.id} → Hoàn thành. `;
+                            }
+                        });
+                        setTimeout(() => {
+                            if (typeof showAlert === 'function') {
+                                showAlert(autoUpdateMessage, 'info');
+                            } else {
+                                alert(autoUpdateMessage);
+                            }
+                        }, 1000);
+                    }
+                    
                     const modal = bootstrap.Modal.getInstance(document.getElementById('editDeploymentCaseModal'));
                     if (modal) modal.hide();
                     // Reload danh sách case
@@ -2447,6 +2470,21 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(result => {
                 if (result.success) {
                     showAlert(result.message, 'success');
+                    
+                    // Hiển thị thông báo auto update nếu có
+                    if (result.auto_updated_items && result.auto_updated_items.length > 0) {
+                        let autoUpdateMessage = 'Hệ thống đã tự động cập nhật: ';
+                        result.auto_updated_items.forEach(item => {
+                            if (item.type === 'case') {
+                                autoUpdateMessage += `Case #${item.id} → Hoàn thành. `;
+                            } else if (item.type === 'deployment_request') {
+                                autoUpdateMessage += `Yêu cầu triển khai #${item.id} → Hoàn thành. `;
+                            }
+                        });
+                        setTimeout(() => {
+                            showAlert(autoUpdateMessage, 'info');
+                        }, 1000);
+                    }
                     
                     // Close modal
                     const modal = bootstrap.Modal.getInstance(document.getElementById('editDeploymentTaskModal'));
