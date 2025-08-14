@@ -6,20 +6,22 @@
  * Tác giả: IT Support Team
  */
 
+// Cấu hình session trước khi bắt đầu (chỉ khi chưa có output)
+if (!headers_sent()) {
+    ini_set('session.cookie_lifetime', 0); // Session cookie sẽ tồn tại cho đến khi browser đóng
+    ini_set('session.gc_maxlifetime', 3600); // 1 giờ
+    ini_set('session.use_strict_mode', 1);
+    ini_set('session.use_cookies', 1);
+    ini_set('session.use_only_cookies', 1);
+    ini_set('session.cookie_httponly', 1);
+    ini_set('session.cookie_samesite', 'Lax');
+    ini_set('session.cookie_path', '/'); // Đảm bảo cookie có thể truy cập từ tất cả paths
+}
+
 if (basename(__FILE__) == basename($_SERVER['SCRIPT_FILENAME'])) {
     http_response_code(403);
     exit('Access denied.');
 }
-
-// Cấu hình session trước khi bắt đầu
-ini_set('session.cookie_lifetime', 0); // Session cookie sẽ tồn tại cho đến khi browser đóng
-ini_set('session.gc_maxlifetime', 3600); // 1 giờ
-ini_set('session.use_strict_mode', 1);
-ini_set('session.use_cookies', 1);
-ini_set('session.use_only_cookies', 1);
-ini_set('session.cookie_httponly', 1);
-ini_set('session.cookie_samesite', 'Lax');
-ini_set('session.cookie_path', '/'); // Đảm bảo cookie có thể truy cập từ tất cả paths
 
 // Bắt đầu session nếu chưa có
 if (session_status() === PHP_SESSION_NONE) {
@@ -80,7 +82,7 @@ function getCurrentUser() {
     // Lấy thông tin chi tiết từ database
     try {
         global $pdo;
-        if ($pdo) {
+        if (isset($pdo) && $pdo) {
             $stmt = $pdo->prepare("SELECT position, department, office, staff_code FROM staffs WHERE id = ?");
             $stmt->execute([$_SESSION[SESSION_USER_ID]]);
             $staff_info = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -409,7 +411,7 @@ function logUserActivity($action, $details = '') {
     try {
         global $pdo;
         
-        if (!isset($pdo)) {
+        if (!isset($pdo) || !$pdo) {
             return; // Không có kết nối database
         }
         
@@ -418,11 +420,11 @@ function logUserActivity($action, $details = '') {
         $ip_address = $_SERVER['REMOTE_ADDR'] ?? 'unknown';
         $user_agent = $_SERVER['HTTP_USER_AGENT'] ?? '';
         
-        $sql = "INSERT INTO user_activity_logs (user_id, username, action, details, ip_address, user_agent, created_at) 
-                VALUES (?, ?, ?, ?, ?, ?, NOW())";
+        $sql = "INSERT INTO user_activity_logs (user_id, activity, details, ip_address, user_agent, created_at) 
+                VALUES (?, ?, ?, ?, ?, NOW())";
         
         $stmt = $pdo->prepare($sql);
-        $stmt->execute([$user_id, $username, $action, $details, $ip_address, $user_agent]);
+        $stmt->execute([$user_id, $action, $details, $ip_address, $user_agent]);
         
     } catch (Exception $e) {
         // Log lỗi nhưng không làm crash ứng dụng
