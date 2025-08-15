@@ -703,7 +703,7 @@ if (isset($_SESSION['user_id'])) {
                         <i class="fas fa-file-excel me-2"></i>
                         Xuất Excel
                     </button>
-                    <?php if ($current_role !== 'user'): ?>
+                    <?php if ($current_role !== 'it' && $current_role !== 'user'): ?>
                     <button class="button" id="createRequestBtn" data-bs-toggle="modal" data-bs-target="#addmaintenanceRequestModal">
                         <span class="button_lg">
                             <span class="button_sl"></span>
@@ -826,7 +826,7 @@ if (isset($_SESSION['user_id'])) {
                                             <button class="btn btn-sm btn-outline-warning" onclick="editRequest(<?php echo $request['id']; ?>)" title="Chỉnh sửa">
                                                 <i class="fas fa-edit"></i>
                                             </button>
-                                            <?php if ($current_role !== 'user'): ?>
+                                            <?php if ($current_role === 'admin'): ?>
                                             <button class="btn btn-sm btn-outline-danger" onclick="deleteRequest(<?php echo $request['id']; ?>)" title="Xóa">
                                                 <i class="fas fa-trash"></i>
                                             </button>
@@ -1296,8 +1296,13 @@ function editRequest(requestId) {
     fetch(`api/get_maintenance_request.php?id=${requestId}`)
         .then(response => response.json())
         .then(data => {
-                            if (data.success) {
-                    const request = data.data;
+            if (data.success) {
+                const request = data.data;
+                const currentRole = '<?php echo $current_role; ?>';
+                const currentUserId = <?php echo $_SESSION['user_id'] ?? 0; ?>;
+                
+                // Kiểm tra quyền chỉnh sửa - sale phụ trách hoặc admin
+                const canEdit = currentRole === 'admin' || (currentRole !== 'it' && currentRole !== 'user' && request.sale_id == currentUserId);
                     // Debug: Log toàn bộ dữ liệu request
             
                 
@@ -1343,7 +1348,41 @@ function editRequest(requestId) {
                 
                 // Đợi modal hiển thị xong rồi set values
                 document.getElementById('editmaintenanceRequestModal').addEventListener('shown.bs.modal', function() {
-            
+                    // Set readonly cho các trường nếu không có quyền chỉnh sửa
+                    if (!canEdit) {
+                        const readonlyFields = [
+                            'edit_po_number', 'edit_no_contract_po', 'edit_contract_type', 'edit_request_detail_type',
+                            'edit_email_subject_customer', 'edit_email_subject_internal', 'edit_expected_start', 'edit_expected_end',
+                            'edit_customer_id', 'edit_contact_person', 'edit_contact_phone', 'edit_sale_id', 
+                            'edit_requester_notes', 'edit_maintenance_status'
+                        ];
+                        
+                        readonlyFields.forEach(fieldId => {
+                            const field = document.getElementById(fieldId);
+                            if (field) {
+                                field.setAttribute('readonly', true);
+                                field.style.backgroundColor = '#f8f9fa';
+                                field.style.cursor = 'not-allowed';
+                            }
+                        });
+                        
+                        // Disable select elements
+                        const selectFields = ['edit_contract_type', 'edit_request_detail_type', 'edit_customer_id', 'edit_sale_id', 'edit_maintenance_status'];
+                        selectFields.forEach(fieldId => {
+                            const field = document.getElementById(fieldId);
+                            if (field) {
+                                field.disabled = true;
+                                field.style.backgroundColor = '#f8f9fa';
+                                field.style.cursor = 'not-allowed';
+                            }
+                        });
+                        
+                        // Disable checkbox
+                        const checkbox = document.getElementById('edit_no_contract_po');
+                        if (checkbox) {
+                            checkbox.disabled = true;
+                        }
+                    }
                     
                     // Set values sau khi modal đã hiển thị
                     const detailTypeSelect = document.getElementById('edit_request_detail_type');
@@ -1628,7 +1667,7 @@ function loadmaintenanceCases(requestId) {
                         <button type="button" class="btn btn-sm btn-outline-warning" onclick="editmaintenanceCase(${item.id}); return false;" title="Chỉnh sửa">
                           <i class="fas fa-edit"></i>
                         </button>
-                        <?php if ($current_role !== 'user'): ?>
+                        <?php if ($current_role === 'admin'): ?>
                         <button type="button" class="btn btn-sm btn-outline-danger" onclick="deletemaintenanceCase(${item.id}, ${requestId}); return false;" title="Xóa">
                           <i class="fas fa-trash"></i>
                         </button>
@@ -1811,6 +1850,24 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
             
+            // Kiểm tra quyền trước khi submit
+            const currentRole = '<?php echo $current_role; ?>';
+            const currentUserId = <?php echo $_SESSION['user_id'] ?? 0; ?>;
+            const originalAssignedTo = document.getElementById('edit_case_id').getAttribute('data-original-assigned-to');
+            
+            // Kiểm tra quyền chỉnh sửa case - chỉ role 'it' và người phụ trách case hoặc admin
+            const canEditCase = currentRole === 'admin' || (currentRole === 'it' && originalAssignedTo == currentUserId);
+            
+            if (!canEditCase) {
+                if (typeof showAlert === 'function') {
+                    showAlert('Bạn không có quyền chỉnh sửa case này!', 'error');
+                } else {
+                    alert('Bạn không có quyền chỉnh sửa case này!');
+                }
+                isSubmitting = false;
+                return;
+            }
+            
             // Chuẩn bị dữ liệu
             const formData = {
                 id: document.getElementById('edit_case_id').value,
@@ -1919,6 +1976,14 @@ function editmaintenanceCase(caseId) {
         .then(data => {
             if (data.success) {
                 const caseData = data.data;
+                const currentRole = '<?php echo $current_role; ?>';
+                const currentUserId = <?php echo $_SESSION['user_id'] ?? 0; ?>;
+                
+                // Kiểm tra quyền chỉnh sửa case - chỉ role 'it' và người phụ trách case hoặc admin
+                const canEditCase = currentRole === 'admin' || (currentRole === 'it' && caseData.assigned_to == currentUserId);
+                
+                // Lưu trữ giá trị assigned_to gốc để kiểm tra quyền khi submit
+                document.getElementById('edit_case_id').setAttribute('data-original-assigned-to', caseData.assigned_to);
                 
                 // Điền dữ liệu vào form edit case
                 document.getElementById('edit_case_id').value = caseData.id;
@@ -1976,6 +2041,61 @@ function editmaintenanceCase(caseId) {
                     document.getElementById('edit_start_date').value = caseData.start_date ? formatDateTimeForInput(caseData.start_date) : '';
                     document.getElementById('edit_end_date').value = caseData.end_date ? formatDateTimeForInput(caseData.end_date) : '';
                     document.getElementById('edit_status').value = caseData.status || '';
+                    
+                    // Set readonly cho các trường dựa trên quyền
+                    if (!canEditCase) {
+                        // Disable tất cả các trường nếu không có quyền
+                        const readonlyFields = [
+                            'edit_case_code', 'edit_request_type', 'edit_progress', 'edit_case_description', 
+                            'edit_notes', 'edit_assigned_to', 'edit_work_type', 'edit_start_date', 'edit_end_date', 'edit_status'
+                        ];
+                        
+                        readonlyFields.forEach(fieldId => {
+                            const field = document.getElementById(fieldId);
+                            if (field) {
+                                field.setAttribute('readonly', true);
+                                field.style.backgroundColor = '#f8f9fa';
+                                field.style.cursor = 'not-allowed';
+                            }
+                        });
+                        
+                        // Disable select elements (bao gồm cả trạng thái)
+                        const selectFields = ['edit_request_type', 'edit_progress', 'edit_assigned_to', 'edit_work_type', 'edit_status'];
+                        selectFields.forEach(fieldId => {
+                            const field = document.getElementById(fieldId);
+                            if (field) {
+                                field.disabled = true;
+                                field.style.backgroundColor = '#f8f9fa';
+                                field.style.cursor = 'not-allowed';
+                            }
+                        });
+                    } else {
+                        // User có quyền: chỉ cho phép sửa ngày kết thúc và trạng thái
+                        const readonlyFields = [
+                            'edit_case_code', 'edit_request_type', 'edit_progress', 'edit_case_description', 
+                            'edit_notes', 'edit_assigned_to', 'edit_work_type', 'edit_start_date'
+                        ];
+                        
+                        readonlyFields.forEach(fieldId => {
+                            const field = document.getElementById(fieldId);
+                            if (field) {
+                                field.setAttribute('readonly', true);
+                                field.style.backgroundColor = '#f8f9fa';
+                                field.style.cursor = 'not-allowed';
+                            }
+                        });
+                        
+                        // Disable select elements (trừ trạng thái)
+                        const selectFields = ['edit_request_type', 'edit_progress', 'edit_assigned_to', 'edit_work_type'];
+                        selectFields.forEach(fieldId => {
+                            const field = document.getElementById(fieldId);
+                            if (field) {
+                                field.disabled = true;
+                                field.style.backgroundColor = '#f8f9fa';
+                                field.style.cursor = 'not-allowed';
+                            }
+                        });
+                    }
                 }
                 
                 // Load danh sách task bảo trì
@@ -2232,7 +2352,7 @@ function loadmaintenanceTasks(caseId) {
                         <button type="button" class="btn btn-sm btn-outline-warning" onclick="editmaintenanceTask(${item.id}); return false;" title="Chỉnh sửa">
                           <i class="fas fa-edit"></i>
                         </button>
-                        <?php if ($current_role !== 'user'): ?>
+                        <?php if ($current_role === 'admin'): ?>
                         <button type="button" class="btn btn-sm btn-outline-danger" onclick="deletemaintenanceTask(${item.id}, ${caseId}); return false;" title="Xóa">
                           <i class="fas fa-trash"></i>
                         </button>
@@ -2265,6 +2385,11 @@ function editmaintenanceTask(taskId) {
         .then(data => {
             if (data.success && data.data) {
                 const taskData = data.data;
+                const currentRole = '<?php echo $current_role; ?>';
+                const currentUserId = <?php echo $_SESSION['user_id'] ?? 0; ?>;
+                
+                // Kiểm tra quyền chỉnh sửa task - sale phụ trách hoặc admin
+                const canEditTask = currentRole === 'admin' || (currentRole !== 'it' && currentRole !== 'user' && taskData.sale_id == currentUserId);
                 
                 // Điền dữ liệu vào form edit task
                 document.getElementById('edit_task_id').value = taskData.id;
@@ -2305,6 +2430,35 @@ function editmaintenanceTask(taskId) {
                         
                         // Hiển thị modal edit task
                         const editTaskModal = new bootstrap.Modal(document.getElementById('editmaintenanceTaskModal'));
+                        
+                        // Set readonly cho các trường nếu không có quyền chỉnh sửa
+                        if (!canEditTask) {
+                            const readonlyFields = [
+                                'edit_task_number', 'edit_task_type', 'edit_task_template', 'edit_task_name', 
+                                'edit_task_note', 'edit_task_assignee_id', 'edit_task_start_date', 'edit_task_end_date', 'edit_task_status'
+                            ];
+                            
+                            readonlyFields.forEach(fieldId => {
+                                const field = document.getElementById(fieldId);
+                                if (field) {
+                                    field.setAttribute('readonly', true);
+                                    field.style.backgroundColor = '#f8f9fa';
+                                    field.style.cursor = 'not-allowed';
+                                }
+                            });
+                            
+                            // Disable select elements
+                            const selectFields = ['edit_task_type', 'edit_task_template', 'edit_task_assignee_id', 'edit_task_status'];
+                            selectFields.forEach(fieldId => {
+                                const field = document.getElementById(fieldId);
+                                if (field) {
+                                    field.disabled = true;
+                                    field.style.backgroundColor = '#f8f9fa';
+                                    field.style.cursor = 'not-allowed';
+                                }
+                            });
+                        }
+                        
                         editTaskModal.show();
                     });
                 
@@ -2590,6 +2744,7 @@ function reloadmaintenanceRequestsTable() {
                 console.log('Card container position: N/A');
             }
             const currentRole = '<?php echo $current_role; ?>';
+            const currentUserId = <?php echo $_SESSION['user_id'] ?? 0; ?>;
             
             if (data.data.length === 0) {
                 console.log('No data, showing empty message');
@@ -2633,7 +2788,7 @@ function reloadmaintenanceRequestsTable() {
                             </thead>
                             <tbody id="maintenance-requests-table">
                                 ${data.data.map((request, index) => {
-                                    const deleteButton = currentRole !== 'user' ? `<button class="btn btn-sm btn-outline-danger" onclick="deleteRequest(${request.id})" title="Xóa"><i class="fas fa-trash"></i></button>` : '';
+                                    const deleteButton = currentRole === 'admin' ? `<button class="btn btn-sm btn-outline-danger" onclick="deleteRequest(${request.id})" title="Xóa"><i class="fas fa-trash"></i></button>` : '';
                                     return `
                                     <tr>
                                         <td class="text-center">${index + 1}</td>
@@ -3050,9 +3205,11 @@ document.addEventListener('DOMContentLoaded', function() {
               <div class="col-12">
                 <div class="d-flex justify-content-between align-items-center mb-3">
                   <h6 class="text-success mb-0"><i class="fas fa-tasks me-2"></i>QUẢN LÝ CASE bảo trì</h6>
+                  <?php if ($current_role === 'it'): ?>
                   <button type="button" class="btn btn-success btn-sm" onclick="createmaintenanceCase()">
                     <i class="fas fa-plus me-1"></i>Tạo case bảo trì
                   </button>
+                  <?php endif; ?>
                 </div>
                 
                 <!-- Bảng danh sách case bảo trì -->
@@ -3091,7 +3248,7 @@ document.addEventListener('DOMContentLoaded', function() {
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
-          <?php if ($current_role !== 'user'): ?>
+          <?php if ($current_role === 'admin' || ($current_role !== 'it' && $current_role !== 'user')): ?>
           <button type="submit" class="btn btn-primary">Cập nhật yêu cầu</button>
           <?php endif; ?>
         </div>
@@ -3525,9 +3682,11 @@ document.addEventListener('DOMContentLoaded', function() {
               <div class="col-12">
                 <div class="d-flex justify-content-between align-items-center mb-3">
                   <h6 class="text-info mb-0"><i class="fas fa-tasks me-2"></i>QUẢN LÝ TASK bảo trì</h6>
+                  <?php if ($current_role === 'it'): ?>
                   <button type="button" class="btn btn-info btn-sm" onclick="createmaintenanceTask()">
                     <i class="fas fa-plus me-1"></i>Tạo task bảo trì
                   </button>
+                  <?php endif; ?>
                 </div>
                 
                 <!-- Bảng danh sách task bảo trì -->

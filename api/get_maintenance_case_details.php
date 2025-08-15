@@ -30,6 +30,7 @@ try {
             mc.*, 
             mc.maintenance_request_id, 
             mr.request_code,
+            mr.sale_id,
             s.fullname as assigned_to_name,
             creator.fullname as created_by_name
         FROM maintenance_cases mc

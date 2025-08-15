@@ -24,7 +24,8 @@ try {
         mt.*,
         s.fullname as assigned_to_name,
         mc.case_code,
-        mr.request_code
+        mr.request_code,
+        mr.sale_id
         FROM maintenance_tasks mt
         LEFT JOIN staffs s ON mt.assigned_to = s.id
         LEFT JOIN maintenance_cases mc ON mt.maintenance_case_id = mc.id

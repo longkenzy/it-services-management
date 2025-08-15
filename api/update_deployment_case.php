@@ -8,6 +8,9 @@ require_once '../config/db.php';
 require_once '../includes/session.php';
 
 header('Content-Type: application/json');
+header('Access-Control-Allow-Origin: *');
+header('Access-Control-Allow-Methods: POST, PUT');
+header('Access-Control-Allow-Headers: Content-Type');
 
 // Kiểm tra đăng nhập
 if (null === getCurrentUserId()) {
@@ -24,14 +27,26 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 }
 
 try {
+    // Lấy dữ liệu từ JSON input
+    $input = json_decode(file_get_contents('php://input'), true);
+    
+    // Validate JSON input
+    if (json_last_error() !== JSON_ERROR_NONE) {
+        throw new Exception('Invalid JSON data');
+    }
+    
     // Lấy dữ liệu từ form
-    $id = $_POST['id'] ?? '';
-    $case_code = $_POST['case_code'] ?? '';
-    $case_description = $_POST['case_description'] ?? '';
-    $notes = $_POST['notes'] ?? '';
-    $start_date = $_POST['start_date'] ?? null;
-    $end_date = $_POST['end_date'] ?? null;
-    $status = $_POST['status'] ?? '';
+    $id = $input['id'] ?? '';
+    $case_code = $input['case_code'] ?? '';
+    $request_type = $input['request_type'] ?? '';
+    $progress = $input['progress'] ?? '';
+    $case_description = $input['case_description'] ?? '';
+    $notes = $input['notes'] ?? '';
+    $assigned_to = $input['assigned_to'] ?? '';
+    $work_type = $input['work_type'] ?? '';
+    $start_date = $input['start_date'] ?? null;
+    $end_date = $input['end_date'] ?? null;
+    $status = $input['status'] ?? '';
     
     // Validate dữ liệu
     if (empty($id)) {
@@ -42,10 +57,24 @@ try {
         throw new Exception('Trạng thái không được để trống');
     }
     
+    // Validate date range if both dates are provided
+    if (!empty($start_date) && !empty($end_date)) {
+        $start = new DateTime($start_date);
+        $end = new DateTime($end_date);
+        
+        if ($end <= $start) {
+            throw new Exception('Ngày kết thúc phải lớn hơn ngày bắt đầu');
+        }
+    }
+    
     // Cập nhật deployment case
     $sql = "UPDATE deployment_cases SET 
+            request_type = ?,
+            progress = ?,
             case_description = ?,
             notes = ?,
+            assigned_to = ?,
+            work_type = ?,
             start_date = ?,
             end_date = ?,
             status = ?,
@@ -54,8 +83,12 @@ try {
     
     $stmt = $pdo->prepare($sql);
     $result = $stmt->execute([
+        $request_type,
+        $progress,
         $case_description,
         $notes,
+        $assigned_to ?: null,
+        $work_type,
         $start_date ?: null,
         $end_date ?: null,
         $status,
