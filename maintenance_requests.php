@@ -2069,8 +2069,11 @@ function editmaintenanceCase(caseId) {
                                 field.style.cursor = 'not-allowed';
                             }
                         });
+                    } else if (currentRole === 'admin') {
+                        // Admin: có thể chỉnh sửa tất cả các trường
+                        // Không disable trường nào
                     } else {
-                        // User có quyền: chỉ cho phép sửa ngày kết thúc và trạng thái
+                        // User có quyền (role it + người phụ trách): chỉ cho phép sửa ngày kết thúc và trạng thái
                         const readonlyFields = [
                             'edit_case_code', 'edit_request_type', 'edit_progress', 'edit_case_description', 
                             'edit_notes', 'edit_assigned_to', 'edit_work_type', 'edit_start_date'
@@ -2316,6 +2319,7 @@ function loadmaintenanceTasks(caseId) {
     fetch('api/get_maintenance_tasks.php?maintenance_case_id=' + caseId)
         .then(response => response.json())
         .then(data => {
+            console.log('Debug - API response for maintenance tasks:', data);
             const tbody = document.getElementById('maintenance-tasks-table');
             if (!tbody) {
                 return;
@@ -2331,7 +2335,11 @@ function loadmaintenanceTasks(caseId) {
             }
             
             // Populate table with filtered tasks
+            console.log('Debug - Populating table with', data.data.length, 'tasks');
             data.data.forEach((item, idx) => {
+                console.log('Debug - Processing task:', item);
+                console.log('Debug - Template name:', item.template_name);
+                console.log('Debug - Assignee name:', item.assignee_name);
                 tbody.innerHTML += `
                   <tr>
                     <td class='text-center'>${idx + 1}</td>
@@ -2388,8 +2396,11 @@ function editmaintenanceTask(taskId) {
                 const currentRole = '<?php echo $current_role; ?>';
                 const currentUserId = <?php echo $_SESSION['user_id'] ?? 0; ?>;
                 
-                // Kiểm tra quyền chỉnh sửa task - sale phụ trách hoặc admin
-                const canEditTask = currentRole === 'admin' || (currentRole !== 'it' && currentRole !== 'user' && taskData.sale_id == currentUserId);
+                // Kiểm tra quyền chỉnh sửa task - chỉ role 'it' và người thực hiện task hoặc admin
+                const canEditTask = currentRole === 'admin' || (currentRole === 'it' && taskData.assigned_to == currentUserId);
+                
+                // Lưu trữ giá trị assigned_to gốc để kiểm tra quyền khi submit
+                document.getElementById('edit_task_id').setAttribute('data-original-assigned-to', taskData.assigned_to);
                 
                 // Điền dữ liệu vào form edit task
                 document.getElementById('edit_task_id').value = taskData.id;
@@ -2431,8 +2442,9 @@ function editmaintenanceTask(taskId) {
                         // Hiển thị modal edit task
                         const editTaskModal = new bootstrap.Modal(document.getElementById('editmaintenanceTaskModal'));
                         
-                        // Set readonly cho các trường nếu không có quyền chỉnh sửa
+                        // Set readonly cho các trường dựa trên quyền
                         if (!canEditTask) {
+                            // Disable tất cả các trường nếu không có quyền
                             const readonlyFields = [
                                 'edit_task_number', 'edit_task_type', 'edit_task_template', 'edit_task_name', 
                                 'edit_task_note', 'edit_task_assignee_id', 'edit_task_start_date', 'edit_task_end_date', 'edit_task_status'
@@ -2447,8 +2459,37 @@ function editmaintenanceTask(taskId) {
                                 }
                             });
                             
-                            // Disable select elements
+                            // Disable select elements (bao gồm cả trạng thái)
                             const selectFields = ['edit_task_type', 'edit_task_template', 'edit_task_assignee_id', 'edit_task_status'];
+                            selectFields.forEach(fieldId => {
+                                const field = document.getElementById(fieldId);
+                                if (field) {
+                                    field.disabled = true;
+                                    field.style.backgroundColor = '#f8f9fa';
+                                    field.style.cursor = 'not-allowed';
+                                }
+                            });
+                        } else if (currentRole === 'admin') {
+                            // Admin: có thể chỉnh sửa tất cả các trường
+                            // Không disable trường nào
+                        } else {
+                            // User có quyền (role it + người thực hiện): chỉ cho phép sửa ngày kết thúc và trạng thái
+                            const readonlyFields = [
+                                'edit_task_number', 'edit_task_type', 'edit_task_template', 'edit_task_name', 
+                                'edit_task_note', 'edit_task_assignee_id', 'edit_task_start_date'
+                            ];
+                            
+                            readonlyFields.forEach(fieldId => {
+                                const field = document.getElementById(fieldId);
+                                if (field) {
+                                    field.setAttribute('readonly', true);
+                                    field.style.backgroundColor = '#f8f9fa';
+                                    field.style.cursor = 'not-allowed';
+                                }
+                            });
+                            
+                            // Disable select elements (trừ trạng thái)
+                            const selectFields = ['edit_task_type', 'edit_task_template', 'edit_task_assignee_id'];
                             selectFields.forEach(fieldId => {
                                 const field = document.getElementById(fieldId);
                                 if (field) {
@@ -2872,6 +2913,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 console.log(key + ': ' + value);
             }
             
+            // Debug: Check specific fields
+            console.log('task_template value:', formData.get('task_template'));
+            console.log('assignee_id value:', formData.get('assignee_id'));
+            
             const data = {
                 task_number: formData.get('task_number'),
                 maintenance_case_id: formData.get('maintenance_case_id'),
@@ -2911,21 +2956,36 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (result.success) {
                     showAlert(result.message, 'success');
                     
+                    // Lưu caseId trước khi đóng modal
+                    const caseId = data.maintenance_case_id || document.getElementById('task_maintenance_case_id').value;
+                    const requestId = data.maintenance_request_id || document.getElementById('task_request_id').value;
+                    
+                    console.log('Debug - caseId for reload:', caseId);
+                    console.log('Debug - data.maintenance_case_id:', data.maintenance_case_id);
+                    console.log('Debug - task_maintenance_case_id.value:', document.getElementById('task_maintenance_case_id').value);
+                    
                     // Close modal
                     const modal = bootstrap.Modal.getInstance(document.getElementById('createmaintenanceTaskModal'));
                     modal.hide();
                     
-                    // Reload tasks table
-                    loadmaintenanceTasks(data.maintenance_case_id);
-                    
-                    // Reload maintenance cases table để cập nhật cột tổng số task
-                    const requestId = data.request_id;
-                    if (requestId) {
-                        loadmaintenanceCases(requestId);
-                    }
-                    
-                    // Reload maintenance requests table để cập nhật cột tổng số task
-                    reloadmaintenanceRequestsTable();
+                    // Reload sau khi modal đã đóng
+                    setTimeout(() => {
+                        // Reload tasks table
+                        if (caseId) {
+                            console.log('Debug - Calling loadmaintenanceTasks with caseId:', caseId);
+                            loadmaintenanceTasks(caseId);
+                        } else {
+                            console.log('Debug - caseId is empty, cannot reload tasks');
+                        }
+                        
+                        // Reload maintenance cases table để cập nhật cột tổng số task
+                        if (requestId) {
+                            loadmaintenanceCases(requestId);
+                        }
+                        
+                        // Reload maintenance requests table để cập nhật cột tổng số task
+                        reloadmaintenanceRequestsTable();
+                    }, 500);
                     
                     // Reset form
                     e.target.reset();
@@ -2957,6 +3017,23 @@ document.addEventListener('DOMContentLoaded', function() {
     if (editTaskForm) {
         editTaskForm.addEventListener('submit', function(e) {
             e.preventDefault();
+            
+            // Kiểm tra quyền trước khi submit
+            const currentRole = '<?php echo $current_role; ?>';
+            const currentUserId = <?php echo $_SESSION['user_id'] ?? 0; ?>;
+            const originalAssignedTo = document.getElementById('edit_task_id').getAttribute('data-original-assigned-to');
+            
+            // Kiểm tra quyền chỉnh sửa task - chỉ role 'it' và người thực hiện task hoặc admin
+            const canEditTask = currentRole === 'admin' || (currentRole === 'it' && originalAssignedTo == currentUserId);
+            
+            if (!canEditTask) {
+                if (typeof showAlert === 'function') {
+                    showAlert('Bạn không có quyền chỉnh sửa task này!', 'error');
+                } else {
+                    alert('Bạn không có quyền chỉnh sửa task này!');
+                }
+                return;
+            }
             
             const formData = new FormData(e.target);
             const data = {
@@ -3682,7 +3759,7 @@ document.addEventListener('DOMContentLoaded', function() {
               <div class="col-12">
                 <div class="d-flex justify-content-between align-items-center mb-3">
                   <h6 class="text-info mb-0"><i class="fas fa-tasks me-2"></i>QUẢN LÝ TASK bảo trì</h6>
-                  <?php if ($current_role === 'it'): ?>
+                  <?php if ($current_role === 'it' || $current_role === 'admin'): ?>
                   <button type="button" class="btn btn-info btn-sm" onclick="createmaintenanceTask()">
                     <i class="fas fa-plus me-1"></i>Tạo task bảo trì
                   </button>
