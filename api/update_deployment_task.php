@@ -24,12 +24,25 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 }
 
 try {
-    $id = $_POST['id'] ?? '';
-    $task_description = $_POST['task_description'] ?? '';
-    $notes = $_POST['notes'] ?? '';
-    $start_date = $_POST['start_date'] ?? '';
-    $end_date = $_POST['end_date'] ?? '';
-    $status = $_POST['status'] ?? '';
+    // Đọc JSON input
+    $input = json_decode(file_get_contents('php://input'), true);
+    
+    if (!$input) {
+        throw new Exception('Invalid JSON data');
+    }
+    
+    $id = $input['id'] ?? '';
+    $task_description = $input['task_description'] ?? $input['task_name'] ?? '';
+    $notes = $input['notes'] ?? $input['task_note'] ?? '';
+    $start_date = $input['start_date'] ?? '';
+    $end_date = $input['end_date'] ?? '';
+    $status = $input['status'] ?? '';
+    
+    // Debug: Log input data
+    error_log("Update task input: " . json_encode($input));
+    error_log("Update task ID: " . $id);
+    error_log("Update task task_name: " . $task_description);
+    error_log("Update task task_note: " . $notes);
     
     if (empty($id)) {
         throw new Exception('ID task không được để trống');
@@ -38,22 +51,25 @@ try {
     // Cập nhật deployment task
     $sql = "UPDATE deployment_tasks SET 
             task_description = ?, 
-            notes = ?, 
             start_date = ?, 
             end_date = ?, 
             status = ?,
             updated_at = NOW()
             WHERE id = ?";
     
+    error_log("Update task SQL: " . $sql);
+    error_log("Update task params: " . json_encode([$task_description, $start_date, $end_date, $status, $id]));
+    
     $stmt = $pdo->prepare($sql);
     $result = $stmt->execute([
         $task_description,
-        $notes,
         $start_date,
         $end_date,
         $status,
         $id
     ]);
+    
+    error_log("Update task result: " . ($result ? 'true' : 'false'));
     
     if ($result) {
         $auto_updated_items = [];

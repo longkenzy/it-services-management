@@ -32,7 +32,7 @@ try {
                 dt.status,
                 dt.created_at,
                 dt.updated_at,
-                dt.created_by,
+
                 s.fullname as assignee_name
             FROM maintenance_tasks dt
             LEFT JOIN staffs s ON dt.assigned_to = s.id
@@ -51,6 +51,8 @@ try {
         error_log("First task: " . json_encode($tasks[0]));
     }
     
+    // Debug: Log response data
+    error_log("API Response: " . json_encode(['success' => true, 'data' => $tasks]));
     echo json_encode(['success' => true, 'data' => $tasks]);
     
 } catch (Exception $e) {

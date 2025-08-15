@@ -1737,8 +1737,11 @@ function editDeploymentCase(caseId) {
                                 field.style.cursor = 'not-allowed';
                             }
                         });
+                    } else if (currentRole === 'admin') {
+                        // Admin: có thể chỉnh sửa tất cả các trường
+                        // Không disable trường nào
                     } else {
-                        // User có quyền: chỉ cho phép sửa ngày kết thúc và trạng thái
+                        // User có quyền (role it + người phụ trách): chỉ cho phép sửa ngày kết thúc và trạng thái
                         const readonlyFields = [
                             'edit_case_code', 'edit_request_type', 'edit_progress', 'edit_case_description', 
                             'edit_notes', 'edit_assigned_to', 'edit_work_type', 'edit_start_date'
@@ -1978,10 +1981,16 @@ function createDeploymentTask() {
 
 // Function load danh sách task triển khai
 function loadDeploymentTasks(caseId) {
-    if (!caseId) return;
-    
+    if (!caseId) {
+        return;
+    }
     // Fetch tasks filtered by deployment_case_id
-    fetch('api/get_deployment_tasks.php?deployment_case_id=' + caseId)
+    fetch('api/get_deployment_tasks.php?deployment_case_id=' + caseId, {
+        credentials: 'same-origin', // Include cookies/session
+        headers: {
+            'Accept': 'application/json'
+        }
+    })
         .then(response => response.json())
         .then(data => {
             const tbody = document.getElementById('deployment-tasks-table');
@@ -2056,8 +2065,11 @@ function editDeploymentTask(taskId) {
                 const currentRole = '<?php echo $current_role; ?>';
                 const currentUserId = <?php echo $_SESSION['user_id'] ?? 0; ?>;
                 
-                // Kiểm tra quyền chỉnh sửa task - sale phụ trách hoặc admin
-                const canEditTask = currentRole === 'admin' || (currentRole !== 'it' && currentRole !== 'user' && taskData.sale_id == currentUserId);
+                // Kiểm tra quyền chỉnh sửa task - chỉ role 'it' và người thực hiện task hoặc admin
+                const canEditTask = currentRole === 'admin' || (currentRole === 'it' && taskData.assignee_id == currentUserId);
+                
+                // Lưu trữ giá trị assignee_id gốc để kiểm tra quyền khi submit
+                document.getElementById('edit_task_id').setAttribute('data-original-assignee-id', taskData.assignee_id);
                 
                 // Điền dữ liệu vào form edit task
                 document.getElementById('edit_task_id').value = taskData.id;
@@ -2099,8 +2111,9 @@ function editDeploymentTask(taskId) {
                         // Hiển thị modal edit task
                         const editTaskModal = new bootstrap.Modal(document.getElementById('editDeploymentTaskModal'));
                         
-                        // Set readonly cho các trường nếu không có quyền chỉnh sửa
+                        // Set readonly cho các trường dựa trên quyền
                         if (!canEditTask) {
+                            // Disable tất cả các trường nếu không có quyền
                             const readonlyFields = [
                                 'edit_task_number', 'edit_task_type', 'edit_task_template', 'edit_task_name', 
                                 'edit_task_note', 'edit_task_assignee_id', 'edit_task_start_date', 'edit_task_end_date', 'edit_task_status'
@@ -2115,8 +2128,37 @@ function editDeploymentTask(taskId) {
                                 }
                             });
                             
-                            // Disable select elements
+                            // Disable select elements (bao gồm cả trạng thái)
                             const selectFields = ['edit_task_type', 'edit_task_template', 'edit_task_assignee_id', 'edit_task_status'];
+                            selectFields.forEach(fieldId => {
+                                const field = document.getElementById(fieldId);
+                                if (field) {
+                                    field.disabled = true;
+                                    field.style.backgroundColor = '#f8f9fa';
+                                    field.style.cursor = 'not-allowed';
+                                }
+                            });
+                        } else if (currentRole === 'admin') {
+                            // Admin: có thể chỉnh sửa tất cả các trường
+                            // Không disable trường nào
+                        } else {
+                            // User có quyền (role it + người thực hiện): chỉ cho phép sửa ngày kết thúc và trạng thái
+                            const readonlyFields = [
+                                'edit_task_number', 'edit_task_type', 'edit_task_template', 'edit_task_name', 
+                                'edit_task_note', 'edit_task_assignee_id', 'edit_task_start_date'
+                            ];
+                            
+                            readonlyFields.forEach(fieldId => {
+                                const field = document.getElementById(fieldId);
+                                if (field) {
+                                    field.setAttribute('readonly', true);
+                                    field.style.backgroundColor = '#f8f9fa';
+                                    field.style.cursor = 'not-allowed';
+                                }
+                            });
+                            
+                            // Disable select elements (trừ trạng thái)
+                            const selectFields = ['edit_task_type', 'edit_task_template', 'edit_task_assignee_id'];
                             selectFields.forEach(fieldId => {
                                 const field = document.getElementById(fieldId);
                                 if (field) {
@@ -2556,21 +2598,29 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (result.success) {
                     showAlert(result.message, 'success');
                     
+                    // Lưu caseId trước khi đóng modal
+                    const caseId = data.deployment_case_id || document.getElementById('task_deployment_case_id').value;
+                    const requestId = data.request_id || document.getElementById('task_request_id').value;
+                    
                     // Close modal
                     const modal = bootstrap.Modal.getInstance(document.getElementById('createDeploymentTaskModal'));
                     modal.hide();
                     
-                    // Reload tasks table
-                    loadDeploymentTasks(data.deployment_case_id);
-                    
-                    // Reload deployment cases table để cập nhật cột tổng số task
-                    const requestId = data.request_id;
-                    if (requestId) {
-                        loadDeploymentCases(requestId);
-                    }
-                    
-                    // Reload deployment requests table để cập nhật cột tổng số task
-                    reloadDeploymentRequestsTable();
+                    // Reload sau khi modal đã đóng
+                    setTimeout(() => {
+                        // Reload tasks table
+                        if (caseId) {
+                            loadDeploymentTasks(caseId);
+                        }
+                        
+                        // Reload deployment cases table để cập nhật cột tổng số task
+                        if (requestId) {
+                            loadDeploymentCases(requestId);
+                        }
+                        
+                        // Reload deployment requests table để cập nhật cột tổng số task
+                        reloadDeploymentRequestsTable();
+                    }, 500);
                     
                     // Reset form
                     e.target.reset();
@@ -2601,17 +2651,37 @@ document.addEventListener('DOMContentLoaded', function() {
         editTaskForm.addEventListener('submit', function(e) {
             e.preventDefault();
             
+            // Kiểm tra quyền trước khi submit
+            const currentRole = '<?php echo $current_role; ?>';
+            const currentUserId = <?php echo $_SESSION['user_id'] ?? 0; ?>;
+            const originalAssigneeId = document.getElementById('edit_task_id').getAttribute('data-original-assignee-id');
+            
+            // Kiểm tra quyền chỉnh sửa task - chỉ role 'it' và người thực hiện task hoặc admin
+            const canEditTask = currentRole === 'admin' || (currentRole === 'it' && originalAssigneeId == currentUserId);
+            
+            if (!canEditTask) {
+                if (typeof showAlert === 'function') {
+                    showAlert('Bạn không có quyền chỉnh sửa task này!', 'error');
+                } else {
+                    alert('Bạn không có quyền chỉnh sửa task này!');
+                }
+                return;
+            }
+            
             const formData = new FormData(e.target);
             const data = {
                 id: formData.get('id'),
                 task_type: formData.get('task_type'),
                 template_name: formData.get('task_template') || null,
-                task_description: formData.get('task_name'),
+                task_name: formData.get('task_name'),
+                task_note: formData.get('task_note'),
                 start_date: formData.get('start_date'),
                 end_date: formData.get('end_date'),
                 assignee_id: formData.get('assignee_id') || null,
                 status: formData.get('status')
             };
+            
+            console.log('Debug - Update task data:', data);
             
             fetch('api/update_deployment_task.php', {
                 method: 'POST',
@@ -2927,6 +2997,9 @@ document.addEventListener('DOMContentLoaded', function() {
       </div>
       <div class="modal-body">
         <form id="createDeploymentTaskForm">
+          <!-- Hidden fields for IDs -->
+          <input type="hidden" name="deployment_case_id" id="task_deployment_case_id">
+          <input type="hidden" name="request_id" id="task_request_id">
           <div class="row g-4">
             <!-- Cột trái -->
             <div class="col-md-6">
@@ -3028,8 +3101,8 @@ document.addEventListener('DOMContentLoaded', function() {
               </div>
             </div>
           </div>
-          <input type="hidden" name="deployment_case_id" id="task_deployment_case_id">
-          <input type="hidden" name="request_id" id="task_request_id">
+          <input type="hidden" name="deployment_case_id" id="task_deployment_case_id_duplicate">
+          <input type="hidden" name="request_id" id="task_request_id_duplicate">
         </form>
       </div>
       <div class="modal-footer">
@@ -3338,7 +3411,7 @@ document.addEventListener('DOMContentLoaded', function() {
               <div class="col-12">
                 <div class="d-flex justify-content-between align-items-center mb-3">
                   <h6 class="text-info mb-0"><i class="fas fa-tasks me-2"></i>QUẢN LÝ TASK TRIỂN KHAI</h6>
-                  <?php if ($current_role === 'it'): ?>
+                  <?php if ($current_role === 'it' || $current_role === 'admin'): ?>
                   <button type="button" class="btn btn-info btn-sm" onclick="createDeploymentTask()">
                     <i class="fas fa-plus me-1"></i>Tạo task triển khai
                   </button>

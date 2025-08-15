@@ -3,6 +3,12 @@ header('Content-Type: application/json');
 require_once '../config/db.php';
 require_once '../includes/session.php';
 
+// Ensure session is started
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
+// Re-enable session check
 if (null === getCurrentUserId()) {
     http_response_code(401);
     echo json_encode(['success' => false, 'message' => 'Chưa đăng nhập']);
@@ -16,6 +22,10 @@ if ($deployment_case_id <= 0) {
 }
 
 try {
+    if (!$pdo) {
+        throw new Exception("Database connection not available");
+    }
+    
     $sql = "SELECT 
                 dt.id,
                 dt.deployment_case_id,
@@ -29,7 +39,6 @@ try {
                 dt.status,
                 dt.created_at,
                 dt.updated_at,
-                dt.created_by,
                 s.fullname as assignee_name
             FROM deployment_tasks dt
             LEFT JOIN staffs s ON dt.assignee_id = s.id
@@ -46,7 +55,7 @@ try {
     error_log("Error in get_deployment_tasks.php: " . $e->getMessage());
     echo json_encode([
         'success' => false,
-        'message' => 'Có lỗi xảy ra khi lấy danh sách tasks'
+        'message' => 'Có lỗi xảy ra khi lấy danh sách tasks: ' . $e->getMessage()
     ]);
 }
 ?> 
