@@ -31,9 +31,12 @@ try {
                 dt.id, dt.deployment_case_id, dt.task_number, dt.task_type, dt.template_name, 
                 dt.task_description, dt.start_date, dt.end_date, dt.assignee_id, dt.status, 
                 dt.created_at, dt.updated_at,
+                dr.sale_id,
                 s.fullname as assignee_name
             FROM deployment_tasks dt
             LEFT JOIN staffs s ON dt.assignee_id = s.id
+            LEFT JOIN deployment_cases dc ON dt.deployment_case_id = dc.id
+            LEFT JOIN deployment_requests dr ON dc.deployment_request_id = dr.id
             WHERE dt.id = ?";
     
     $stmt = $pdo->prepare($sql);

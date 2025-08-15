@@ -13,7 +13,7 @@ if ($deployment_request_id <= 0) {
     echo json_encode(['success' => false, 'error' => 'Thiếu deployment_request_id']);
     exit;
 }
-$sql = "SELECT dc.*, s.fullname as assigned_to_name, (
+$sql = "SELECT dc.*, s.fullname as assigned_to_name, dc.created_by, (
     SELECT COUNT(*) FROM deployment_tasks dt WHERE dt.deployment_case_id = dc.id
 ) as total_tasks,
 (

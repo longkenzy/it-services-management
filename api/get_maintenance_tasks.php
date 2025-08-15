@@ -32,6 +32,7 @@ try {
                 dt.status,
                 dt.created_at,
                 dt.updated_at,
+                dt.created_by,
                 s.fullname as assignee_name
             FROM maintenance_tasks dt
             LEFT JOIN staffs s ON dt.assigned_to = s.id

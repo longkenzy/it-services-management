@@ -29,6 +29,7 @@ try {
                 dt.status,
                 dt.created_at,
                 dt.updated_at,
+                dt.created_by,
                 s.fullname as assignee_name
             FROM deployment_tasks dt
             LEFT JOIN staffs s ON dt.assignee_id = s.id

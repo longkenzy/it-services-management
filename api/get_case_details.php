@@ -46,6 +46,7 @@ try {
             dc.*, 
             dc.deployment_request_id, 
             dr.request_code,
+            dr.sale_id,
             s.fullname as assigned_to_name,
             creator.fullname as created_by_name
         FROM deployment_cases dc
