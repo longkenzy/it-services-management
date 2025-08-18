@@ -93,6 +93,7 @@ try {
     // Insert case vào database với explicit timestamps
     $current_timestamp = date('Y-m-d H:i:s');
     
+    // Thử cách 1: Insert với explicit timestamps
     $stmt = $pdo->prepare("
         INSERT INTO internal_cases (
             case_number, requester_id, handler_id, transferred_by, case_type, priority,
@@ -117,6 +118,34 @@ try {
         $current_timestamp,
         $current_timestamp
     ]);
+    
+    // Nếu cách 1 thất bại, thử cách 2: Insert không có timestamps
+    if (!$result) {
+        error_log("DEBUG: First insert failed, trying without timestamps");
+        
+        $stmt = $pdo->prepare("
+            INSERT INTO internal_cases (
+                case_number, requester_id, handler_id, transferred_by, case_type, priority,
+                issue_title, issue_description, status, notes, start_date, due_date, completed_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ");
+        
+        $result = $stmt->execute([
+            $case_number,
+            $requester_id,
+            $handler_id,
+            $transferred_by,
+            $case_type,
+            $priority,
+            $issue_title,
+            $issue_description,
+            $status,
+            $notes,
+            $start_date,
+            $due_date,
+            $completed_at
+        ]);
+    }
     
     if (!$result) {
         $error_info = $stmt->errorInfo();
