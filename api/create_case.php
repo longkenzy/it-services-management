@@ -23,6 +23,16 @@ if (!isLoggedIn()) {
 
 require_once '../config/db.php';
 
+// Debug: Kiểm tra database connection
+try {
+    $test_stmt = $pdo->prepare("SELECT NOW() as current_time, @@time_zone as timezone, @@sql_mode as sql_mode");
+    $test_stmt->execute();
+    $test_result = $test_stmt->fetch(PDO::FETCH_ASSOC);
+    error_log("DEBUG: Database connection test - Current time: {$test_result['current_time']}, Timezone: {$test_result['timezone']}, SQL mode: {$test_result['sql_mode']}");
+} catch (Exception $e) {
+    error_log("DEBUG: Database connection test failed - " . $e->getMessage());
+}
+
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
     echo json_encode(['success' => false, 'error' => 'Method not allowed']);
@@ -80,12 +90,14 @@ try {
         $completed_at = date('Y-m-d H:i:s');
     }
     
-    // Insert case vào database
+    // Insert case vào database với explicit timestamps
+    $current_timestamp = date('Y-m-d H:i:s');
+    
     $stmt = $pdo->prepare("
         INSERT INTO internal_cases (
             case_number, requester_id, handler_id, transferred_by, case_type, priority,
-            issue_title, issue_description, status, notes, start_date, due_date, completed_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            issue_title, issue_description, status, notes, start_date, due_date, completed_at, created_at, updated_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     ");
     
     $result = $stmt->execute([
@@ -101,15 +113,25 @@ try {
         $notes,
         $start_date,
         $due_date,
-        $completed_at
+        $completed_at,
+        $current_timestamp,
+        $current_timestamp
     ]);
     
     if (!$result) {
-        echo json_encode(['success' => false, 'error' => 'Database insert failed']);
+        $error_info = $stmt->errorInfo();
+        error_log("DEBUG: Insert failed - Error info: " . print_r($error_info, true));
+        echo json_encode(['success' => false, 'error' => 'Database insert failed: ' . $error_info[2]]);
         exit;
     }
     
+    // Debug: Log thông tin insert
+    error_log("DEBUG: Insert successful - Rows affected: " . $stmt->rowCount());
+    
     $case_id = $pdo->lastInsertId();
+    
+    // Debug: Log thông tin database
+    error_log("DEBUG: Database info - lastInsertId: $case_id, current_timestamp: $current_timestamp");
     
     // Debug: Kiểm tra case vừa tạo
     if ($case_id) {
@@ -119,6 +141,20 @@ try {
         
         if ($check_result) {
             error_log("DEBUG: Case created successfully - ID: {$check_result['id']}, Number: {$check_result['case_number']}, Created: {$check_result['created_at']}, Updated: {$check_result['updated_at']}");
+        } else {
+            error_log("DEBUG: Case not found after insert - ID: $case_id");
+        }
+    } else {
+        error_log("DEBUG: lastInsertId returned 0 or null");
+        
+        // Thử lấy case vừa tạo bằng case_number
+        $check_stmt = $pdo->prepare("SELECT id, case_number, created_at, updated_at FROM internal_cases WHERE case_number = ? ORDER BY id DESC LIMIT 1");
+        $check_stmt->execute([$case_number]);
+        $check_result = $check_stmt->fetch(PDO::FETCH_ASSOC);
+        
+        if ($check_result) {
+            $case_id = $check_result['id'];
+            error_log("DEBUG: Found case by case_number - ID: {$check_result['id']}, Number: {$check_result['case_number']}, Created: {$check_result['created_at']}, Updated: {$check_result['updated_at']}");
         }
     }
     
