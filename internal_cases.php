@@ -146,6 +146,9 @@ $flash_messages = getFlashMessages();
     <link rel="stylesheet" href="assets/css/dashboard.css?v=<?php echo filemtime('assets/css/dashboard.css'); ?>">
     <link rel="stylesheet" href="assets/css/alert.css?v=<?php echo filemtime('assets/css/alert.css'); ?>">
     
+    <!-- SheetJS for Excel export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    
     <!-- Tooltip CSS -->
     <style>
         .tooltip-icon {
@@ -347,6 +350,41 @@ $flash_messages = getFlashMessages();
             font-style: italic;
             opacity: 0.8;
         }
+        
+        /* Responsive filter styling */
+        @media (max-width: 1200px) {
+            .page-header .d-flex.gap-2 {
+                flex-wrap: wrap;
+            }
+            .page-header .d-flex.gap-2 .form-select,
+            .page-header .d-flex.gap-2 .btn {
+                margin-bottom: 0.5rem;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .page-header .d-flex.gap-2 {
+                flex-direction: column;
+            }
+            .page-header .d-flex.gap-2 .form-select,
+            .page-header .d-flex.gap-2 .btn {
+                width: 100% !important;
+                margin-bottom: 0.5rem;
+            }
+        }
+        
+        /* Active filter styling */
+        .form-select:not([value=""]) {
+            border-color: #0d6efd;
+            box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+        }
+        
+        /* Filter button hover effect */
+        #clearFiltersBtn:hover {
+            background-color: #6c757d;
+            border-color: #6c757d;
+            color: white;
+        }
     </style>
 </head>
 <body>
@@ -378,6 +416,45 @@ $flash_messages = getFlashMessages();
                         </button>
                     </div>
                 </div>
+                <!-- Filter Row -->
+                <div class="row mt-3">
+                    <div class="col-12">
+                        <div class="d-flex gap-2 align-items-center flex-wrap">
+                            <select class="form-select form-select-sm" id="requesterFilter" style="width: 180px;">
+                                <option value="">Tất cả người yêu cầu</option>
+                            </select>
+                            <select class="form-select form-select-sm" id="handlerFilter" style="width: 180px;">
+                                <option value="">Tất cả người xử lý</option>
+                            </select>
+                            <select class="form-select form-select-sm" id="caseTypeFilter" style="width: 180px;">
+                                <option value="">Tất cả loại case</option>
+                            </select>
+                            <select class="form-select form-select-sm" id="statusFilter" style="width: 150px;">
+                                <option value="">Tất cả trạng thái</option>
+                                <option value="pending">Tiếp nhận</option>
+                                <option value="in_progress">Đang xử lý</option>
+                                <option value="completed">Hoàn thành</option>
+                                <option value="cancelled">Huỷ</option>
+                            </select>
+                            <div class="d-flex gap-1 align-items-center">
+                                <label class="form-label mb-0 me-1" style="font-size: 0.875rem; color: #6c757d;">Từ:</label>
+                                <input type="date" class="form-control form-control-sm" id="dateFromFilter" style="width: 140px;">
+                            </div>
+                            <div class="d-flex gap-1 align-items-center">
+                                <label class="form-label mb-0 me-1" style="font-size: 0.875rem; color: #6c757d;">Đến:</label>
+                                <input type="date" class="form-control form-control-sm" id="dateToFilter" style="width: 140px;">
+                            </div>
+                            <button class="btn btn-outline-secondary btn-sm" id="clearFiltersBtn" title="Xóa bộ lọc">
+                                <i class="fas fa-times me-1"></i>
+                                Xóa lọc
+                            </button>
+                            <button class="btn btn-success btn-sm" id="exportExcelBtn" title="Xuất Excel">
+                                <i class="fas fa-file-excel me-1"></i>
+                                Xuất Excel
+                            </button>
+                        </div>
+                    </div>
+                </div>
             </div>
             
             <!-- Cases Table -->
@@ -392,29 +469,17 @@ $flash_messages = getFlashMessages();
                                         Danh sách Case nội bộ
                                     </h5>
                                 </div>
-                                <div class="col-auto">
-                                    <div class="d-flex gap-2">
-                                        <select class="form-select form-select-sm" id="statusFilter" style="width: 150px;">
-                                            <option value="">Tất cả trạng thái</option>
-                                            <option value="pending">Tiếp nhận</option>
-                                            <option value="in_progress">Đang xử lý</option>
-                                            <option value="completed">Hoàn thành</option>
-                                            <option value="cancelled">Huỷ</option>
-                                        </select>
-                                        <select class="form-select form-select-sm" id="monthFilter" style="width: 150px;">
-                                            <option value="" style="font-style: normal;">Tất cả thời gian</option>
-                                            <option value="current_month" selected>Tháng này (ngày bắt đầu)</option>
-                                            <option value="last_month">Tháng trước (ngày bắt đầu)</option>
-                                        </select>
-                                        <button class="btn btn-success btn-sm" id="exportExcelBtn" title="Xuất Excel">
-                                            <i class="fas fa-file-excel me-1"></i>
-                                            Xuất Excel
-                                        </button>
-                                    </div>
-                                </div>
                             </div>
                         </div>
                         <div class="card-body p-0">
+                            <!-- Filter results info -->
+                            <div class="px-3 py-2 border-bottom bg-light">
+                                <small class="text-muted">
+                                    <span id="filterResultsInfo">
+                                        Hiển thị tất cả <?php echo count($cases); ?> case
+                                    </span>
+                                </small>
+                            </div>
                             <?php if (empty($cases)): ?>
                                 <!-- Empty State -->
                                 <div class="text-center py-5">
@@ -450,7 +515,10 @@ $flash_messages = getFlashMessages();
                                             <?php foreach ($cases as $index => $case): ?>
                                                 <tr data-case-id="<?php echo $case['id']; ?>" 
                                                     data-status="<?php echo htmlspecialchars($case['status']); ?>" 
-                                                    data-start-date="<?php echo htmlspecialchars($case['start_date']); ?>">
+                                                    data-start-date="<?php echo htmlspecialchars($case['start_date']); ?>"
+                                                    data-requester="<?php echo htmlspecialchars($case['requester_name'] ?? ''); ?>"
+                                                    data-handler="<?php echo htmlspecialchars($case['handler_name'] ?? ''); ?>"
+                                                    data-case-type="<?php echo htmlspecialchars($case['case_type'] ?? ''); ?>">
                                                     <td class="text-center">
                                                         <span class="text-muted"><?php echo $index + 1; ?></span>
                                                     </td>
@@ -538,13 +606,7 @@ $flash_messages = getFlashMessages();
                                                                     onclick="editCase(<?php echo $case['id']; ?>)">
                                                                 <i class="fas fa-edit"></i>
                                                             </button>
-                                                            <?php if ($case['status'] !== 'completed'): ?>
-                                                            <button type="button" class="btn btn-sm btn-outline-success" 
-                                                                    title="Đánh dấu hoàn thành"
-                                                                    onclick="markAsCompleted(<?php echo $case['id']; ?>)">
-                                                                <i class="fas fa-check"></i>
-                                                            </button>
-                                                            <?php endif; ?>
+
                                                             <?php endif; ?>
                                                             <?php if (canDeleteInternalCase()): ?>
                                                             <button type="button" class="btn btn-sm btn-outline-danger" 
@@ -748,10 +810,10 @@ $flash_messages = getFlashMessages();
                                 <div class="mb-3">
                                     <div class="row align-items-center">
                                         <div class="col-4">
-                                            <label class="form-label mb-0 fw-semibold">Bắt đầu</label>
+                                            <label class="form-label mb-0 fw-semibold">Bắt đầu <span class="text-danger">*</span></label>
                                         </div>
                                         <div class="col-8">
-                                            <input type="datetime-local" class="form-control" id="startDate" name="start_date">
+                                            <input type="datetime-local" class="form-control" id="startDate" name="start_date" required>
                                         </div>
                                     </div>
                                 </div>
@@ -1291,18 +1353,40 @@ $flash_messages = getFlashMessages();
         // Hide the table container
         $('.table-responsive').hide();
         
-        // Show empty state message
-        var emptyStateHtml = '<div class="text-center py-5" id="emptyStateMessage">' +
-            '<div class="mb-4">' +
-                '<i class="fas fa-inbox fa-5x text-muted opacity-50"></i>' +
-            '</div>' +
-            '<h4 class="text-muted mb-3">Chưa có case nội bộ nào</h4>' +
-            '<p class="text-muted mb-4">Bắt đầu bằng cách tạo case nội bộ đầu tiên của bạn</p>' +
-            '<button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createCaseModal">' +
-                '<i class="fas fa-plus me-2"></i>' +
-                'Tạo Case đầu tiên' +
-            '</button>' +
-        '</div>';
+        // Check if this is due to filtering
+        var hasActiveFilters = $('#requesterFilter').val() || $('#handlerFilter').val() || 
+                              $('#caseTypeFilter').val() || $('#statusFilter').val() || 
+                              ($('#monthFilter').val() && $('#monthFilter').val() !== 'current_month');
+        
+        var emptyStateHtml;
+        
+        if (hasActiveFilters) {
+            // Show filter-specific empty state
+            emptyStateHtml = '<div class="text-center py-5" id="emptyStateMessage">' +
+                '<div class="mb-4">' +
+                    '<i class="fas fa-search fa-5x text-muted opacity-50"></i>' +
+                '</div>' +
+                '<h4 class="text-muted mb-3">Không tìm thấy case nào</h4>' +
+                '<p class="text-muted mb-4">Thử thay đổi bộ lọc hoặc tạo case mới</p>' +
+                '<button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createCaseModal">' +
+                    '<i class="fas fa-plus me-2"></i>' +
+                    'Tạo Case mới' +
+                '</button>' +
+            '</div>';
+        } else {
+            // Show general empty state
+            emptyStateHtml = '<div class="text-center py-5" id="emptyStateMessage">' +
+                '<div class="mb-4">' +
+                    '<i class="fas fa-inbox fa-5x text-muted opacity-50"></i>' +
+                '</div>' +
+                '<h4 class="text-muted mb-3">Chưa có case nội bộ nào</h4>' +
+                '<p class="text-muted mb-4">Bắt đầu bằng cách tạo case nội bộ đầu tiên của bạn</p>' +
+                '<button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createCaseModal">' +
+                    '<i class="fas fa-plus me-2"></i>' +
+                    'Tạo Case đầu tiên' +
+                '</button>' +
+            '</div>';
+        }
         
         // Insert empty state after the table container
         $('.table-responsive').after(emptyStateHtml);
@@ -1629,14 +1713,61 @@ $flash_messages = getFlashMessages();
             validateDateRange();
         });
         
+        // Load filter data on page load
+        loadFilterData();
+        
+        // Debounce function for better performance
+        function debounce(func, wait) {
+            var timeout;
+            return function executedFunction() {
+                var context = this;
+                var args = arguments;
+                var later = function() {
+                    timeout = null;
+                    func.apply(context, args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        }
+        
+        // Debounced filter function
+        var debouncedApplyFilters = debounce(applyFilters, 300);
+        
         // Status filter
         $('#statusFilter').on('change', function() {
-            applyFilters();
+            debouncedApplyFilters();
         });
         
-        // Month filter
-        $('#monthFilter').on('change', function() {
-            applyFilters();
+        // Date filters
+        $('#dateFromFilter, #dateToFilter').on('change', function() {
+            debouncedApplyFilters();
+        });
+        
+        // Requester filter
+        $('#requesterFilter').on('change', function() {
+            debouncedApplyFilters();
+        });
+        
+        // Handler filter
+        $('#handlerFilter').on('change', function() {
+            debouncedApplyFilters();
+        });
+        
+        // Case type filter
+        $('#caseTypeFilter').on('change', function() {
+            debouncedApplyFilters();
+        });
+        
+        // Clear filters button
+        $('#clearFiltersBtn').on('click', function() {
+            $('#requesterFilter').val('');
+            $('#handlerFilter').val('');
+            $('#caseTypeFilter').val('');
+            $('#statusFilter').val('');
+            $('#dateFromFilter').val('');
+            $('#dateToFilter').val('');
+            applyFilters(); // Use immediate filter for clear button
         });
         
         // Apply default filter on page load
@@ -1647,21 +1778,99 @@ $flash_messages = getFlashMessages();
             showEmptyState();
         }
         
+        // Load filter data function
+        function loadFilterData() {
+            // Load requester filter data
+            $.ajax({
+                url: 'api/get_staff_list.php?all=1',
+                type: 'GET',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                success: function(response) {
+                    if (response.success) {
+                        var options = '<option value="">Tất cả người yêu cầu</option>';
+                        
+                        // Add all staff members to the dropdown
+                        response.data.forEach(function(staff) {
+                            options += '<option value="' + staff.fullname + '">' + staff.fullname + '</option>';
+                        });
+                        
+                        $('#requesterFilter').html(options);
+                    }
+                }
+            });
+            
+            // Load handler filter data
+            $.ajax({
+                url: 'api/get_staff_list.php',
+                type: 'GET',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                success: function(response) {
+                    if (response.success) {
+                        var options = '<option value="">Tất cả người xử lý</option>';
+                        
+                        // Add all IT staff members to the dropdown
+                        response.data.forEach(function(staff) {
+                            options += '<option value="' + staff.fullname + '">' + staff.fullname + '</option>';
+                        });
+                        
+                        $('#handlerFilter').html(options);
+                    }
+                }
+            });
+            
+            // Load case type filter data
+            $.ajax({
+                url: 'api/case_types.php?type=internal&action=list',
+                type: 'GET',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                success: function(response) {
+                    if (response.success) {
+                        var options = '<option value="">Tất cả loại case</option>';
+                        
+                        // Add all case types to the dropdown
+                        response.data.forEach(function(caseType) {
+                            if (caseType.status === 'active') {
+                                options += '<option value="' + caseType.name + '">' + caseType.name + '</option>';
+                            }
+                        });
+                        
+                        $('#caseTypeFilter').html(options);
+                    }
+                }
+            });
+        }
+        
         // Combined filter function
         function applyFilters() {
             var selectedStatus = $('#statusFilter').val();
-            var selectedMonth = $('#monthFilter').val();
+            var selectedDateFrom = $('#dateFromFilter').val();
+            var selectedDateTo = $('#dateToFilter').val();
+            var selectedRequester = $('#requesterFilter').val();
+            var selectedHandler = $('#handlerFilter').val();
+            var selectedCaseType = $('#caseTypeFilter').val();
             var visibleRows = 0;
             
             $('tbody tr').each(function() {
                 var row = $(this);
                 var rowStatus = row.data('status');
                 var rowDate = row.data('start-date');
+                var rowRequester = row.data('requester');
+                var rowHandler = row.data('handler');
+                var rowCaseType = row.data('case-type');
                 
                 var statusMatch = !selectedStatus || selectedStatus === "" || rowStatus === selectedStatus;
-                var monthMatch = !selectedMonth || selectedMonth === "" || isDateInRange(rowDate, selectedMonth);
+                var dateMatch = isDateInRange(rowDate, selectedDateFrom, selectedDateTo);
+                var requesterMatch = !selectedRequester || selectedRequester === "" || rowRequester === selectedRequester;
+                var handlerMatch = !selectedHandler || selectedHandler === "" || rowHandler === selectedHandler;
+                var caseTypeMatch = !selectedCaseType || selectedCaseType === "" || rowCaseType === selectedCaseType;
                 
-                if (statusMatch && monthMatch) {
+                if (statusMatch && dateMatch && requesterMatch && handlerMatch && caseTypeMatch) {
                     row.show();
                     visibleRows++;
                 } else {
@@ -1683,20 +1892,29 @@ $flash_messages = getFlashMessages();
 
         
         // Helper function to check if date is in selected range
-        function isDateInRange(dateString, range) {
+        function isDateInRange(dateString, dateFrom, dateTo) {
             if (!dateString) return true;
             
             var date = new Date(dateString);
-            var now = new Date();
-            var currentMonth = now.getMonth();
-            var currentYear = now.getFullYear();
+            var fromDate = dateFrom ? new Date(dateFrom) : null;
+            var toDate = dateTo ? new Date(dateTo) : null;
             
-            if (range === 'current_month') {
-                return date.getMonth() === currentMonth && date.getFullYear() === currentYear;
-            } else if (range === 'last_month') {
-                var lastMonth = currentMonth === 0 ? 11 : currentMonth - 1;
-                var lastMonthYear = currentMonth === 0 ? currentYear - 1 : currentYear;
-                return date.getMonth() === lastMonth && date.getFullYear() === lastMonthYear;
+            // If no date filters are set, show all
+            if (!fromDate && !toDate) return true;
+            
+            // If only from date is set
+            if (fromDate && !toDate) {
+                return date >= fromDate;
+            }
+            
+            // If only to date is set
+            if (!fromDate && toDate) {
+                return date <= toDate;
+            }
+            
+            // If both dates are set
+            if (fromDate && toDate) {
+                return date >= fromDate && date <= toDate;
             }
             
             return true;
@@ -2009,41 +2227,7 @@ $flash_messages = getFlashMessages();
         });
     }
     
-    function markAsCompleted(id) {
-        if (confirm('Bạn có chắc chắn muốn đánh dấu case này là hoàn thành?')) {
-            $.ajax({
-                url: 'api/update_case.php',
-                type: 'POST',
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest'
-                },
-                contentType: 'application/json',
-                data: JSON.stringify({
-                    case_id: id,
-                    status: 'completed'
-                }),
-                success: function(response) {
-                    if (response.success) {
-                        showSuccess('Đánh dấu hoàn thành thành công!');
-                        // Cập nhật trạng thái trực tiếp trên bảng
-                        var row = $('tr[data-case-id="' + id + '"]');
-                        var statusCell = row.find('td:nth-child(9)'); // Cột trạng thái
-                        statusCell.html('<span class="case-status status-completed">Hoàn thành</span>');
-                        // Cập nhật data-status attribute
-                        row.attr('data-status', 'completed');
-                        // Ẩn nút "Đánh dấu hoàn thành"
-                        row.find('button[onclick*="markAsCompleted"]').hide();
-                    } else {
-                        showError(response.error || 'Có lỗi xảy ra khi cập nhật trạng thái');
-                    }
-                },
-                error: function(xhr, status, error) {
-                    console.error('Error updating case:', error);
-                    showError('Có lỗi xảy ra khi cập nhật trạng thái');
-                }
-            });
-        }
-    }
+
     
     // Helper functions for create case modal
     function loadStaffList() {
@@ -2124,7 +2308,7 @@ $flash_messages = getFlashMessages();
     
     function createCase() {
         // Validate form
-        var requiredFields = ['requesterId', 'handlerId', 'caseType', 'issueTitle', 'issueDescription', 'status'];
+        var requiredFields = ['requesterId', 'handlerId', 'caseType', 'issueTitle', 'issueDescription', 'status', 'startDate'];
         var isValid = true;
         var firstInvalidField = null;
         
@@ -2542,35 +2726,126 @@ $flash_messages = getFlashMessages();
     });
     
     function exportInternalCasesToExcel() {
-        // Lấy các filter hiện tại
-        var statusFilter = $('#statusFilter').val();
-        var monthFilter = $('#monthFilter').val();
+        // Lấy dữ liệu từ các row đang hiển thị
+        var visibleRows = [];
+        $('tbody tr:visible').each(function() {
+            var row = $(this);
+            var caseData = {
+                case_number: row.find('td:eq(1) .case-number').text().trim(),
+                requester_name: row.find('td:eq(2) div').text().trim(),
+                handler_name: row.find('td:eq(3) div').text().trim(),
+                case_type: row.find('td:eq(4) span').text().trim(),
+                issue_title: row.find('td:eq(5) .case-title').text().trim(),
+                start_date: row.find('td:eq(6) .case-date').text().trim() || '-',
+                due_date: row.find('td:eq(7) .case-date').text().trim() || '-',
+                status: row.find('td:eq(8) .case-status').text().trim()
+            };
+            visibleRows.push(caseData);
+        });
+        
+        if (visibleRows.length === 0) {
+            showError('Không có dữ liệu để xuất!');
+            return;
+        }
         
         // Hiển thị loading
         var originalText = $('#exportExcelBtn').html();
         $('#exportExcelBtn').prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-1"></i>Đang xuất...');
         
-        // Tạo URL với các tham số filter
-        var exportUrl = 'api/export_internal_cases.php?';
-        if (statusFilter) {
-            exportUrl += 'status=' + encodeURIComponent(statusFilter) + '&';
-        }
-        if (monthFilter) {
-            exportUrl += 'month=' + encodeURIComponent(monthFilter) + '&';
+        // Tạo workbook và worksheet
+        var wb = XLSX.utils.book_new();
+        
+        // Tạo dữ liệu cho worksheet
+        var wsData = [
+            ['STT', 'Số case', 'Người yêu cầu', 'Người xử lý', 'Loại case', 'Vụ việc hỗ trợ', 'Ngày tiếp nhận', 'Ngày hoàn thành', 'Trạng thái']
+        ];
+        
+        // Thêm dữ liệu từ các row
+        visibleRows.forEach(function(row, index) {
+            wsData.push([
+                index + 1,
+                row.case_number,
+                row.requester_name,
+                row.handler_name,
+                row.case_type,
+                row.issue_title,
+                row.start_date,
+                row.due_date,
+                row.status
+            ]);
+        });
+        
+        // Tạo worksheet
+        var ws = XLSX.utils.aoa_to_sheet(wsData);
+        
+        // Định dạng header (dòng đầu tiên)
+        var headerRange = XLSX.utils.decode_range(ws['!ref']);
+        for (var col = headerRange.s.c; col <= headerRange.e.c; col++) {
+            var cellAddress = XLSX.utils.encode_cell({r: 0, c: col});
+            if (!ws[cellAddress]) ws[cellAddress] = {};
+            ws[cellAddress].s = {
+                font: { bold: true, color: { rgb: "FFFFFF" } },
+                fill: { fgColor: { rgb: "4472C4" } },
+                alignment: { horizontal: "center", vertical: "center" },
+                border: {
+                    top: { style: "thin", color: { rgb: "000000" } },
+                    bottom: { style: "thin", color: { rgb: "000000" } },
+                    left: { style: "thin", color: { rgb: "000000" } },
+                    right: { style: "thin", color: { rgb: "000000" } }
+                }
+            };
         }
         
-        // Tạo một iframe ẩn để download file
-        var iframe = document.createElement('iframe');
-        iframe.style.display = 'none';
-        iframe.src = exportUrl;
-        document.body.appendChild(iframe);
+        // Định dạng dữ liệu (các dòng còn lại)
+        for (var row = 1; row <= visibleRows.length; row++) {
+            for (var col = 0; col <= 8; col++) {
+                var cellAddress = XLSX.utils.encode_cell({r: row, c: col});
+                if (!ws[cellAddress]) ws[cellAddress] = {};
+                ws[cellAddress].s = {
+                    alignment: { 
+                        horizontal: col === 0 ? "center" : "left", 
+                        vertical: "center" 
+                    },
+                    border: {
+                        top: { style: "thin", color: { rgb: "000000" } },
+                        bottom: { style: "thin", color: { rgb: "000000" } },
+                        left: { style: "thin", color: { rgb: "000000" } },
+                        right: { style: "thin", color: { rgb: "000000" } }
+                    }
+                };
+            }
+        }
         
-        // Xóa iframe sau khi download
+        // Thiết lập độ rộng cột
+        ws['!cols'] = [
+            { width: 8 },   // STT
+            { width: 15 },  // Số case
+            { width: 20 },  // Người yêu cầu
+            { width: 20 },  // Người xử lý
+            { width: 18 },  // Loại case
+            { width: 35 },  // Vụ việc hỗ trợ
+            { width: 15 },  // Ngày tiếp nhận
+            { width: 15 },  // Ngày hoàn thành
+            { width: 15 }   // Trạng thái
+        ];
+        
+        // Thiết lập chiều cao dòng header
+        ws['!rows'] = [{ hpt: 25 }]; // Chiều cao 25 points cho dòng đầu
+        
+        // Thêm worksheet vào workbook
+        XLSX.utils.book_append_sheet(wb, ws, "Danh sách Case nội bộ");
+        
+        // Tạo tên file
+        var fileName = "Danh_sach_Case_noi_bo_" + new Date().toISOString().slice(0,10) + ".xlsx";
+        
+        // Xuất file
+        XLSX.writeFile(wb, fileName);
+        
+        // Reset button
         setTimeout(function() {
-            document.body.removeChild(iframe);
             $('#exportExcelBtn').prop('disabled', false).html(originalText);
             showSuccess('Đã xuất file Excel thành công!');
-        }, 2000);
+        }, 1000);
     }
     
     // Auto-open modal khi có parameter từ workspace

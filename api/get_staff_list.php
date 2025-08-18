@@ -32,13 +32,20 @@ if (!isLoggedIn()) {
 
 try {
     $all = isset($_GET['all']) && $_GET['all'] == '1';
+    $department = $_GET['department'] ?? '';
+    
     // Lấy danh sách nhân sự
     if ($all) {
         $stmt = $pdo->prepare("SELECT id, fullname, position FROM staffs WHERE status = 'active' ORDER BY fullname");
+        $stmt->execute();
+    } elseif ($department) {
+        $stmt = $pdo->prepare("SELECT id, fullname, position FROM staffs WHERE status = 'active' AND department = ? ORDER BY fullname");
+        $stmt->execute([$department]);
     } else {
         $stmt = $pdo->prepare("SELECT id, fullname, position FROM staffs WHERE status = 'active' AND department = 'IT Dept.' ORDER BY fullname");
+        $stmt->execute();
     }
-    $stmt->execute();
+    
     $staff_list = $stmt->fetchAll(PDO::FETCH_ASSOC);
     
     echo json_encode([
