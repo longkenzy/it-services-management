@@ -53,12 +53,6 @@ try {
     // Thiết lập timezone cho MySQL
     $pdo->exec("SET time_zone = '+07:00'");
     
-    // Thiết lập SQL mode để đảm bảo timestamps hoạt động đúng
-    $pdo->exec("SET sql_mode = 'STRICT_TRANS_TABLES,NO_ZERO_DATE,NO_ZERO_IN_DATE,ERROR_FOR_DIVISION_BY_ZERO'");
-    
-    // Đảm bảo MySQL sử dụng đúng format datetime
-    $pdo->exec("SET NAMES utf8mb4 COLLATE utf8mb4_unicode_ci");
-    
     // Log kết nối thành công (chỉ trong môi trường development)
     
 } catch (PDOException $e) {
