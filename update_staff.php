@@ -9,8 +9,13 @@
 require_once 'includes/session.php';
 require_once 'config/db.php';
 
-// Bảo vệ trang - chỉ admin mới được truy cập
-requireAdmin();
+// Bảo vệ trang - chỉ admin và HR mới được truy cập
+requireLogin();
+if (!isAdmin() && !isHR()) {
+    http_response_code(403);
+    echo json_encode(['success' => false, 'message' => 'Bạn không có quyền thực hiện chức năng này']);
+    exit();
+}
 
 // Lấy thông tin user hiện tại
 $current_user = getCurrentUser();

@@ -277,7 +277,7 @@ $(document).ready(function() {
                             <i class="fas fa-eye"></i>
                         </button>
                         ${
-                            (window.currentUserRole !== 'user' && window.currentUserRole !== 'account user')
+                            (window.currentUserRole === 'admin' || window.currentUserRole === 'hr')
                             ? `<button class="action-btn btn-edit" onclick="editStaff(${staff.id})" title="Chỉnh sửa"><i class="fas fa-edit"></i></button>
                                <button class="action-btn btn-delete" onclick="deleteStaff(${staff.id})" title="Xóa"><i class="fas fa-trash"></i></button>`
                             : ''
@@ -722,10 +722,10 @@ $(document).ready(function() {
         // Enable nút Đóng và nút Chỉnh sửa
         $('#addStaffForm button[data-bs-dismiss], #btnViewToEdit').prop('disabled', false).prop('readonly', false);
         // Thêm nút Chỉnh sửa nếu chưa có (ở footer) và user có quyền
-        if ($('#btnViewToEdit').length === 0 && window.currentUserRole !== 'user' && window.currentUserRole !== 'account user') {
+        if ($('#btnViewToEdit').length === 0 && (window.currentUserRole === 'admin' || window.currentUserRole === 'hr')) {
             $('<button type="button" class="btn btn-primary ms-2" id="btnViewToEdit"><i class="fas fa-edit me-2"></i>Chỉnh sửa</button>')
                 .insertBefore($('#addStaffModal .modal-footer button[data-bs-dismiss]'));
-        } else if ((window.currentUserRole === 'user' || window.currentUserRole === 'account user') && $('#btnViewToEdit').length) {
+        } else if ((window.currentUserRole !== 'admin' && window.currentUserRole !== 'hr') && $('#btnViewToEdit').length) {
             $('#btnViewToEdit').remove();
         }
         
