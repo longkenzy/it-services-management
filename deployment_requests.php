@@ -1353,10 +1353,10 @@ function loadDeploymentCases(requestId) {
                         <button type="button" class="btn btn-sm btn-outline-warning" onclick="editDeploymentCase(${item.id}); return false;" title="Chỉnh sửa">
                           <i class="fas fa-edit"></i>
                         </button>
-                        <?php if ($current_role === 'admin'): ?>
-                        <button type="button" class="btn btn-sm btn-outline-danger" onclick="deleteDeploymentCase(${item.id}, ${requestId}); return false;" title="Xóa">
-                          <i class="fas fa-trash"></i>
-                        </button>
+                                                 <?php if ($current_role === 'admin' || $current_role === 'it'): ?>
+                         <button type="button" class="btn btn-sm btn-outline-danger" onclick="deleteDeploymentCase(${item.id}, ${requestId}); return false;" title="Xóa">
+                           <i class="fas fa-trash"></i>
+                         </button>
                         <?php endif; ?>
                       </div>
                     </td>
@@ -2973,11 +2973,11 @@ document.addEventListener('DOMContentLoaded', function() {
               <div class="col-12">
                 <div class="d-flex justify-content-between align-items-center mb-3">
                   <h6 class="text-success mb-0"><i class="fas fa-tasks me-2"></i>QUẢN LÝ CASE TRIỂN KHAI</h6>
-                  <?php if ($current_role === 'it'): ?>
-                  <button type="button" class="btn btn-success btn-sm" onclick="createDeploymentCase()">
-                    <i class="fas fa-plus me-1"></i>Tạo case triển khai
-                  </button>
-                  <?php endif; ?>
+                                     <?php if ($current_role === 'it' || $current_role === 'admin'): ?>
+                   <button type="button" class="btn btn-success btn-sm" onclick="createDeploymentCase()">
+                     <i class="fas fa-plus me-1"></i>Tạo case triển khai
+                   </button>
+                   <?php endif; ?>
                 </div>
                 
                 <!-- Bảng danh sách case triển khai -->
@@ -3017,7 +3017,7 @@ document.addEventListener('DOMContentLoaded', function() {
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
           <?php if ($current_role === 'admin' || ($current_role !== 'it' && $current_role !== 'user')): ?>
-          <button type="submit" class="btn btn-primary">Cập nhật yêu cầu</button>
+          <button type="submit" class="btn" style="background-color: #198754; border-color: #198754; color: white;">Cập nhật yêu cầu</button>
           <?php endif; ?>
         </div>
       </form>
@@ -3492,7 +3492,7 @@ document.addEventListener('DOMContentLoaded', function() {
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
-          <button type="submit" class="btn btn-primary">Cập nhật case</button>
+          <button type="submit" class="btn" style="background-color: #198754; border-color: #198754; color: white;">Cập nhật case</button>
         </div>
       </form>
     </div>
@@ -3602,7 +3602,7 @@ document.addEventListener('DOMContentLoaded', function() {
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
           <i class="fas fa-times"></i> Hủy
         </button>
-        <button type="submit" form="editDeploymentTaskForm" class="btn btn-warning">
+        <button type="submit" form="editDeploymentTaskForm" class="btn" style="background-color: #198754; border-color: #198754; color: white;">
           <i class="fas fa-save"></i> Cập nhật Task
         </button>
       </div>
@@ -4032,7 +4032,10 @@ $(document).ready(function() {
         ];
         data.push(headers);
         
-        $('#deployment-requests-table tr:visible').each(function(index) {
+        var visibleRows = $('#deployment-requests-table tr:visible');
+        console.log('Exporting deployment requests - Total visible rows:', visibleRows.length);
+        
+        visibleRows.each(function(index) {
             var row = $(this);
             var rowData = [];
             
@@ -4044,8 +4047,11 @@ $(document).ready(function() {
             
             if (rowData.length > 0) {
                 data.push(rowData);
+                console.log('Added row to export:', rowData);
             }
         });
+        
+        console.log('Total rows to export:', data.length - 1); // -1 for header
         
         // Create workbook and worksheet
         var wb = XLSX.utils.book_new();
@@ -4113,6 +4119,10 @@ $(document).ready(function() {
         // Generate and download file
         var fileName = "deployment_requests_" + new Date().toISOString().slice(0, 10) + ".xlsx";
         XLSX.writeFile(wb, fileName);
+        
+        // Show success message
+        var visibleCount = data.length - 1; // -1 for header
+        showSuccess('Đã xuất ' + visibleCount + ' yêu cầu triển khai theo bộ lọc hiện tại');
     }
 });
 

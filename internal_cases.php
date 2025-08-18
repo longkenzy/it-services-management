@@ -868,7 +868,7 @@ $flash_messages = getFlashMessages();
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
                             <i class="fas fa-arrow-left me-2"></i>Trở về
                         </button>
-                        <button type="submit" class="btn btn-success">
+                        <button type="submit" class="btn" style="background-color: #0d6efd; border-color: #0d6efd; color: white;">
                             <i class="fas fa-plus me-2"></i>Tạo
                         </button>
                     </div>
@@ -1127,7 +1127,7 @@ $flash_messages = getFlashMessages();
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
                             <i class="fas fa-times me-2"></i>Hủy
                         </button>
-                        <button type="submit" class="btn btn-primary">
+                        <button type="submit" class="btn" style="background-color: #198754; border-color: #198754; color: white;">
                             <i class="fas fa-save me-2"></i>Cập nhật
                         </button>
                     </div>
