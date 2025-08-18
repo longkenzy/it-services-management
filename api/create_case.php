@@ -84,8 +84,8 @@ try {
     $stmt = $pdo->prepare("
         INSERT INTO internal_cases (
             case_number, requester_id, handler_id, transferred_by, case_type, priority,
-            issue_title, issue_description, status, notes, start_date, due_date, completed_at, created_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
+            issue_title, issue_description, status, notes, start_date, due_date, completed_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     ");
     
     $result = $stmt->execute([
@@ -111,6 +111,17 @@ try {
     
     $case_id = $pdo->lastInsertId();
     
+    // Debug: Kiểm tra case vừa tạo
+    if ($case_id) {
+        $check_stmt = $pdo->prepare("SELECT id, case_number, created_at, updated_at FROM internal_cases WHERE id = ?");
+        $check_stmt->execute([$case_id]);
+        $check_result = $check_stmt->fetch(PDO::FETCH_ASSOC);
+        
+        if ($check_result) {
+            error_log("DEBUG: Case created successfully - ID: {$check_result['id']}, Number: {$check_result['case_number']}, Created: {$check_result['created_at']}, Updated: {$check_result['updated_at']}");
+        }
+    }
+    
     // Ghi log
     try {
         $log_message = "Tạo case nội bộ mới: $case_number";
@@ -127,7 +138,12 @@ try {
         'success' => true,
         'message' => 'Tạo case thành công',
         'case_id' => $case_id,
-        'case_number' => $case_number
+        'case_number' => $case_number,
+        'debug_info' => [
+            'inserted_id' => $case_id,
+            'case_number' => $case_number,
+            'current_user_id' => $current_user_id
+        ]
     ]);
     
 } catch (PDOException $e) {
@@ -153,14 +169,20 @@ function generateCaseNumber($pdo) {
         $result = $stmt->fetch();
         $max_sequence = $result['max_sequence'] ?? 0;
         $count = $max_sequence + 1;
+        
+        // Debug log
+        error_log("DEBUG: generateCaseNumber - year: $year, month: $month, max_sequence: $max_sequence, count: $count");
     } catch (Exception $e) {
         // Nếu lỗi, sử dụng số sequence mặc định
         $count = 1;
+        error_log("DEBUG: generateCaseNumber error - " . $e->getMessage());
     }
     
     // Format số thứ tự thành 3 chữ số (001, 002, ...)
     $sequence = str_pad($count, 3, '0', STR_PAD_LEFT);
+    $case_number = "CNB.{$year}{$month}{$sequence}";
     
-    return "CNB.{$year}{$month}{$sequence}";
+    error_log("DEBUG: Generated case number: $case_number");
+    return $case_number;
 }
 ?> 
