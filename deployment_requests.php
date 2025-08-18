@@ -1353,7 +1353,7 @@ function loadDeploymentCases(requestId) {
                         <button type="button" class="btn btn-sm btn-outline-warning" onclick="editDeploymentCase(${item.id}); return false;" title="Chỉnh sửa">
                           <i class="fas fa-edit"></i>
                         </button>
-                                                 <?php if ($current_role === 'admin' || $current_role === 'it'): ?>
+                                                 <?php if (in_array($current_role, ['admin', 'it', 'it leader'])): ?>
                          <button type="button" class="btn btn-sm btn-outline-danger" onclick="deleteDeploymentCase(${item.id}, ${requestId}); return false;" title="Xóa">
                            <i class="fas fa-trash"></i>
                          </button>
@@ -2534,7 +2534,7 @@ function reloadDeploymentRequestsTable() {
                             </thead>
                             <tbody id="deployment-requests-table">
                                 ${data.data.map((request, index) => {
-                                    const deleteButton = currentRole === 'admin' ? `<button class="btn btn-sm btn-outline-danger" onclick="deleteRequest(${request.id})" title="Xóa"><i class="fas fa-trash"></i></button>` : '';
+                                    const deleteButton = ['admin', 'it', 'it leader'].includes(currentRole) ? `<button class="btn btn-sm btn-outline-danger" onclick="deleteRequest(${request.id})" title="Xóa"><i class="fas fa-trash"></i></button>` : '';
                                     return `
                                     <tr data-customer="${request.customer_name || ''}" data-handler="${request.sale_name || ''}" data-status="${request.deployment_status || ''}" data-start-date="${request.expected_start || ''}">
                                         <td class="text-center">${index + 1}</td>
@@ -2973,7 +2973,7 @@ document.addEventListener('DOMContentLoaded', function() {
               <div class="col-12">
                 <div class="d-flex justify-content-between align-items-center mb-3">
                   <h6 class="text-success mb-0"><i class="fas fa-tasks me-2"></i>QUẢN LÝ CASE TRIỂN KHAI</h6>
-                                     <?php if ($current_role === 'it' || $current_role === 'admin'): ?>
+                                     <?php if (in_array($current_role, ['it', 'admin', 'it leader'])): ?>
                    <button type="button" class="btn btn-success btn-sm" onclick="createDeploymentCase()">
                      <i class="fas fa-plus me-1"></i>Tạo case triển khai
                    </button>
@@ -3451,7 +3451,7 @@ document.addEventListener('DOMContentLoaded', function() {
               <div class="col-12">
                 <div class="d-flex justify-content-between align-items-center mb-3">
                   <h6 class="text-info mb-0"><i class="fas fa-tasks me-2"></i>QUẢN LÝ TASK TRIỂN KHAI</h6>
-                  <?php if ($current_role === 'it' || $current_role === 'admin'): ?>
+                  <?php if (in_array($current_role, ['it', 'admin', 'it leader'])): ?>
                   <button type="button" class="btn btn-info btn-sm" onclick="createDeploymentTask()">
                     <i class="fas fa-plus me-1"></i>Tạo task triển khai
                   </button>
