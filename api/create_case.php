@@ -23,12 +23,19 @@ if (!isLoggedIn()) {
 
 require_once '../config/db.php';
 
-// Debug: Kiểm tra database connection
+// Debug: Kiểm tra database connection và auto-increment
 try {
-    $test_stmt = $pdo->prepare("SELECT NOW() as current_time, @@time_zone as timezone, @@sql_mode as sql_mode");
+    $test_stmt = $pdo->prepare("SELECT NOW() as current_time, @@time_zone as timezone, @@sql_mode as sql_mode, @@auto_increment_increment as auto_inc_inc, @@auto_increment_offset as auto_inc_offset");
     $test_stmt->execute();
     $test_result = $test_stmt->fetch(PDO::FETCH_ASSOC);
-    error_log("DEBUG: Database connection test - Current time: {$test_result['current_time']}, Timezone: {$test_result['timezone']}, SQL mode: {$test_result['sql_mode']}");
+    error_log("DEBUG: Database connection test - Current time: {$test_result['current_time']}, Timezone: {$test_result['timezone']}, SQL mode: {$test_result['sql_mode']}, Auto increment: {$test_result['auto_inc_inc']}, Auto offset: {$test_result['auto_inc_offset']}");
+    
+    // Kiểm tra auto-increment của bảng internal_cases
+    $auto_stmt = $pdo->prepare("SHOW TABLE STATUS LIKE 'internal_cases'");
+    $auto_stmt->execute();
+    $auto_result = $auto_stmt->fetch(PDO::FETCH_ASSOC);
+    error_log("DEBUG: Table status - Auto_increment: {$auto_result['Auto_increment']}, Engine: {$auto_result['Engine']}");
+    
 } catch (Exception $e) {
     error_log("DEBUG: Database connection test failed - " . $e->getMessage());
 }
@@ -147,6 +154,57 @@ try {
         ]);
     }
     
+    // Nếu vẫn thất bại, thử sửa auto-increment
+    if (!$result) {
+        error_log("DEBUG: Both inserts failed, trying to fix auto-increment");
+        
+        try {
+            // Lấy ID cao nhất hiện có
+            $max_stmt = $pdo->prepare("SELECT MAX(id) as max_id FROM internal_cases");
+            $max_stmt->execute();
+            $max_result = $max_stmt->fetch(PDO::FETCH_ASSOC);
+            $max_id = $max_result['max_id'] ?? 0;
+            $next_id = $max_id + 1;
+            
+            error_log("DEBUG: Max ID: $max_id, Next ID: $next_id");
+            
+            // Reset auto-increment
+            $reset_stmt = $pdo->prepare("ALTER TABLE internal_cases AUTO_INCREMENT = ?");
+            $reset_stmt->execute([$next_id]);
+            
+            // Thử insert lại
+            $stmt = $pdo->prepare("
+                INSERT INTO internal_cases (
+                    case_number, requester_id, handler_id, transferred_by, case_type, priority,
+                    issue_title, issue_description, status, notes, start_date, due_date, completed_at, created_at, updated_at
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ");
+            
+            $result = $stmt->execute([
+                $case_number,
+                $requester_id,
+                $handler_id,
+                $transferred_by,
+                $case_type,
+                $priority,
+                $issue_title,
+                $issue_description,
+                $status,
+                $notes,
+                $start_date,
+                $due_date,
+                $completed_at,
+                $current_timestamp,
+                $current_timestamp
+            ]);
+            
+            error_log("DEBUG: After auto-increment fix - Insert result: " . ($result ? 'success' : 'failed'));
+            
+        } catch (Exception $e) {
+            error_log("DEBUG: Auto-increment fix failed - " . $e->getMessage());
+        }
+    }
+    
     if (!$result) {
         $error_info = $stmt->errorInfo();
         error_log("DEBUG: Insert failed - Error info: " . print_r($error_info, true));
@@ -163,7 +221,7 @@ try {
     error_log("DEBUG: Database info - lastInsertId: $case_id, current_timestamp: $current_timestamp");
     
     // Debug: Kiểm tra case vừa tạo
-    if ($case_id) {
+    if ($case_id && $case_id > 0) {
         $check_stmt = $pdo->prepare("SELECT id, case_number, created_at, updated_at FROM internal_cases WHERE id = ?");
         $check_stmt->execute([$case_id]);
         $check_result = $check_stmt->fetch(PDO::FETCH_ASSOC);
@@ -174,7 +232,7 @@ try {
             error_log("DEBUG: Case not found after insert - ID: $case_id");
         }
     } else {
-        error_log("DEBUG: lastInsertId returned 0 or null");
+        error_log("DEBUG: lastInsertId returned 0 or null: $case_id");
         
         // Thử lấy case vừa tạo bằng case_number
         $check_stmt = $pdo->prepare("SELECT id, case_number, created_at, updated_at FROM internal_cases WHERE case_number = ? ORDER BY id DESC LIMIT 1");
@@ -184,6 +242,30 @@ try {
         if ($check_result) {
             $case_id = $check_result['id'];
             error_log("DEBUG: Found case by case_number - ID: {$check_result['id']}, Number: {$check_result['case_number']}, Created: {$check_result['created_at']}, Updated: {$check_result['updated_at']}");
+            
+            // Nếu ID = 0, thử update ID
+            if ($case_id == 0) {
+                error_log("DEBUG: Case has ID = 0, trying to fix");
+                
+                // Lấy ID cao nhất + 1
+                $max_stmt = $pdo->prepare("SELECT MAX(id) as max_id FROM internal_cases WHERE id > 0");
+                $max_stmt->execute();
+                $max_result = $max_stmt->fetch(PDO::FETCH_ASSOC);
+                $new_id = ($max_result['max_id'] ?? 0) + 1;
+                
+                // Update ID
+                $update_stmt = $pdo->prepare("UPDATE internal_cases SET id = ? WHERE case_number = ? AND id = 0");
+                $update_result = $update_stmt->execute([$new_id, $case_number]);
+                
+                if ($update_result) {
+                    $case_id = $new_id;
+                    error_log("DEBUG: Fixed ID from 0 to $new_id");
+                } else {
+                    error_log("DEBUG: Failed to fix ID");
+                }
+            }
+        } else {
+            error_log("DEBUG: No case found with case_number: $case_number");
         }
     }
     
