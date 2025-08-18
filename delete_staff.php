@@ -18,9 +18,9 @@ if (!isLoggedIn()) {
     exit();
 }
 
-// Kiểm tra quyền admin (tùy chọn)
+// Kiểm tra quyền admin hoặc HR
 $current_user = getCurrentUser();
-if ($current_user['role'] !== 'admin') {
+if ($current_user['role'] !== 'admin' && $current_user['role'] !== 'hr') {
     header('Content-Type: application/json');
     echo json_encode([
         'success' => false,

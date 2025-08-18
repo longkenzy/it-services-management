@@ -59,7 +59,7 @@ $current_user = getCurrentUser();
                         </h1>
                         <p class="page-subtitle">Quản lý thông tin nhân sự trong hệ thống</p>
                     </div>
-                    <?php if ($current_user['role'] !== 'user' && $current_user['role'] !== 'account user'): ?>
+                    <?php if ($current_user['role'] === 'admin' || $current_user['role'] === 'hr'): ?>
                     <div class="col-md-6 text-end">
                         <button class="btn btn-primary btn-add-staff" id="btnAddStaff">
                             <i class="fas fa-plus me-2"></i>
@@ -216,10 +216,12 @@ $current_user = getCurrentUser();
                             <i class="fas fa-users fa-3x text-muted mb-3"></i>
                             <h5 class="text-muted">Chưa có nhân sự</h5>
                             <p class="text-muted">Hiện tại chưa có nhân sự nào trong hệ thống.</p>
+                            <?php if ($current_user['role'] === 'admin' || $current_user['role'] === 'hr'): ?>
                             <button class="btn btn-primary" id="btnAddFirstStaff">
                                 <i class="fas fa-plus me-2"></i>
                                 Thêm nhân sự đầu tiên
                             </button>
+                            <?php endif; ?>
                         </div>
 
                         <!-- Staff Table -->
@@ -512,7 +514,7 @@ $current_user = getCurrentUser();
                                             <img id="avatarPreview" src="" alt="Avatar Preview" 
                                                  class="rounded-circle border d-none" style="width: 120px; height: 120px; object-fit: cover;">
                                         </div>
-                                        <?php if ($current_user['role'] !== 'user'): ?>
+                                        <?php if ($current_user['role'] === 'admin' || $current_user['role'] === 'hr'): ?>
                                         <div class="mb-3">
                                             <label for="avatar" class="form-label">Chọn ảnh đại diện</label>
                                             <input type="file" class="form-control" name="avatar" id="avatar" accept="image/*">
@@ -591,7 +593,7 @@ $current_user = getCurrentUser();
                                 </div>
 
                                 <!-- TÀI KHOẢN ĐĂNG NHẬP -->
-                                <?php if ($current_user['role'] !== 'user'): ?>
+                                <?php if ($current_user['role'] === 'admin' || $current_user['role'] === 'hr'): ?>
                                 <div class="card mb-3">
                                     <div class="card-header bg-info text-white">
                                         <h6 class="mb-0"><i class="fas fa-key me-2"></i>TÀI KHOẢN ĐĂNG NHẬP</h6>

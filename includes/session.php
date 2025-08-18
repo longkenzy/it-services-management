@@ -159,6 +159,22 @@ function isAdmin() {
 }
 
 /**
+ * Kiểm tra xem user có phải HR không
+ * @return bool True nếu là HR, False nếu không
+ */
+function isHR() {
+    return hasRole('hr');
+}
+
+/**
+ * Kiểm tra xem user có phải manager không (admin hoặc HR)
+ * @return bool True nếu là manager, False nếu không
+ */
+function isManager() {
+    return hasRole(['admin', 'hr']);
+}
+
+/**
  * Kiểm tra xem user có phải leader không
  * @return bool True nếu là leader hoặc admin, False nếu không
  */
