@@ -31,7 +31,11 @@ $current_user = getCurrentUser();
 
 // Lấy các tham số filter từ request
 $status_filter = $_GET['status'] ?? '';
-$month_filter = $_GET['month'] ?? '';
+$date_from_filter = $_GET['date_from'] ?? '';
+$date_to_filter = $_GET['date_to'] ?? '';
+$requester_filter = $_GET['requester'] ?? '';
+$handler_filter = $_GET['handler'] ?? '';
+$case_type_filter = $_GET['case_type'] ?? '';
 
 try {
     // Xây dựng câu query với filter
@@ -62,13 +66,34 @@ try {
         $params[] = $status_filter;
     }
     
-    // Filter theo tháng
-    if (!empty($month_filter)) {
-        if ($month_filter === 'current_month') {
-            $sql .= " AND MONTH(ic.start_date) = MONTH(CURRENT_DATE()) AND YEAR(ic.start_date) = YEAR(CURRENT_DATE())";
-        } elseif ($month_filter === 'last_month') {
-            $sql .= " AND MONTH(ic.start_date) = MONTH(DATE_SUB(CURRENT_DATE(), INTERVAL 1 MONTH)) AND YEAR(ic.start_date) = YEAR(DATE_SUB(CURRENT_DATE(), INTERVAL 1 MONTH))";
-        }
+    // Filter theo ngày từ
+    if (!empty($date_from_filter)) {
+        $sql .= " AND ic.start_date >= ?";
+        $params[] = $date_from_filter;
+    }
+    
+    // Filter theo ngày đến
+    if (!empty($date_to_filter)) {
+        $sql .= " AND ic.start_date <= ?";
+        $params[] = $date_to_filter;
+    }
+    
+    // Filter theo người yêu cầu
+    if (!empty($requester_filter)) {
+        $sql .= " AND requester.fullname = ?";
+        $params[] = $requester_filter;
+    }
+    
+    // Filter theo người xử lý
+    if (!empty($handler_filter)) {
+        $sql .= " AND handler.fullname = ?";
+        $params[] = $handler_filter;
+    }
+    
+    // Filter theo loại case
+    if (!empty($case_type_filter)) {
+        $sql .= " AND ic.case_type = ?";
+        $params[] = $case_type_filter;
     }
     
     $sql .= " ORDER BY ic.created_at DESC";

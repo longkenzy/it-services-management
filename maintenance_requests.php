@@ -125,6 +125,7 @@ if (isset($_SESSION['user_id'])) {
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
     <link href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" rel="stylesheet" />
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
         /* Custom Select2 styling */
         .select2-container--bootstrap-5 .select2-selection {
@@ -716,6 +717,38 @@ if (isset($_SESSION['user_id'])) {
                     <?php endif; ?>
                 </div>
             </div>
+            <!-- Filter Row -->
+            <div class="row mt-3">
+                <div class="col-12">
+                    <div class="d-flex gap-2 align-items-center flex-wrap justify-content-end">
+                        <select class="form-select form-select-sm" id="customerFilter" style="width: 180px;">
+                            <option value="">Tất cả khách hàng</option>
+                        </select>
+                        <select class="form-select form-select-sm" id="handlerFilter" style="width: 180px;">
+                            <option value="">Tất cả người phụ trách</option>
+                        </select>
+                        <select class="form-select form-select-sm" id="statusFilter" style="width: 150px;">
+                            <option value="">Tất cả trạng thái</option>
+                            <option value="Tiếp nhận">Tiếp nhận</option>
+                            <option value="Đang xử lý">Đang xử lý</option>
+                            <option value="Hoàn thành">Hoàn thành</option>
+                            <option value="Huỷ">Huỷ</option>
+                        </select>
+                        <div class="d-flex gap-1 align-items-center">
+                            <label class="form-label mb-0 me-1" style="font-size: 0.875rem; color: #6c757d;">Từ:</label>
+                            <input type="date" class="form-control form-control-sm" id="dateFromFilter" style="width: 140px;">
+                        </div>
+                        <div class="d-flex gap-1 align-items-center">
+                            <label class="form-label mb-0 me-1" style="font-size: 0.875rem; color: #6c757d;">Đến:</label>
+                            <input type="date" class="form-control form-control-sm" id="dateToFilter" style="width: 140px;">
+                        </div>
+                        <button class="btn btn-outline-secondary btn-sm" id="clearFiltersBtn" title="Xóa bộ lọc">
+                            <i class="fas fa-times me-1"></i>
+                            Xóa lọc
+                        </button>
+                    </div>
+                </div>
+            </div>
         </div>
         <?php if (!empty($requests)): ?>
         <!-- Table hiển thị danh sách Yêu cầu bảo trì -->
@@ -741,7 +774,10 @@ if (isset($_SESSION['user_id'])) {
                         </thead>
                         <tbody id="maintenance-requests-table">
                                 <?php foreach ($requests as $index => $request): ?>
-                                <tr>
+                                <tr data-customer="<?php echo htmlspecialchars($request['customer_name'] ?? ''); ?>"
+                                    data-handler="<?php echo htmlspecialchars($request['sale_name'] ?? ''); ?>"
+                                    data-status="<?php echo htmlspecialchars($request['maintenance_status'] ?? ''); ?>"
+                                    data-start-date="<?php echo htmlspecialchars($request['expected_start'] ?? ''); ?>">
                                     <td class="text-center">
                                         <?php echo $index + 1; ?>
                                     </td>
@@ -2831,7 +2867,7 @@ function reloadmaintenanceRequestsTable() {
                                 ${data.data.map((request, index) => {
                                     const deleteButton = currentRole === 'admin' ? `<button class="btn btn-sm btn-outline-danger" onclick="deleteRequest(${request.id})" title="Xóa"><i class="fas fa-trash"></i></button>` : '';
                                     return `
-                                    <tr>
+                                    <tr data-customer="${request.customer_name || ''}" data-handler="${request.sale_name || ''}" data-status="${request.maintenance_status || ''}" data-start-date="${request.expected_start || ''}">
                                         <td class="text-center">${index + 1}</td>
                                         <td><strong class="text-primary">${request.request_code || ''}</strong></td>
                                         <td><div class="contract-info"><div class="fw-bold">${request.contract_type || 'N/A'}</div><small class="text-muted">${request.request_detail_type || 'N/A'}</small></div></td>
@@ -2870,6 +2906,10 @@ function reloadmaintenanceRequestsTable() {
                 }
             }
             console.log('Table reloaded successfully');
+            // Re-apply active filters after reload so visible rows match current selections
+            if (typeof applyFilters === 'function') {
+                try { applyFilters(); } catch (e) { console.warn('applyFilters not available yet:', e); }
+            }
             
             // Đảm bảo card không bị "nhảy" lên header
             if (cardContainer) {
@@ -4067,6 +4107,363 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 });
+
+// Filtering functionality
+$(document).ready(function() {
+    // Load filter data
+    loadFilterData();
+    
+    // Debounce function for performance
+    function debounce(func, wait) {
+        let timeout;
+        return function executedFunction(...args) {
+            const later = () => {
+                clearTimeout(timeout);
+                func(...args);
+            };
+            clearTimeout(timeout);
+            timeout = setTimeout(later, wait);
+        };
+    }
+    
+    // Apply filters function
+    function applyFilters() {
+        var selectedCustomer = $('#customerFilter').val();
+        var selectedHandler = $('#handlerFilter').val();
+        var selectedStatus = $('#statusFilter').val();
+        var selectedDateFrom = $('#dateFromFilter').val();
+        var selectedDateTo = $('#dateToFilter').val();
+        
+        console.log('Applying filters:', {
+            customer: selectedCustomer,
+            handler: selectedHandler,
+            status: selectedStatus,
+            dateFrom: selectedDateFrom,
+            dateTo: selectedDateTo
+        });
+        
+        var visibleCount = 0;
+        
+        $('#maintenance-requests-table tr').each(function() {
+            var row = $(this);
+            var customer = row.attr('data-customer');
+            var handler = row.attr('data-handler');
+            var status = row.attr('data-status');
+            var startDate = row.attr('data-start-date');
+            
+            console.log('Row data:', {
+                customer: customer,
+                handler: handler,
+                status: status,
+                startDate: startDate
+            });
+            
+            var showRow = true;
+            
+            // Filter by customer
+            if (selectedCustomer && customer && customer.trim() !== selectedCustomer.trim()) {
+                showRow = false;
+                console.log('Filtered out by customer:', customer, '!==', selectedCustomer);
+            }
+            
+            // Filter by handler
+            if (selectedHandler && handler && handler.trim() !== selectedHandler.trim()) {
+                showRow = false;
+                console.log('Filtered out by handler:', handler, '!==', selectedHandler);
+                console.log('Handler comparison:', {
+                    tableHandler: '"' + handler + '"',
+                    selectedHandler: '"' + selectedHandler + '"',
+                    tableHandlerLength: handler ? handler.length : 0,
+                    selectedHandlerLength: selectedHandler ? selectedHandler.length : 0,
+                    tableHandlerTrimmed: '"' + (handler ? handler.trim() : '') + '"',
+                    selectedHandlerTrimmed: '"' + (selectedHandler ? selectedHandler.trim() : '') + '"'
+                });
+            } else if (selectedHandler && handler && handler.trim() === selectedHandler.trim()) {
+                console.log('Handler match found:', handler, '===', selectedHandler);
+            }
+            
+            // Filter by status
+            if (selectedStatus && status && status.trim() !== selectedStatus.trim()) {
+                showRow = false;
+                console.log('Filtered out by status:', status, '!==', selectedStatus);
+            }
+            
+            // Filter by date range
+            if (selectedDateFrom || selectedDateTo) {
+                if (!isDateInRange(startDate, selectedDateFrom, selectedDateTo)) {
+                    showRow = false;
+                    console.log('Filtered out by date range');
+                }
+            }
+            
+            if (showRow) {
+                row.show();
+                visibleCount++;
+                console.log('Showing row');
+            } else {
+                row.hide();
+                console.log('Hiding row');
+            }
+        });
+        
+        console.log('Total visible rows after filtering:', visibleCount);
+        
+        // Check if any rows are visible
+        if (visibleCount === 0) {
+            showEmptyState();
+        } else {
+            $('.table-responsive').show();
+            $('#emptyStateMessage').remove();
+        }
+    }
+    
+    // Date range filter helper
+    function isDateInRange(dateString, dateFrom, dateTo) {
+        if (!dateString) return true;
+        
+        var date = new Date(dateString);
+        var from = dateFrom ? new Date(dateFrom) : null;
+        var to = dateTo ? new Date(dateTo) : null;
+        
+        if (from && date < from) return false;
+        if (to && date > to) return false;
+        
+        return true;
+    }
+    
+    // Load filter data from API
+    function loadFilterData() {
+        // Load customers
+        $.ajax({
+            url: 'api/test_customers.php',
+            type: 'GET',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            success: function(response) {
+                console.log('Customers API response:', response);
+                if (response.success) {
+                    var options = '<option value="">Tất cả khách hàng</option>';
+                    response.data.forEach(function(customer) {
+                        options += '<option value="' + customer.name + '">' + customer.name + '</option>';
+                    });
+                    $('#customerFilter').html(options);
+                    console.log('Loaded ' + response.data.length + ' customers');
+                } else {
+                    console.error('Error loading customers:', response.error);
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error('AJAX error loading customers:', error);
+                console.error('Status:', xhr.status);
+                console.error('Response:', xhr.responseText);
+            }
+        });
+        
+        // Load handlers (all staff)
+        $.ajax({
+            url: 'api/get_staff_list.php?all=1',
+            type: 'GET',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            success: function(response) {
+                console.log('Handlers API response:', response);
+                if (response.success) {
+                    var options = '<option value="">Tất cả người phụ trách</option>';
+                    response.data.forEach(function(staff) {
+                        options += '<option value="' + staff.fullname + '">' + staff.fullname + '</option>';
+                    });
+                    $('#handlerFilter').html(options);
+                    console.log('Loaded ' + response.data.length + ' handlers');
+                    
+                    // Debug: Log all handler names from table
+                    var tableHandlers = [];
+                    $('#maintenance-requests-table tr').each(function() {
+                        var handler = $(this).attr('data-handler');
+                        if (handler && !tableHandlers.includes(handler)) {
+                            tableHandlers.push(handler);
+                        }
+                    });
+                    console.log('Handlers in table:', tableHandlers);
+                } else {
+                    console.error('Error loading handlers:', response.error);
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error('AJAX error loading handlers:', error);
+            }
+        });
+    }
+    
+    // Event listeners for filters
+    var debouncedApplyFilters = debounce(applyFilters, 300);
+    
+    $('#customerFilter, #handlerFilter, #statusFilter').on('change', debouncedApplyFilters);
+    $('#dateFromFilter, #dateToFilter').on('change', debouncedApplyFilters);
+    
+    // Clear filters button
+    $('#clearFiltersBtn').on('click', function() {
+        console.log('Clearing all filters...');
+        $('#customerFilter').val('');
+        $('#handlerFilter').val('');
+        $('#statusFilter').val('');
+        $('#dateFromFilter').val('');
+        $('#dateToFilter').val('');
+        
+        // Show all rows when clearing filters
+        var totalRows = $('#maintenance-requests-table tr').length;
+        $('#maintenance-requests-table tr').show();
+        $('.table-responsive').show();
+        $('#emptyStateMessage').remove();
+        console.log('Cleared filters, showing all', totalRows, 'rows');
+    });
+    
+    // Show empty state function
+    function showEmptyState() {
+        $('.table-responsive').hide();
+        
+        // Remove any existing empty state messages first
+        $('#emptyStateMessage').remove();
+        
+        // Check if this is due to filtering
+        var hasActiveFilters = $('#customerFilter').val() || $('#handlerFilter').val() || 
+                              $('#statusFilter').val() || 
+                              ($('#dateFromFilter').val() || $('#dateToFilter').val());
+        
+        var emptyStateHtml;
+        
+        if (hasActiveFilters) {
+            // Show filter-specific empty state
+            emptyStateHtml = '<div class="text-center py-5" id="emptyStateMessage">' +
+                '<div class="mb-4">' +
+                    '<i class="fas fa-search fa-5x text-muted opacity-50"></i>' +
+                '</div>' +
+                '<h4 class="text-muted mb-3">Không tìm thấy yêu cầu nào</h4>' +
+                '<p class="text-muted mb-4">Thử thay đổi bộ lọc hoặc tạo yêu cầu mới</p>' +
+                '<button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addmaintenanceRequestModal">' +
+                    '<i class="fas fa-plus me-2"></i>' +
+                    'Tạo yêu cầu mới' +
+                '</button>' +
+            '</div>';
+        } else {
+            // Show general empty state
+            emptyStateHtml = '<div class="text-center py-5" id="emptyStateMessage">' +
+                '<div class="mb-4">' +
+                    '<i class="fas fa-inbox fa-5x text-muted opacity-50"></i>' +
+                '</div>' +
+                '<h4 class="text-muted mb-3">Chưa có yêu cầu bảo trì nào</h4>' +
+                '<p class="text-muted mb-4">Bấm nút "Tạo Yêu cầu bảo trì" để bắt đầu</p>' +
+                '<button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addmaintenanceRequestModal">' +
+                    '<i class="fas fa-plus me-2"></i>' +
+                    'Tạo Yêu cầu bảo trì' +
+                '</button>' +
+            '</div>';
+        }
+        
+        // Insert empty state after the table container
+        $('.card').after(emptyStateHtml);
+    }
+    
+    // Export Excel functionality - use the original export button
+    $('.btn-success[id="exportExcelBtn"]').on('click', function() {
+        exportMaintenanceRequestsToExcel();
+    });
+    
+    function exportMaintenanceRequestsToExcel() {
+        // Get visible rows data
+        var data = [];
+        var headers = [
+            'STT', 'Mã YC', 'Loại HĐ', 'Khách hàng', 'Phụ trách', 
+            'Thời hạn bảo trì', 'Ghi chú', 'Tổng số case', 
+            'Tổng số task', 'Tiến độ (%)', 'Trạng thái bảo trì'
+        ];
+        data.push(headers);
+        
+        $('#maintenance-requests-table tr:visible').each(function(index) {
+            var row = $(this);
+            var rowData = [];
+            
+            // Get text content from each cell
+            row.find('td').each(function() {
+                var cellText = $(this).text().trim();
+                rowData.push(cellText);
+            });
+            
+            if (rowData.length > 0) {
+                data.push(rowData);
+            }
+        });
+        
+        // Create workbook and worksheet
+        var wb = XLSX.utils.book_new();
+        var ws = XLSX.utils.aoa_to_sheet(data);
+        
+        // Apply styling
+        var range = XLSX.utils.decode_range(ws['!ref']);
+        
+        // Style headers
+        for (var col = range.s.c; col <= range.e.c; col++) {
+            var cellAddress = XLSX.utils.encode_cell({r: 0, c: col});
+            if (!ws[cellAddress]) continue;
+            
+            ws[cellAddress].s = {
+                fill: { fgColor: { rgb: "4472C4" } },
+                font: { color: { rgb: "FFFFFF" }, bold: true },
+                alignment: { horizontal: "center", vertical: "center" },
+                border: {
+                    top: { style: "thin" },
+                    bottom: { style: "thin" },
+                    left: { style: "thin" },
+                    right: { style: "thin" }
+                }
+            };
+        }
+        
+        // Style data rows
+        for (var row = 1; row <= range.e.r; row++) {
+            for (var col = range.s.c; col <= range.e.c; col++) {
+                var cellAddress = XLSX.utils.encode_cell({r: row, c: col});
+                if (!ws[cellAddress]) continue;
+                
+                ws[cellAddress].s = {
+                    border: {
+                        top: { style: "thin" },
+                        bottom: { style: "thin" },
+                        left: { style: "thin" },
+                        right: { style: "thin" }
+                    }
+                };
+            }
+        }
+        
+        // Set column widths
+        ws['!cols'] = [
+            { width: 5 },   // STT
+            { width: 12 },  // Mã YC
+            { width: 15 },  // Loại HĐ
+            { width: 25 },  // Khách hàng
+            { width: 20 },  // Phụ trách
+            { width: 20 },  // Thời hạn bảo trì
+            { width: 30 },  // Ghi chú
+            { width: 12 },  // Tổng số case
+            { width: 12 },  // Tổng số task
+            { width: 12 },  // Tiến độ (%)
+            { width: 15 }   // Trạng thái bảo trì
+        ];
+        
+        // Set row height for header
+        ws['!rows'] = [{ hpt: 25 }];
+        
+        // Add worksheet to workbook
+        XLSX.utils.book_append_sheet(wb, ws, "Yêu cầu bảo trì");
+        
+        // Generate and download file
+        var fileName = "maintenance_requests_" + new Date().toISOString().slice(0, 10) + ".xlsx";
+        XLSX.writeFile(wb, fileName);
+    }
+});
+
 </script>
 <script src="assets/js/dashboard.js?v=<?php echo filemtime('assets/js/dashboard.js'); ?>"></script>
 </body>
