@@ -238,6 +238,11 @@ try {
             $requester_dept_stmt->execute([$current_user['id']]);
             $requester_dept = $requester_dept_stmt->fetchColumn();
             
+            // Debug log
+            error_log("Create leave request - User ID: " . $current_user['id'] . ", Department: '" . $requester_dept . "'");
+            error_log("Department contains 'IT': " . (strpos($requester_dept, 'IT') !== false ? 'true' : 'false'));
+            error_log("Department contains 'it': " . (strpos($requester_dept, 'it') !== false ? 'true' : 'false'));
+            
             // Gửi thông báo theo phòng ban
             if ($requester_dept && strpos($requester_dept, 'HR') !== false) {
                 // HR: gửi cho hr_leader
@@ -258,7 +263,7 @@ try {
                     ]);
                 }
                 
-            } elseif ($requester_dept && strpos($requester_dept, 'IT') !== false) {
+            } elseif ($requester_dept && (strpos($requester_dept, 'IT') !== false || strpos($requester_dept, 'it') !== false)) {
                 // IT: gửi cho it_leader
                 $leader_ids = [];
                 $stmt = $pdo->prepare("SELECT id FROM staffs WHERE role = 'it_leader'");
@@ -266,6 +271,9 @@ try {
                 while ($leader = $stmt->fetch(PDO::FETCH_ASSOC)) {
                     $leader_ids[] = $leader['id'];
                 }
+                
+                // Debug log
+                error_log("IT department detected. Found " . count($leader_ids) . " IT leaders: " . implode(', ', $leader_ids));
                 
                 foreach ($leader_ids as $leader_id) {
                     $notification_stmt->execute([
@@ -275,6 +283,7 @@ try {
                         'leave_request',
                         $request_id
                     ]);
+                    error_log("Notification sent to IT leader ID: " . $leader_id);
                 }
                 
             } elseif ($requester_dept && strpos($requester_dept, 'SALE') !== false) {
@@ -304,6 +313,9 @@ try {
                 while ($admin = $stmt->fetch(PDO::FETCH_ASSOC)) {
                     $admin_ids[] = $admin['id'];
                 }
+                
+                // Debug log
+                error_log("Other department detected. Found " . count($admin_ids) . " admins: " . implode(', ', $admin_ids));
                 
                 foreach ($admin_ids as $admin_id) {
                     $notification_stmt->execute([

@@ -55,14 +55,20 @@ try {
     if (!in_array($current_user['role'], ['admin', 'hr', 'hr_leader', 'it_leader', 'sale_leader'])) {
         $sql .= " AND lr.requester_id = ?";
         $params[] = $current_user['id'];
+        error_log("User role: {$current_user['role']} - Only viewing own requests");
     } else {
         // Các leader chỉ xem được đơn của phòng ban mình
         if ($current_user['role'] === 'hr_leader') {
-            $sql .= " AND s.department LIKE '%HR%'";
+            $sql .= " AND (s.department LIKE '%HR%' OR s.department LIKE '%hr%')";
+            error_log("User role: {$current_user['role']} - Viewing HR department requests");
         } elseif ($current_user['role'] === 'it_leader') {
-            $sql .= " AND s.department LIKE '%IT%'";
+            $sql .= " AND (s.department LIKE '%IT%' OR s.department LIKE '%it%')";
+            error_log("User role: {$current_user['role']} - Viewing IT department requests");
         } elseif ($current_user['role'] === 'sale_leader') {
-            $sql .= " AND s.department LIKE '%SALE%'";
+            $sql .= " AND (s.department LIKE '%SALE%' OR s.department LIKE '%sale%')";
+            error_log("User role: {$current_user['role']} - Viewing SALE department requests");
+        } else {
+            error_log("User role: {$current_user['role']} - Viewing all requests (admin/hr)");
         }
         // Admin và HR có thể xem tất cả đơn
     }
