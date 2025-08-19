@@ -133,6 +133,17 @@ try {
             background: var(--gray-50);
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
         }
+        
+        /* Đảm bảo navbar có màu sắc đúng */
+        .main-header .user-name,
+        .navbar .user-name {
+            color: var(--gray-900) !important;
+        }
+        
+        .main-header .user-role,
+        .navbar .user-role {
+            color: var(--gray-600) !important;
+        }
 
         .profile-container {
             min-height: 100vh;
@@ -223,14 +234,14 @@ try {
             box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
         }
 
-        .user-name {
+        .profile-header .user-name {
             font-size: 2rem;
             font-weight: 700;
             margin-bottom: 0.5rem;
             color: white;
         }
 
-        .user-username {
+        .profile-header .user-username {
             font-size: 1.1rem;
             opacity: 0.9;
             color: rgba(255, 255, 255, 0.9);
@@ -431,7 +442,7 @@ try {
                 font-size: 1rem;
             }
 
-            .user-name {
+            .profile-header .user-name {
                 font-size: 1.5rem;
             }
 

@@ -3187,22 +3187,29 @@ document.addEventListener('DOMContentLoaded', function() {
               <div class="mb-3 row align-items-center">
                 <label class="col-md-3 form-label mb-0">Loại yêu cầu:</label>
                 <div class="col-md-9">
-                  <select class="form-select" name="request_type" id="request_type">
-                    <option value="">-- Chọn loại yêu cầu --</option>
-                    <option value="Triển khai mới">Triển khai mới</option>
-                    <option value="Nâng cấp hệ thống">Nâng cấp hệ thống</option>
-                    <option value="Bảo trì hệ thống">Bảo trì hệ thống</option>
-                    <option value="Tư vấn kỹ thuật">Tư vấn kỹ thuật</option>
-                    <option value="Đào tạo người dùng">Đào tạo người dùng</option>
-                    <option value="Hỗ trợ kỹ thuật">Hỗ trợ kỹ thuật</option>
-                    <option value="Tích hợp hệ thống">Tích hợp hệ thống</option>
-                    <option value="Tích hợp hệ thống bên thứ 3">Tích hợp hệ thống bên thứ 3</option>
-                    <option value="Khắc phục sự cố">Khắc phục sự cố</option>
-                    <option value="Tối ưu hóa hiệu suất">Tối ưu hóa hiệu suất</option>
-                    <option value="Di chuyển dữ liệu">Di chuyển dữ liệu</option>
-                  </select>
+                    <select class="form-select" name="request_type" id="request_type">
+                        <option value="">-- Chọn loại yêu cầu --</option>
+                        <option value="Hỗ trợ nội bộ">Hỗ trợ nội bộ</option>
+                        <option value="Nhận hàng từ vendor">Nhận hàng từ vendor</option>
+                        <option value="Kiểm tra kho & thiết bị">Kiểm tra kho & thiết bị</option>
+                        <option value="Soạn hàng giao">Soạn hàng giao</option>
+                        <option value="Gửi bảo hành">Gửi bảo hành</option>
+                        <option value="Tìm hiểu & test thiết bị">Tìm hiểu & test thiết bị</option>
+                        <option value="Tư vấn giải pháp">Tư vấn giải pháp</option>
+                        <option value="Giao hàng">Giao hàng</option>
+                        <option value="Giám sát thi công">Giám sát thi công</option>
+                        <option value="Lắp đặt thiết bị">Lắp đặt thiết bị</option>
+                        <option value="Cấu hình thiết bị">Cấu hình thiết bị</option>
+                        <option value="Triển khai hệ thống">Triển khai hệ thống</option>
+                        <option value="Kiểm tra & nghiệm thu hệ thống">Kiểm tra & nghiệm thu hệ thống</option>
+                        <option value="Training/Lab">Training/Lab</option>
+                        <option value="Hỗ trợ từ xa">Hỗ trợ từ xa</option>
+                        <option value="Xử lý sự cố thiết bị">Xử lý sự cố thiết bị</option>
+                        <option value="Bảo trì & bảo dưỡng thiết bị">Bảo trì & bảo dưỡng thiết bị</option>
+                        <option value="Báo cáo tiến độ">Báo cáo tiến độ</option>
+                    </select>
+                  </div>
                 </div>
-              </div>
               
               <div class="mb-3 row align-items-center">
                 <label class="col-md-3 form-label mb-0">Tiến trình:</label>
