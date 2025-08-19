@@ -67,6 +67,9 @@ try {
     
     $task_number = $prefix . str_pad($sequence, 3, '0', STR_PAD_LEFT);
     
+    // Debug: Log thông tin trước khi insert
+    error_log("DEBUG: Attempting to insert deployment task - task_number: $task_number, deployment_case_id: $deployment_case_id");
+    
     // Insert task mới
     $sql = "INSERT INTO deployment_tasks (
                 task_number, 
@@ -96,6 +99,9 @@ try {
     ]);
     
     $task_id = $pdo->lastInsertId();
+    
+    // Debug: Log kết quả insert
+    error_log("DEBUG: Insert result - task_id: $task_id, lastInsertId: " . $pdo->lastInsertId());
     
     // Lấy thông tin task vừa tạo
     $sql = "SELECT 
