@@ -28,12 +28,18 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 
 try {
     // Lấy dữ liệu từ JSON input
-    $input = json_decode(file_get_contents('php://input'), true);
+    $raw_input = file_get_contents('php://input');
+    error_log("Raw input: " . $raw_input);
+    
+    $input = json_decode($raw_input, true);
     
     // Validate JSON input
     if (json_last_error() !== JSON_ERROR_NONE) {
-        throw new Exception('Invalid JSON data');
+        error_log("JSON decode error: " . json_last_error_msg());
+        throw new Exception('Invalid JSON data: ' . json_last_error_msg());
     }
+    
+    error_log("Parsed input: " . print_r($input, true));
     
     // Lấy dữ liệu từ form
     $id = $input['id'] ?? '';
@@ -49,11 +55,15 @@ try {
     $status = $input['status'] ?? '';
     
     // Validate dữ liệu
+    error_log("Validating data - ID: '$id', Status: '$status'");
+    
     if (empty($id)) {
+        error_log("Validation failed: ID is empty");
         throw new Exception('ID case không được để trống');
     }
     
     if (empty($status)) {
+        error_log("Validation failed: Status is empty");
         throw new Exception('Trạng thái không được để trống');
     }
     

@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Demo Expandable Rows</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* CSS cho expandable rows */
+        .workspace-row {
+            transition: background-color 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .workspace-row:hover {
+            background-color: #f8f9fa !important;
+        }
+        
+        .workspace-row.table-active {
+            background-color: #e3f2fd !important;
+            border-left: 4px solid #007bff;
+        }
+        
+        .workspace-detail-row {
+            background-color: #f8f9fa;
+            border-top: 2px solid #dee2e6;
+        }
+        
+        .detail-content {
+            animation: slideDown 0.3s ease-out;
+        }
+        
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .workspace-row td {
+            position: relative;
+        }
+        
+        .workspace-row td:first-child::before {
+            content: '▶';
+            position: absolute;
+            left: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 10px;
+            color: #6c757d;
+            transition: transform 0.3s ease;
+        }
+        
+        .workspace-row.table-active td:first-child::before {
+            transform: translateY(-50%) rotate(90deg);
+            color: #007bff;
+        }
+        
+        .workspace-row button {
+            position: relative;
+            z-index: 10;
+        }
+        
+        .detail-content .table-sm td {
+            padding: 4px 8px;
+            border: none;
+        }
+        
+        .detail-content .table-sm td:first-child {
+            font-weight: 600;
+            color: #495057;
+        }
+        
+        .detail-content h6 {
+            font-weight: 600;
+            color: #007bff;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-4">
+        <h2>Demo Expandable Rows - Workspace Table</h2>
+        <p class="text-muted">Click vào bất kỳ row nào để mở rộng xem chi tiết</p>
+        
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                                 <thead class="table-light">
+                     <tr>
+                         <th>STT</th>
+                         <th>MÃ ITSM</th>
+                         <th>LEVEL</th>
+                         <th>LOẠI CASE</th>
+                         <th>LOẠI DV</th>
+                         <th>KHÁCH HÀNG</th>
+                         <th>BẮT ĐẦU</th>
+                         <th>KẾT THÚC</th>
+                         <th>TRẠNG THÁI</th>
+                     </tr>
+                 </thead>
+                <tbody id="demo-table">
+                    <!-- Rows sẽ được tạo bằng JavaScript -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        // Dữ liệu demo
+        const demoData = [
+            {
+                id: 1,
+                case_code: 'ITS-001',
+                level: 'Case',
+                case_type: 'Triển khai',
+                service_type: 'Website',
+                customer_name: 'Công ty ABC',
+                start_date: '2024-01-15 09:00:00',
+                end_date: '2024-01-20 17:00:00',
+                status: 'Đang xử lý'
+            },
+            {
+                id: 2,
+                case_code: 'ITS-002',
+                level: 'Task',
+                case_type: 'Bảo trì',
+                service_type: 'Server',
+                customer_name: 'Công ty XYZ',
+                start_date: '2024-01-16 08:00:00',
+                end_date: '2024-01-18 16:00:00',
+                status: 'Hoàn thành'
+            },
+            {
+                id: 3,
+                case_code: 'ITS-003',
+                level: 'Case Bảo trì',
+                case_type: 'Sửa chữa',
+                service_type: 'Database',
+                customer_name: 'Công ty DEF',
+                start_date: '2024-01-17 10:00:00',
+                end_date: '2024-01-19 15:00:00',
+                status: 'Tiếp nhận'
+            }
+        ];
+
+        function formatDateForDisplay(dateStr) {
+            if (!dateStr) return '';
+            const d = new Date(dateStr);
+            if (isNaN(d)) return dateStr;
+            return d.toLocaleDateString('vi-VN') + ' ' + d.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+        }
+
+        function loadDemoData() {
+            const tbody = document.getElementById('demo-table');
+            tbody.innerHTML = '';
+            
+                         demoData.forEach((item, idx) => {
+                 // Tạo row chính
+                 const mainRow = `
+                     <tr class="workspace-row" data-item-id="${item.id}" style="cursor: pointer;">
+                         <td style="padding-left: 25px;">${idx + 1}</td>
+                         <td>${item.case_code || ''}</td>
+                         <td><span class="badge ${item.level === 'Case' ? 'bg-primary' : (item.level === 'Task' ? 'bg-success' : 'bg-warning')}">${item.level || ''}</span></td>
+                         <td>${item.case_type || ''}</td>
+                         <td>${item.service_type || ''}</td>
+                         <td>${item.customer_name || ''}</td>
+                         <td>${item.start_date ? formatDateForDisplay(item.start_date) : ''}</td>
+                         <td>${item.end_date ? formatDateForDisplay(item.end_date) : ''}</td>
+                         <td><span class="badge ${item.status === 'Tiếp nhận' ? 'bg-info' : (item.status === 'Đang xử lý' ? 'bg-warning' : 'bg-success')}">${item.status}</span></td>
+                     </tr>
+                 `;
+                
+                                 // Tạo row chi tiết
+                 const detailRow = `
+                     <tr class="workspace-detail-row" data-item-id="${item.id}" style="display: none;">
+                         <td colspan="9">
+                            <div class="detail-content p-3 bg-light border-start border-4 border-primary">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <h6 class="text-primary mb-3"><i class="fas fa-info-circle me-2"></i>Thông tin chi tiết</h6>
+                                        <table class="table table-sm table-borderless">
+                                            <tr>
+                                                <td class="fw-bold" style="width: 120px;">Mã ITSM:</td>
+                                                <td>${item.case_code || 'N/A'}</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="fw-bold">Loại:</td>
+                                                <td>${item.level || 'N/A'}</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="fw-bold">Loại Case:</td>
+                                                <td>${item.case_type || 'N/A'}</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="fw-bold">Loại DV:</td>
+                                                <td>${item.service_type || 'N/A'}</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="fw-bold">Khách hàng:</td>
+                                                <td>${item.customer_name || 'N/A'}</td>
+                                            </tr>
+                                        </table>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <h6 class="text-primary mb-3"><i class="fas fa-calendar-alt me-2"></i>Thời gian</h6>
+                                        <table class="table table-sm table-borderless">
+                                            <tr>
+                                                <td class="fw-bold" style="width: 120px;">Bắt đầu:</td>
+                                                <td>${item.start_date ? formatDateForDisplay(item.start_date) : 'N/A'}</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="fw-bold">Kết thúc:</td>
+                                                <td>${item.end_date ? formatDateForDisplay(item.end_date) : 'N/A'}</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="fw-bold">Trạng thái:</td>
+                                                <td><span class="badge ${item.status === 'Tiếp nhận' ? 'bg-info' : (item.status === 'Đang xử lý' ? 'bg-warning' : 'bg-success')}">${item.status}</span></td>
+                                            </tr>
+                                        </table>
+                                    </div>
+                                </div>
+                                <div class="row mt-3">
+                                    <div class="col-12">
+                                        <div class="d-flex justify-content-end gap-2">
+                                            <button class="btn btn-sm btn-primary">
+                                                <i class="fas fa-edit me-1"></i>Chỉnh sửa
+                                            </button>
+                                            <button onclick="toggleRowDetail('${item.id}'); return false;" class="btn btn-sm btn-outline-secondary">
+                                                <i class="fas fa-times me-1"></i>Đóng
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+                
+                tbody.innerHTML += mainRow + detailRow;
+            });
+            
+            // Thêm event listeners
+            addRowClickHandlers();
+        }
+
+        // Hàm thêm event listeners cho các row
+        function addRowClickHandlers() {
+            const rows = document.querySelectorAll('.workspace-row');
+            rows.forEach(row => {
+                row.addEventListener('click', function(e) {
+                    // Ngăn chặn click nếu click vào button
+                    if (e.target.tagName === 'BUTTON' || e.target.closest('button')) {
+                        return;
+                    }
+                    
+                    const itemId = this.getAttribute('data-item-id');
+                    toggleRowDetail(itemId);
+                });
+            });
+        }
+
+        // Hàm toggle row detail
+        function toggleRowDetail(itemId) {
+            const mainRow = document.querySelector(`.workspace-row[data-item-id="${itemId}"]`);
+            const detailRow = document.querySelector(`.workspace-detail-row[data-item-id="${itemId}"]`);
+            
+            if (!mainRow || !detailRow) return;
+            
+            const isExpanded = detailRow.style.display !== 'none';
+            
+            if (isExpanded) {
+                // Đóng row
+                detailRow.style.display = 'none';
+                mainRow.classList.remove('table-active');
+                mainRow.style.backgroundColor = '';
+            } else {
+                // Đóng tất cả row khác trước
+                const allDetailRows = document.querySelectorAll('.workspace-detail-row');
+                const allMainRows = document.querySelectorAll('.workspace-row');
+                
+                allDetailRows.forEach(row => {
+                    row.style.display = 'none';
+                });
+                
+                allMainRows.forEach(row => {
+                    row.classList.remove('table-active');
+                    row.style.backgroundColor = '';
+                });
+                
+                // Mở row hiện tại
+                detailRow.style.display = 'table-row';
+                mainRow.classList.add('table-active');
+                mainRow.style.backgroundColor = '#e3f2fd';
+            }
+        }
+
+        // Load demo khi trang load
+        document.addEventListener('DOMContentLoaded', function() {
+            loadDemoData();
+        });
+    </script>
+</body>
+</html>

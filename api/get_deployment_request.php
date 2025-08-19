@@ -30,6 +30,8 @@ try {
             LEFT JOIN staffs creator ON dr.created_by = creator.id
             WHERE dr.id = ?";
     
+
+    
     $stmt = $pdo->prepare($sql);
     $stmt->execute([$request_id]);
     $request = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -38,6 +40,8 @@ try {
         echo json_encode(['success' => false, 'message' => 'Yêu cầu triển khai không tồn tại']);
         exit;
     }
+    
+
     
     echo json_encode([
         'success' => true,

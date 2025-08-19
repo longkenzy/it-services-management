@@ -81,4 +81,92 @@
   background-color: #ffb3b3 !important;
   padding: 8px 16px !important;
   border-radius: 6px !important;
+}
+
+/* ===== EXPANDABLE ROWS STYLES ===== */
+.workspace-row {
+  transition: background-color 0.3s ease;
+  cursor: pointer;
+}
+
+.workspace-row:hover {
+  background-color: #f8f9fa !important;
+}
+
+.workspace-row.table-active {
+  background-color: #e3f2fd !important;
+  border-left: 4px solid #007bff;
+}
+
+.workspace-detail-row {
+  background-color: #f8f9fa;
+  border-top: 2px solid #dee2e6;
+}
+
+.detail-content {
+  animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.workspace-row td {
+  position: relative;
+}
+
+.workspace-row td:first-child::before {
+  content: '▶';
+  position: absolute;
+  left: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 10px;
+  color: #6c757d;
+  transition: transform 0.3s ease;
+}
+
+.workspace-row.table-active td:first-child::before {
+  transform: translateY(-50%) rotate(90deg);
+  color: #007bff;
+}
+
+/* Đảm bảo button trong row không bị ảnh hưởng bởi click event */
+.workspace-row button {
+  position: relative;
+  z-index: 10;
+}
+
+/* Style cho detail content */
+.detail-content .table-sm td {
+  padding: 4px 8px;
+  border: none;
+}
+
+.detail-content .table-sm td:first-child {
+  font-weight: 600;
+  color: #495057;
+}
+
+.detail-content h6 {
+  font-weight: 600;
+  color: #007bff;
+}
+
+/* Responsive cho detail row */
+@media (max-width: 768px) {
+  .detail-content .row {
+    flex-direction: column;
+  }
+  
+  .detail-content .col-md-6 {
+    margin-bottom: 1rem;
+  }
 } 
