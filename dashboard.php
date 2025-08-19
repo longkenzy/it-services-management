@@ -839,7 +839,7 @@ $flash_messages = getFlashMessages();
     <!-- ===== SCRIPTS ===== -->
     
     <!-- jQuery -->
-    <script src="assets/js/jquery-3.7.1.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
@@ -1139,7 +1139,11 @@ $flash_messages = getFlashMessages();
             
             $('[data-action="change-password"]').on('click', function(e) {
                 e.preventDefault();
-                showNotification('Chức năng đổi mật khẩu đang được phát triển', 'info');
+                $('#changePasswordModal').modal('show');
+                // Reset form khi mở modal
+                $('#changePasswordForm')[0].reset();
+                $('#changePasswordError').addClass('d-none');
+                $('#changePasswordSuccess').addClass('d-none');
             });
         }
         
@@ -1250,6 +1254,143 @@ $flash_messages = getFlashMessages();
             };
             return text.replace(/[&<>"']/g, function(m) { return map[m]; });
         }
+        
+        // ===== CHANGE PASSWORD MODAL ===== //
+        
+        // Xử lý submit form đổi mật khẩu
+        $('#changePasswordForm').on('submit', function(e) {
+            e.preventDefault();
+            
+            const oldPassword = $('#old_password').val().trim();
+            const newPassword = $('#new_password').val().trim();
+            const confirmPassword = $('#confirm_password').val().trim();
+            
+            // Validation
+            if (!oldPassword || !newPassword || !confirmPassword) {
+                showChangePasswordError('Vui lòng điền đầy đủ thông tin');
+                return;
+            }
+            
+            if (newPassword.length < 6) {
+                showChangePasswordError('Mật khẩu mới phải có ít nhất 6 ký tự');
+                return;
+            }
+            
+            if (newPassword !== confirmPassword) {
+                showChangePasswordError('Mật khẩu mới và xác nhận mật khẩu không khớp');
+                return;
+            }
+            
+            if (oldPassword === newPassword) {
+                showChangePasswordError('Mật khẩu mới phải khác mật khẩu cũ');
+                return;
+            }
+            
+            // Disable submit button
+            const submitBtn = $('#changePasswordForm button[type="submit"]');
+            const originalText = submitBtn.text();
+            submitBtn.prop('disabled', true).text('Đang xử lý...');
+            
+            // AJAX request
+            $.ajax({
+                url: 'change_password.php',
+                method: 'POST',
+                data: {
+                    old_password: oldPassword,
+                    new_password: newPassword,
+                    confirm_password: confirmPassword
+                },
+                dataType: 'json',
+                success: function(response) {
+                    if (response.success) {
+                        showChangePasswordSuccess(response.message);
+                        // Đóng modal sau 2 giây
+                        setTimeout(function() {
+                            $('#changePasswordModal').modal('hide');
+                            showSuccess('Đổi mật khẩu thành công!');
+                        }, 2000);
+                    } else {
+                        showChangePasswordError(response.message);
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error('Change password error:', error);
+                    showChangePasswordError('Có lỗi xảy ra. Vui lòng thử lại sau.');
+                },
+                complete: function() {
+                    // Re-enable submit button
+                    submitBtn.prop('disabled', false).text(originalText);
+                }
+            });
+        });
+        
+        // Password strength checker
+        function checkPasswordStrength(password) {
+            let strength = 0;
+            let feedback = '';
+            
+            if (password.length >= 6) strength += 25;
+            if (password.length >= 8) strength += 25;
+            if (/[a-z]/.test(password)) strength += 25;
+            if (/[A-Z]/.test(password)) strength += 25;
+            if (/[0-9]/.test(password)) strength += 25;
+            if (/[^A-Za-z0-9]/.test(password)) strength += 25;
+            
+            if (strength < 25) {
+                feedback = 'Rất yếu';
+            } else if (strength < 50) {
+                feedback = 'Yếu';
+            } else if (strength < 75) {
+                feedback = 'Trung bình';
+            } else {
+                feedback = 'Mạnh';
+            }
+            
+            return { strength, feedback };
+        }
+        
+        // Update password strength indicator
+        $('#new_password').on('input', function() {
+            const password = $(this).val();
+            const { strength, feedback } = checkPasswordStrength(password);
+            
+            const strengthFill = $('#strengthFill');
+            const strengthText = $('#strengthText');
+            
+            strengthFill.removeClass('weak fair good strong');
+            strengthText.removeClass('text-danger text-warning text-info text-success');
+            
+            if (strength < 25) {
+                strengthFill.addClass('weak');
+                strengthText.addClass('text-danger');
+            } else if (strength < 50) {
+                strengthFill.addClass('fair');
+                strengthText.addClass('text-warning');
+            } else if (strength < 75) {
+                strengthFill.addClass('good');
+                strengthText.addClass('text-info');
+            } else {
+                strengthFill.addClass('strong');
+                strengthText.addClass('text-success');
+            }
+            
+            strengthText.text(feedback);
+        });
+        
+        // Helper functions cho change password modal
+        function showChangePasswordError(message) {
+            showError(message);
+        }
+        
+        function showChangePasswordSuccess(message) {
+            showSuccess(message);
+        }
+        
+        // Reset modal khi đóng
+        $('#changePasswordModal').on('hidden.bs.modal', function() {
+            $('#changePasswordForm')[0].reset();
+            $('#changePasswordForm button[type="submit"]').prop('disabled', false).text('Đổi mật khẩu');
+        });
     </script>
 </body>
 </html> 

@@ -7,6 +7,11 @@
 
 // Include các file cần thiết
 require_once 'includes/session.php';
+
+// Include database connection
+if (!defined('INCLUDED')) {
+    define('INCLUDED', true);
+}
 require_once 'config/db.php';
 
 // Bảo vệ trang - yêu cầu đăng nhập
@@ -15,8 +20,8 @@ requireLogin();
 // Lấy thông tin user hiện tại
 $current_user = getCurrentUser();
 
-$user_id = $current_user['id'];
-$username = $current_user['username'];
+$user_id = $current_user['id'] ?? null;
+$username = $current_user['username'] ?? null;
 $old = $_POST['old_password'] ?? '';
 $new = $_POST['new_password'] ?? '';
 $confirm = $_POST['confirm_password'] ?? '';
