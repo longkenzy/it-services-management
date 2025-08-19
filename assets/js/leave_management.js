@@ -161,9 +161,12 @@ function canUserApproveForStatus(status, request) {
             // Các phòng ban khác: admin
             return userRole === 'admin';
         }
-    } else if (status === 'IT Leader đã phê duyệt' || status === 'Sale Leader đã phê duyệt' || status === 'Admin đã phê duyệt') {
+    } else if (status === 'IT Leader đã phê duyệt' || status === 'Sale Leader đã phê duyệt') {
         // Cấp 2: Chỉ HR có thể phê duyệt
         return userRole === 'hr';
+    } else if (status === 'HR Leader đã phê duyệt') {
+        // Cấp 2: Chỉ Admin có thể phê duyệt
+        return userRole === 'admin';
     }
     
     return false;
@@ -285,7 +288,7 @@ function displayLeaveRequests(requests) {
                             <i class="fas fa-eye"></i>
                         </button>
                         ${approvalButtons}
-                        ${(canUserApprove() || window.currentUserRole === 'hr' || window.currentUserRole === 'admin') && ['Đã phê duyệt', 'HR đã phê duyệt', 'Admin đã phê duyệt', 'Từ chối bởi Admin', 'Từ chối bởi HR', 'Từ chối'].includes(request.status) ? `
+                                                 ${(canUserApprove() || window.currentUserRole === 'hr' || window.currentUserRole === 'admin') && ['Đã phê duyệt', 'HR đã phê duyệt', 'Admin đã phê duyệt', 'Từ chối bởi Admin', 'Từ chối bởi HR', 'Từ chối bởi HR Leader', 'Từ chối'].includes(request.status) ? `
                             <button type="button" class="btn btn-outline-danger" onclick="deleteLeaveRequest(${request.id})" title="Xóa đơn">
                                 <i class="fas fa-trash"></i>
                             </button>
@@ -355,7 +358,9 @@ function viewLeaveRequest(id) {
         data: { id: id },
         dataType: 'json',
         success: function(response) {
+            console.log('API Response:', response);
             if (response.success) {
+                console.log('Request data:', response.data);
                 displayLeaveRequestDetails(response.data);
             } else {
                 $('#viewLeaveRequestModalBody').html(`
@@ -384,6 +389,7 @@ function viewLeaveRequest(id) {
  * Hiển thị chi tiết đơn nghỉ phép
  */
 function displayLeaveRequestDetails(request) {
+    console.log('displayLeaveRequestDetails called with:', request);
     const modalBody = $('#viewLeaveRequestModalBody');
     
     // Tạo nội dung modal với thiết kế đẹp và chuyên nghiệp
@@ -411,7 +417,7 @@ function displayLeaveRequestDetails(request) {
                             </div>
                             <div class="request-status">
                                 <small class="text-muted d-block">Trạng thái:</small>
-                                ${getStatusBadge(request.status)}
+                                ${getStatusBadge(request.status, request)}
                             </div>
                         </div>
                     </div>
@@ -605,21 +611,25 @@ function getApprovalInfo(request) {
             <div class="card-body">
     `;
     
-    // Thông tin Admin approval
-    if (request.admin_approved_by) {
-        approvalHtml += `
-            <div class="row mb-4">
-                <div class="col-md-6">
-                    <div class="approval-item border-primary">
-                        <div class="d-flex align-items-center mb-3">
-                            <div class="approval-icon me-2">
-                                <i class="fas fa-user-shield text-primary"></i>
-                            </div>
-                            <div>
-                                <span class="fw-bold text-primary">PHÊ DUYỆT CẤP 1</span>
-                                <br><small class="text-muted">Quản trị viên</small>
-                            </div>
-                        </div>
+         // Thông tin Admin approval (cấp 1 cho các phòng khác, cấp 2 cho HR)
+     if (request.admin_approved_by) {
+         const isHRRequest = request.requester_department && request.requester_department.includes('HR');
+         const approvalLevel = isHRRequest ? 'PHÊ DUYỆT CẤP 2' : 'PHÊ DUYỆT CẤP 1';
+         const approvalTitle = isHRRequest ? 'Admin' : 'Quản trị viên';
+         
+         approvalHtml += `
+             <div class="row mb-4">
+                 <div class="col-md-6">
+                     <div class="approval-item border-primary">
+                         <div class="d-flex align-items-center mb-3">
+                             <div class="approval-icon me-2">
+                                 <i class="fas fa-user-shield text-primary"></i>
+                             </div>
+                             <div>
+                                 <span class="fw-bold text-primary">${approvalLevel}</span>
+                                 <br><small class="text-muted">${approvalTitle}</small>
+                             </div>
+                         </div>
                         <div class="approval-details">
                             <div class="d-flex align-items-center mb-2">
                                 <div class="avatar-sm me-2">
@@ -650,20 +660,24 @@ function getApprovalInfo(request) {
         `;
     }
     
-    // Thông tin HR approval
-    if (request.hr_approved_by) {
-        approvalHtml += `
-                <div class="col-md-6">
-                    <div class="approval-item border-success">
-                        <div class="d-flex align-items-center mb-3">
-                            <div class="approval-icon me-2">
-                                <i class="fas fa-user-tie text-success"></i>
-                            </div>
-                            <div>
-                                <span class="fw-bold text-success">PHÊ DUYỆT CẤP 2</span>
-                                <br><small class="text-muted">Nhân sự</small>
-                            </div>
-                        </div>
+         // Thông tin HR approval (cấp 2 cho IT/SALE, cấp 1 cho HR)
+     if (request.hr_approved_by) {
+         const isHRRequest = request.requester_department && request.requester_department.includes('HR');
+         const approvalLevel = isHRRequest ? 'PHÊ DUYỆT CẤP 1' : 'PHÊ DUYỆT CẤP 2';
+         const approvalTitle = isHRRequest ? 'HR Leader' : 'Nhân sự';
+         
+         approvalHtml += `
+                 <div class="col-md-6">
+                     <div class="approval-item border-success">
+                         <div class="d-flex align-items-center mb-3">
+                             <div class="approval-icon me-2">
+                                 <i class="fas fa-user-tie text-success"></i>
+                             </div>
+                             <div>
+                                 <span class="fw-bold text-success">${approvalLevel}</span>
+                                 <br><small class="text-muted">${approvalTitle}</small>
+                             </div>
+                         </div>
                         <div class="approval-details">
                             <div class="d-flex align-items-center mb-2">
                                 <div class="avatar-sm me-2">
@@ -694,17 +708,49 @@ function getApprovalInfo(request) {
         `;
     }
     
-    if (!request.admin_approved_by && !request.hr_approved_by) {
-        approvalHtml += `
-            <div class="col-12">
-                <div class="text-center text-muted py-4">
-                    <i class="fas fa-clock fa-3x mb-3 text-warning"></i>
-                    <h6 class="mb-2">Đang chờ phê duyệt</h6>
-                    <p class="mb-0 small">Đơn nghỉ phép đã được gửi và đang chờ xử lý</p>
-                </div>
-            </div>
-        `;
-    }
+         // Hiển thị thông báo chờ phê duyệt cấp 2 nếu chỉ có cấp 1 được phê duyệt
+     if ((request.admin_approved_by && !request.hr_approved_by) || (!request.admin_approved_by && request.hr_approved_by)) {
+         const isHRRequest = request.requester_department && request.requester_department.includes('HR');
+         let waitingMessage = '';
+         
+         if (isHRRequest) {
+             if (request.hr_approved_by && !request.admin_approved_by) {
+                 waitingMessage = 'Đơn nghỉ phép đã được HR Leader phê duyệt (Cấp 1), đang chờ Admin phê duyệt cuối (Cấp 2)';
+             }
+         } else {
+             if (request.admin_approved_by && !request.hr_approved_by) {
+                 waitingMessage = 'Đơn nghỉ phép đã được phê duyệt cấp 1, đang chờ HR phê duyệt cuối (Cấp 2)';
+             }
+         }
+         
+         if (waitingMessage) {
+             approvalHtml += `
+                 <div class="col-12">
+                     <div class="text-center text-muted py-4">
+                         <i class="fas fa-clock fa-3x mb-3 text-info"></i>
+                         <h6 class="mb-2">Chờ phê duyệt cấp 2</h6>
+                         <p class="mb-0 small">${waitingMessage}</p>
+                     </div>
+                 </div>
+             `;
+         }
+     } else if (!request.admin_approved_by && !request.hr_approved_by) {
+         // Chưa có ai phê duyệt
+         const isHRRequest = request.requester_department && request.requester_department.includes('HR');
+         const waitingMessage = isHRRequest ? 
+             'Đơn nghỉ phép đã được gửi và đang chờ HR Leader phê duyệt (Cấp 1)' :
+             'Đơn nghỉ phép đã được gửi và đang chờ xử lý';
+         
+         approvalHtml += `
+             <div class="col-12">
+                 <div class="text-center text-muted py-4">
+                     <i class="fas fa-clock fa-3x mb-3 text-warning"></i>
+                     <h6 class="mb-2">Đang chờ phê duyệt</h6>
+                     <p class="mb-0 small">${waitingMessage}</p>
+                 </div>
+             </div>
+         `;
+     }
     
     approvalHtml += `
             </div>
@@ -942,6 +988,24 @@ function hideEmptyState() {
  * Tạo badge trạng thái với 2 dòng
  */
 function getStatusBadge(status, request) {
+    console.log('getStatusBadge called with status:', status, 'request:', request);
+    // Kiểm tra bảo vệ cho request object
+    if (!request) {
+        console.error('getStatusBadge: request object is undefined or null');
+        return `
+            <div class="status-container">
+                <div class="status-line">
+                    <small class="text-muted">Cấp trên:</small>
+                    <span class="badge text-warning">Chưa duyệt</span>
+                </div>
+                <div class="status-line">
+                    <small class="text-muted">HR:</small>
+                    <span class="badge text-warning">Chưa duyệt</span>
+                </div>
+            </div>
+        `;
+    }
+
     let adminStatus = 'Chưa duyệt';
     let hrStatus = 'Chưa duyệt';
 
@@ -954,6 +1018,9 @@ function getStatusBadge(status, request) {
     } else if (status === 'Sale Leader đã phê duyệt') {
         adminStatus = 'Đã duyệt';
         hrStatus = 'Chưa duyệt';
+    } else if (status === 'HR Leader đã phê duyệt') {
+        adminStatus = 'Chưa duyệt';
+        hrStatus = 'Đã duyệt';
     } else if (status === 'Admin đã phê duyệt') {
         adminStatus = 'Đã duyệt';
         hrStatus = 'Chưa duyệt';
@@ -966,6 +1033,9 @@ function getStatusBadge(status, request) {
     } else if (status === 'Từ chối bởi Sale Leader') {
         adminStatus = 'Đã từ chối';
         hrStatus = 'Chưa duyệt';
+    } else if (status === 'Từ chối bởi HR Leader') {
+        adminStatus = 'Chưa duyệt';
+        hrStatus = 'Đã từ chối';
     } else if (status === 'Từ chối bởi Admin') {
         adminStatus = 'Đã từ chối';
         hrStatus = 'Chưa duyệt';
@@ -987,14 +1057,23 @@ function getStatusBadge(status, request) {
     let level1Name = 'Cấp trên';
     let level2Name = 'HR';
     
-    const requesterDepartment = request.requester_department || request.department;
-    if (requesterDepartment && requesterDepartment.includes('IT')) {
+    // Kiểm tra bảo vệ cho requester_department
+    let requesterDepartment = null;
+    try {
+        requesterDepartment = (request && request.requester_department) ? request.requester_department : (request && request.department ? request.department : null);
+        console.log('requesterDepartment:', requesterDepartment);
+    } catch (error) {
+        console.error('Error accessing requester_department:', error);
+        requesterDepartment = null;
+    }
+    
+    if (requesterDepartment && typeof requesterDepartment === 'string' && requesterDepartment.includes('IT')) {
         level1Name = 'IT Leader';
-    } else if (requesterDepartment && requesterDepartment.includes('SALE')) {
+    } else if (requesterDepartment && typeof requesterDepartment === 'string' && requesterDepartment.includes('SALE')) {
         level1Name = 'Sale Leader';
-    } else if (requesterDepartment && requesterDepartment.includes('HR')) {
+    } else if (requesterDepartment && typeof requesterDepartment === 'string' && requesterDepartment.includes('HR')) {
         level1Name = 'HR Leader';
-        level2Name = 'HR';
+        level2Name = 'Admin';
     }
 
     return `

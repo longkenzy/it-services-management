@@ -471,6 +471,6 @@ $can_view_all = in_array($current_user['role'], ['admin', 'hr', 'hr_leader', 'it
  
      </script>
     
-    <script src="assets/js/leave_management.js"></script>
+    <script src="assets/js/leave_management.js?v=<?php echo time(); ?>"></script>
 </body>
 </html> 

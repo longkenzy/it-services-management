@@ -65,18 +65,52 @@ try {
     if (!$stmt->fetch()) throw new Exception('Invalid assigned_to');
     // KHÔNG kiểm tra $created_by nữa
 
+    // Debug: Log thông tin trước khi insert
+    log_error("DEBUG: Attempting to insert deployment case - case_code: $case_code, deployment_request_id: $deployment_request_id");
+    
+    // Kiểm tra auto increment trước khi insert
+    $checkAutoIncrement = $pdo->query("SHOW TABLE STATUS LIKE 'deployment_cases'");
+    $tableStatus = $checkAutoIncrement->fetch(PDO::FETCH_ASSOC);
+    log_error("DEBUG: Current auto increment: " . $tableStatus['Auto_increment']);
+    
     // Insert
     $stmt = $pdo->prepare("INSERT INTO deployment_cases (
         case_code, deployment_request_id, request_type, progress, case_description, notes,
         assigned_to, work_type, start_date, end_date, status, total_tasks, completed_tasks,
         progress_percentage, created_by
     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-    $stmt->execute([
+    
+    $insertResult = $stmt->execute([
         $case_code, $deployment_request_id, $request_type, $progress, $case_description, $notes,
         $assigned_to, $work_type, $start_date, $end_date, $status, $total_tasks, $completed_tasks,
         $progress_percentage, $created_by
     ]);
-    echo json_encode(['success' => true, 'message' => 'Case created', 'case_id' => $pdo->lastInsertId()]);
+    
+    if (!$insertResult) {
+        $errorInfo = $stmt->errorInfo();
+        log_error("DEBUG: Insert failed - Error info: " . print_r($errorInfo, true));
+        throw new Exception('Database insert failed: ' . $errorInfo[2]);
+    }
+    
+    $case_id = $pdo->lastInsertId();
+    log_error("DEBUG: Insert successful - lastInsertId: $case_id");
+    
+    // Kiểm tra record vừa tạo
+    if ($case_id && $case_id > 0) {
+        $checkStmt = $pdo->prepare("SELECT id, case_code, created_at FROM deployment_cases WHERE id = ?");
+        $checkStmt->execute([$case_id]);
+        $checkResult = $checkStmt->fetch(PDO::FETCH_ASSOC);
+        
+        if ($checkResult) {
+            log_error("DEBUG: Case created successfully - ID: {$checkResult['id']}, Code: {$checkResult['case_code']}");
+        } else {
+            log_error("DEBUG: Case not found after insert - ID: $case_id");
+        }
+    } else {
+        log_error("DEBUG: lastInsertId returned 0 or null: $case_id");
+    }
+    
+    echo json_encode(['success' => true, 'message' => 'Case created', 'case_id' => $case_id]);
 } catch (Exception $e) {
     log_error($e->getMessage() . ' | Input: ' . (isset($raw_input) ? $raw_input : ''));
     http_response_code(500);

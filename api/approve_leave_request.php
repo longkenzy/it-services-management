@@ -53,41 +53,100 @@ try {
     
     // Logic phê duyệt theo phòng ban
     if ($requester_department && strpos($requester_department, 'HR') !== false) {
-        // HR: chỉ hr_leader duyệt
-        if ($user_role !== 'hr_leader') {
+        // HR: cấp 1 hr_leader, cấp 2 admin
+        if ($user_role === 'hr_leader') {
+            // Cấp 1: HR Leader
+            if ($current_status !== 'Chờ phê duyệt') {
+                echo json_encode(['success' => false, 'message' => 'Đơn nghỉ phép không ở trạng thái chờ phê duyệt']);
+                exit;
+            }
+            
+            if ($action === 'approve') {
+                $new_status = 'HR Leader đã phê duyệt';
+                $approval_message = 'Đơn nghỉ phép đã được HR Leader phê duyệt (chờ Admin phê duyệt cuối)';
+                
+                $stmt = $pdo->prepare("UPDATE leave_requests SET 
+                    status = ?, 
+                    admin_approved_by = ?, 
+                    admin_approved_at = NOW(), 
+                    admin_approval_comment = ? 
+                    WHERE id = ?");
+                $result = $stmt->execute([$new_status, $current_user['id'], $comment, $request_id]);
+                
+                if ($result) {
+                    // Gửi thông báo cho Admin
+                    try {
+                        $admin_ids = [];
+                        $stmt = $pdo->prepare("SELECT id FROM staffs WHERE role = 'admin'");
+                        $stmt->execute();
+                        while ($admin = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                            $admin_ids[] = $admin['id'];
+                        }
+                        
+                        foreach ($admin_ids as $admin_id) {
+                            $notification_sql = "INSERT INTO notifications (user_id, title, message, type, related_id) VALUES (?, ?, ?, ?, ?)";
+                            $notification_stmt = $pdo->prepare($notification_sql);
+                            $notification_stmt->execute([
+                                $admin_id,
+                                'Đơn nghỉ phép HR cần phê duyệt (Cấp 2)',
+                                "Đơn nghỉ phép {$leave_request['request_code']} đã được HR Leader phê duyệt, cần Admin phê duyệt cuối (Cấp 2)",
+                                'leave_request',
+                                $request_id
+                            ]);
+                        }
+                    } catch (Exception $e) {
+                        // Bỏ qua lỗi notification
+                    }
+                }
+                
+            } elseif ($action === 'reject') {
+                $new_status = 'Từ chối bởi HR Leader';
+                $approval_message = 'Đơn nghỉ phép đã bị HR Leader từ chối';
+                
+                $stmt = $pdo->prepare("UPDATE leave_requests SET 
+                    status = ?, 
+                    admin_approved_by = ?, 
+                    admin_approved_at = NOW(), 
+                    admin_approval_comment = ? 
+                    WHERE id = ?");
+                $result = $stmt->execute([$new_status, $current_user['id'], $comment, $request_id]);
+            }
+            
+        } elseif ($user_role === 'admin') {
+            // Cấp 2: Admin
+            if ($current_status !== 'HR Leader đã phê duyệt') {
+                echo json_encode(['success' => false, 'message' => 'Đơn nghỉ phép chưa được HR Leader phê duyệt hoặc không ở trạng thái phù hợp']);
+                exit;
+            }
+            
+            if ($action === 'approve') {
+                $new_status = 'Đã phê duyệt';
+                $approval_message = 'Đơn nghỉ phép đã được Admin phê duyệt cuối cùng';
+                
+                $stmt = $pdo->prepare("UPDATE leave_requests SET 
+                    status = ?, 
+                    hr_approved_by = ?, 
+                    hr_approved_at = NOW(), 
+                    hr_approval_comment = ? 
+                    WHERE id = ?");
+                $result = $stmt->execute([$new_status, $current_user['id'], $comment, $request_id]);
+                
+            } elseif ($action === 'reject') {
+                $new_status = 'Từ chối bởi Admin';
+                $approval_message = 'Đơn nghỉ phép đã bị Admin từ chối';
+                
+                $stmt = $pdo->prepare("UPDATE leave_requests SET 
+                    status = ?, 
+                    hr_approved_by = ?, 
+                    hr_approved_at = NOW(), 
+                    hr_approval_comment = ? 
+                    WHERE id = ?");
+                $result = $stmt->execute([$new_status, $current_user['id'], $comment, $request_id]);
+            }
+        } else {
             http_response_code(403);
-            echo json_encode(['success' => false, 'message' => 'Chỉ HR Leader mới có quyền duyệt đơn của phòng HR']);
+            echo json_encode(['success' => false, 'message' => 'Bạn không có quyền phê duyệt đơn của phòng HR']);
             exit;
-        }
-        
-        if ($current_status !== 'Chờ phê duyệt') {
-            echo json_encode(['success' => false, 'message' => 'Đơn nghỉ phép không ở trạng thái chờ phê duyệt']);
-            exit;
-        }
-        
-        if ($action === 'approve') {
-            $new_status = 'Đã phê duyệt';
-            $approval_message = 'Đơn nghỉ phép đã được HR Leader phê duyệt';
-            
-            $stmt = $pdo->prepare("UPDATE leave_requests SET 
-                status = ?, 
-                approved_by = ?, 
-                approved_at = NOW(), 
-                approval_comment = ? 
-                WHERE id = ?");
-            $result = $stmt->execute([$new_status, $current_user['id'], $comment, $request_id]);
-            
-        } elseif ($action === 'reject') {
-            $new_status = 'Từ chối';
-            $approval_message = 'Đơn nghỉ phép đã bị HR Leader từ chối';
-            
-            $stmt = $pdo->prepare("UPDATE leave_requests SET 
-                status = ?, 
-                approved_by = ?, 
-                approved_at = NOW(), 
-                approval_comment = ? 
-                WHERE id = ?");
-            $result = $stmt->execute([$new_status, $current_user['id'], $comment, $request_id]);
         }
         
     } elseif ($requester_department && strpos($requester_department, 'IT') !== false) {
