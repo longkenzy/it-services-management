@@ -99,6 +99,8 @@ $user_id = $current_user['id'];
         visibility: visible !important;
     }
     
+
+    
     /* Đảm bảo modal workspace hiển thị */
     #modalContainer .modal {
         z-index: 9999 !important;
@@ -301,23 +303,22 @@ $user_id = $current_user['id'];
             </div>
             <div class="table-responsive">
               <table id="workspace-table" class="table table-hover align-middle mb-0">
-                <thead class="table-light">
-                  <tr>
-                    <th>LINK</th>
-                    <th>STT</th>
-                    <th>MÃ ITSM</th>
-                    <th>LEVEL</th>
-                    <th>LOẠI CASE</th>
-                    <th>LOẠI DV</th>
-                    <th>KHÁCH HÀNG</th>
-                    <th>BẮT ĐẦU</th>
-                    <th>KẾT THÚC</th>
-                    <th>TRẠNG THÁI</th>
-                  </tr>
-                </thead>
-                <tbody id="workspace-tasks-table">
-                  <tr><td colspan="10" class="text-center text-muted py-4"><i class="fas fa-spinner fa-spin"></i> Đang tải dữ liệu...</td></tr>
-                </tbody>
+                                 <thead class="table-light">
+                   <tr>
+                     <th>STT</th>
+                     <th>MÃ ITSM</th>
+                     <th>LEVEL</th>
+                     <th>LOẠI CASE</th>
+                     <th>LOẠI DV</th>
+                     <th>KHÁCH HÀNG</th>
+                     <th>BẮT ĐẦU</th>
+                     <th>KẾT THÚC</th>
+                     <th>TRẠNG THÁI</th>
+                   </tr>
+                 </thead>
+                                 <tbody id="workspace-tasks-table">
+                   <tr><td colspan="9" class="text-center text-muted py-4"><i class="fas fa-spinner fa-spin"></i> Đang tải dữ liệu...</td></tr>
+                 </tbody>
               </table>
             </div>
           </div>
@@ -759,48 +760,105 @@ function handleDeploymentTaskSubmit(e) {
 
 function loadWorkspaceTasks(statusFilter = 'processing') {
     const tbody = document.getElementById('workspace-tasks-table');
-    tbody.innerHTML = '<tr><td colspan="10" class="text-center text-muted py-4"><i class="fas fa-spinner fa-spin"></i> Đang tải dữ liệu...</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="9" class="text-center text-muted py-4"><i class="fas fa-spinner fa-spin"></i> Đang tải dữ liệu...</td></tr>';
     fetch('api/get_workspace_tasks.php?status=' + encodeURIComponent(statusFilter))
         .then(res => res.json())
         .then(data => {
-            if (!data.success || !Array.isArray(data.data) || data.data.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="10" class="text-center text-muted py-4">Không có task nào</td></tr>';
-                return;
-            }
+                         if (!data.success || !Array.isArray(data.data) || data.data.length === 0) {
+                 tbody.innerHTML = '<tr><td colspan="9" class="text-center text-muted py-4">Không có task nào</td></tr>';
+                 return;
+             }
             tbody.innerHTML = '';
-            data.data.forEach((item, idx) => {
-                // Debug: Log level của từng item
-                console.log(`Item ${idx}: ID=${item.id}, Level=${item.level}, Code=${item.case_code}`);
+                         data.data.forEach((item, idx) => {
+                 // Debug: Log level của từng item
+                 console.log(`Item ${idx}: ID=${item.id}, Level=${item.level}, Code=${item.case_code}`);
                 
-                // Tạo link dựa trên loại case/task
-                let link = '';
-                if (item.level === 'Case') {
-                    link = `<button onclick="loadModalFromDeploymentRequests('editDeploymentCase', '${item.id}'); return false;" class="btn btn-sm btn-outline-primary"><i class="fas fa-edit"></i></button>`;
-                } else if (item.level === 'Task') {
-                    link = `<button onclick="loadModalFromDeploymentRequests('editDeploymentTask', '${item.id}'); return false;" class="btn btn-sm btn-outline-primary"><i class="fas fa-edit"></i></button>`;
-                } else if (item.level === 'Case Bảo trì') {
-                    link = `<button onclick="loadModalFromDeploymentRequests('editMaintenanceCase', '${item.id}'); return false;" class="btn btn-sm btn-outline-warning"><i class="fas fa-edit"></i></button>`;
-                } else if (item.level === 'Task Bảo trì') {
-                    link = `<button onclick="loadModalFromDeploymentRequests('editMaintenanceTask', '${item.id}'); return false;" class="btn btn-sm btn-outline-warning"><i class="fas fa-edit"></i></button>`;
-                } else if (item.level === 'Case Nội bộ') {
-                    link = `<button onclick="loadModalFromDeploymentRequests('editInternalCase', '${item.id}'); return false;" class="btn btn-sm btn-outline-info"><i class="fas fa-edit"></i></button>`;
-                }
+                                 // Tạo row chính với click handler
+                 const mainRow = `
+                     <tr class="workspace-row" data-item-id="${item.id}" style="cursor: pointer;">
+                         <td style="padding-left: 25px;">${idx + 1}</td>
+                         <td>${item.case_code || ''}</td>
+                         <td><span class="badge ${item.level === 'Case' ? 'bg-primary' : (item.level === 'Task' ? 'bg-success' : (item.level === 'Case Bảo trì' ? 'bg-warning' : (item.level === 'Task Bảo trì' ? 'bg-warning' : 'bg-info')))}">${item.level || ''}</span></td>
+                         <td>${item.case_type || ''}</td>
+                         <td>${item.service_type || ''}</td>
+                         <td>${item.customer_name || ''}</td>
+                         <td>${item.start_date ? formatDateForDisplay(item.start_date) : ''}</td>
+                         <td>${item.end_date ? formatDateForDisplay(item.end_date) : ''}</td>
+                         <td><span class="badge ${item.status === 'Tiếp nhận' ? 'status-received' : (item.status === 'Đang xử lý' ? 'status-processing' : (item.status === 'Hoàn thành' ? 'status-completed' : (item.status === 'Huỷ' ? 'status-cancelled' : 'bg-secondary')))}">${item.status}</span></td>
+                     </tr>
+                 `;
                 
-                tbody.innerHTML += `
-                    <tr>
-                        <td>${link}</td>
-                        <td>${idx + 1}</td>
-                        <td>${item.case_code || ''}</td>
-                        <td><span class="badge ${item.level === 'Case' ? 'bg-primary' : (item.level === 'Task' ? 'bg-success' : (item.level === 'Case Bảo trì' ? 'bg-warning' : (item.level === 'Task Bảo trì' ? 'bg-warning' : 'bg-info')))}">${item.level || ''}</span></td>
-                        <td>${item.case_type || ''}</td>
-                        <td>${item.service_type || ''}</td>
-                        <td>${item.customer_name || ''}</td>
-                        <td>${item.start_date ? formatDateForDisplay(item.start_date) : ''}</td>
-                        <td>${item.end_date ? formatDateForDisplay(item.end_date) : ''}</td>
-                        <td><span class="badge ${item.status === 'Tiếp nhận' ? 'status-received' : (item.status === 'Đang xử lý' ? 'status-processing' : (item.status === 'Hoàn thành' ? 'status-completed' : (item.status === 'Huỷ' ? 'status-cancelled' : 'bg-secondary')))}">${item.status}</span></td>
+                                 // Tạo row chi tiết (ẩn ban đầu)
+                 const detailRow = `
+                     <tr class="workspace-detail-row" data-item-id="${item.id}" style="display: none;">
+                         <td colspan="9">
+                            <div class="detail-content p-3 bg-light border-start border-4 border-primary">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <h6 class="text-primary mb-3"><i class="fas fa-info-circle me-2"></i>Thông tin chi tiết</h6>
+                                        <table class="table table-sm table-borderless">
+                                            <tr>
+                                                <td class="fw-bold" style="width: 120px;">Mã ITSM:</td>
+                                                <td>${item.case_code || 'N/A'}</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="fw-bold">Loại:</td>
+                                                <td>${item.level || 'N/A'}</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="fw-bold">Loại Case:</td>
+                                                <td>${item.case_type || 'N/A'}</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="fw-bold">Loại DV:</td>
+                                                <td>${item.service_type || 'N/A'}</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="fw-bold">Khách hàng:</td>
+                                                <td>${item.customer_name || 'N/A'}</td>
+                                            </tr>
+                                        </table>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <h6 class="text-primary mb-3"><i class="fas fa-calendar-alt me-2"></i>Thời gian</h6>
+                                        <table class="table table-sm table-borderless">
+                                            <tr>
+                                                <td class="fw-bold" style="width: 120px;">Bắt đầu:</td>
+                                                <td>${item.start_date ? formatDateForDisplay(item.start_date) : 'N/A'}</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="fw-bold">Kết thúc:</td>
+                                                <td>${item.end_date ? formatDateForDisplay(item.end_date) : 'N/A'}</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="fw-bold">Trạng thái:</td>
+                                                <td><span class="badge ${item.status === 'Tiếp nhận' ? 'status-received' : (item.status === 'Đang xử lý' ? 'status-processing' : (item.status === 'Hoàn thành' ? 'status-completed' : (item.status === 'Huỷ' ? 'status-cancelled' : 'bg-secondary')))}">${item.status}</span></td>
+                                            </tr>
+                                        </table>
+                                    </div>
+                                </div>
+                                <div class="row mt-3">
+                                    <div class="col-12">
+                                        <div class="d-flex justify-content-end gap-2">
+                                            <button onclick="loadModalFromDeploymentRequests('${item.level === 'Case' ? 'editDeploymentCase' : (item.level === 'Task' ? 'editDeploymentTask' : (item.level === 'Case Bảo trì' ? 'editMaintenanceCase' : (item.level === 'Task Bảo trì' ? 'editMaintenanceTask' : 'editInternalCase')))}', '${item.id}'); return false;" class="btn btn-sm btn-primary">
+                                                <i class="fas fa-edit me-1"></i>Chỉnh sửa
+                                            </button>
+                                            <button onclick="toggleRowDetail('${item.id}'); return false;" class="btn btn-sm btn-outline-secondary">
+                                                <i class="fas fa-times me-1"></i>Đóng
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
                     </tr>
                 `;
+                
+                tbody.innerHTML += mainRow + detailRow;
             });
+            
+            // Thêm event listeners cho các row
+            addRowClickHandlers();
         });
 }
 
@@ -823,6 +881,57 @@ function openEditMaintenanceTask(taskNumber) {
 
 function openEditInternalCase(caseNumber) {
     window.open(`internal_cases.php?case_id=${caseNumber}&open_edit_modal=1`, '_blank');
+}
+
+// Hàm thêm event listeners cho các row
+function addRowClickHandlers() {
+    const rows = document.querySelectorAll('.workspace-row');
+    rows.forEach(row => {
+        row.addEventListener('click', function(e) {
+            // Ngăn chặn click nếu click vào button
+            if (e.target.tagName === 'BUTTON' || e.target.closest('button')) {
+                return;
+            }
+            
+            const itemId = this.getAttribute('data-item-id');
+            toggleRowDetail(itemId);
+        });
+    });
+}
+
+// Hàm toggle row detail
+function toggleRowDetail(itemId) {
+    const mainRow = document.querySelector(`.workspace-row[data-item-id="${itemId}"]`);
+    const detailRow = document.querySelector(`.workspace-detail-row[data-item-id="${itemId}"]`);
+    
+    if (!mainRow || !detailRow) return;
+    
+    const isExpanded = detailRow.style.display !== 'none';
+    
+    if (isExpanded) {
+        // Đóng row
+        detailRow.style.display = 'none';
+        mainRow.classList.remove('table-active');
+        mainRow.style.backgroundColor = '';
+    } else {
+        // Đóng tất cả row khác trước
+        const allDetailRows = document.querySelectorAll('.workspace-detail-row');
+        const allMainRows = document.querySelectorAll('.workspace-row');
+        
+        allDetailRows.forEach(row => {
+            row.style.display = 'none';
+        });
+        
+        allMainRows.forEach(row => {
+            row.classList.remove('table-active');
+            row.style.backgroundColor = '';
+        });
+        
+        // Mở row hiện tại
+        detailRow.style.display = 'table-row';
+        mainRow.classList.add('table-active');
+        mainRow.style.backgroundColor = '#e3f2fd';
+    }
 }
 
 document.getElementById('btn-filter-processing').onclick = function() { loadWorkspaceTasks('processing'); };

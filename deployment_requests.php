@@ -1080,42 +1080,35 @@ function editRequest(requestId) {
                     }
             
                     
-                    // Set values sau khi modal đã hiển thị
-                    const detailTypeSelect = document.getElementById('edit_request_detail_type');
-                    const customerSelect = document.getElementById('edit_customer_id');
-                    const saleSelect = document.getElementById('edit_sale_id');
-                    const statusSelect = document.getElementById('edit_deployment_status');
+                                    // Set values sau khi modal đã hiển thị
+                const detailTypeSelect = document.getElementById('edit_request_detail_type');
+                const customerSelect = document.getElementById('edit_customer_id');
+                const saleSelect = document.getElementById('edit_sale_id');
+                const statusSelect = document.getElementById('edit_deployment_status');
+                
+                                if (detailTypeSelect) {
+                    detailTypeSelect.value = requestData.request_detail_type || '';
+                }
                     
-
+                if (customerSelect) {
+                    customerSelect.value = requestData.customer_id || '';
+                }
                     
-                    if (detailTypeSelect) {
-                        detailTypeSelect.value = requestData.request_detail_type || '';
-
-                    }
+                if (saleSelect) {
+                    saleSelect.value = requestData.sale_id || '';
+                }
                     
-                    if (customerSelect) {
-                        customerSelect.value = requestData.customer_id || '';
-
-                    }
+                if (statusSelect) {
+                    statusSelect.value = requestData.deployment_status || '';
+                }
                     
-                    if (saleSelect) {
-                        saleSelect.value = requestData.sale_id || '';
-
-                    }
-                    
-                    if (statusSelect) {
-                        statusSelect.value = requestData.deployment_status || '';
-
-                    }
-                    
-                    // Force update UI
-                    setTimeout(() => {
-                        if (detailTypeSelect) detailTypeSelect.dispatchEvent(new Event('change'));
-                        if (customerSelect) customerSelect.dispatchEvent(new Event('change'));
-                        if (saleSelect) saleSelect.dispatchEvent(new Event('change'));
-                        if (statusSelect) statusSelect.dispatchEvent(new Event('change'));
-
-                    }, 100);
+                // Force update UI
+                setTimeout(() => {
+                    if (detailTypeSelect) detailTypeSelect.dispatchEvent(new Event('change'));
+                    if (customerSelect) customerSelect.dispatchEvent(new Event('change'));
+                    if (saleSelect) saleSelect.dispatchEvent(new Event('change'));
+                    if (statusSelect) statusSelect.dispatchEvent(new Event('change'));
+                }, 100);
                     
                     // Load dữ liệu case triển khai ngay khi modal edit hiển thị
                     setTimeout(() => {
@@ -1577,7 +1570,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 },
                 body: JSON.stringify(formData)
             })
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(errorData => {
+                        throw new Error(errorData.message || `HTTP ${response.status}: ${response.statusText}`);
+                    });
+                }
+                return response.json();
+            })
             .then(data => {
                 if (data.success) {
                     if (typeof showAlert === 'function') {
@@ -1613,18 +1613,19 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                 } else {
                     if (typeof showAlert === 'function') {
-                        showAlert(data.error || 'Có lỗi xảy ra khi cập nhật case', 'error');
+                        showAlert(data.message || 'Có lỗi xảy ra khi cập nhật case', 'error');
                     } else {
-                        alert(data.error || 'Có lỗi xảy ra khi cập nhật case');
+                        alert(data.message || 'Có lỗi xảy ra khi cập nhật case');
                     }
                 }
                 isSubmitting = false; // Reset flag
             })
             .catch(error => {
+                console.error('Error updating deployment case:', error);
                 if (typeof showAlert === 'function') {
-                    showAlert('Có lỗi xảy ra khi cập nhật case', 'error');
+                    showAlert('Có lỗi xảy ra khi cập nhật case: ' + error.message, 'error');
                 } else {
-                    alert('Có lỗi xảy ra khi cập nhật case');
+                    alert('Có lỗi xảy ra khi cập nhật case: ' + error.message);
                 }
                 isSubmitting = false; // Reset flag
             });
@@ -2841,17 +2842,18 @@ document.addEventListener('DOMContentLoaded', function() {
                 <div class="col-md-9">
                   <select class="form-select" name="request_detail_type" id="edit_request_detail_type" <?php echo ($current_role === 'user') ? 'disabled' : ''; ?>>
                     <option value="">-- Chọn loại yêu cầu chi tiết --</option>
-                    <option value="Triển khai mới">Triển khai mới</option>
-                    <option value="Nâng cấp hệ thống">Nâng cấp hệ thống</option>
-                    <option value="Bảo trì hệ thống">Bảo trì hệ thống</option>
-                    <option value="Tư vấn kỹ thuật">Tư vấn kỹ thuật</option>
+                    <option value="Triển khai hệ thống mới">Triển khai hệ thống mới</option>
+                    <option value="Nâng cấp hệ thống hiện có">Nâng cấp hệ thống hiện có</option>
+                    <option value="Tích hợp hệ thống bên thứ 3">Tích hợp hệ thống bên thứ 3</option>
+                    <option value="Cấu hình và tối ưu hóa">Cấu hình và tối ưu hóa</option>
+                    <option value="Di chuyển dữ liệu">Di chuyển dữ liệu</option>
+                    <option value="Sao lưu và khôi phục">Sao lưu và khôi phục</option>
+                    <option value="Bảo mật và phân quyền">Bảo mật và phân quyền</option>
                     <option value="Đào tạo người dùng">Đào tạo người dùng</option>
                     <option value="Hỗ trợ kỹ thuật">Hỗ trợ kỹ thuật</option>
-                    <option value="Tích hợp hệ thống">Tích hợp hệ thống</option>
-                    <option value="Tích hợp hệ thống bên thứ 3">Tích hợp hệ thống bên thứ 3</option>
+                    <option value="Bảo trì định kỳ">Bảo trì định kỳ</option>
                     <option value="Khắc phục sự cố">Khắc phục sự cố</option>
-                    <option value="Tối ưu hóa hiệu suất">Tối ưu hóa hiệu suất</option>
-                    <option value="Di chuyển dữ liệu">Di chuyển dữ liệu</option>
+                    <option value="Tư vấn và đánh giá">Tư vấn và đánh giá</option>
                   </select>
                 </div>
               </div>

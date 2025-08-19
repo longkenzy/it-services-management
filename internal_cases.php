@@ -1353,6 +1353,9 @@ $flash_messages = getFlashMessages();
         // Hide the table container
         $('.table-responsive').hide();
         
+        // Remove any existing empty state messages first
+        $('#emptyStateMessage').remove();
+        
         // Check if this is due to filtering
         var hasActiveFilters = $('#requesterFilter').val() || $('#handlerFilter').val() || 
                               $('#caseTypeFilter').val() || $('#statusFilter').val() || 
@@ -2572,6 +2575,42 @@ $flash_messages = getFlashMessages();
             }
         }
         
+        // Update due_date column (Ngày hoàn thành)
+        if (formData.due_date !== undefined) {
+            var dueDateCell = row.find('td:nth-child(8)'); // Cột thứ 8 là Ngày hoàn thành
+            if (dueDateCell.length > 0) {
+                if (formData.due_date) {
+                    var dueDate = new Date(formData.due_date);
+                    var formattedDate = dueDate.getDate().toString().padStart(2, '0') + '/' + 
+                                       (dueDate.getMonth() + 1).toString().padStart(2, '0') + '/' + 
+                                       dueDate.getFullYear() + '<br>' +
+                                       '<small>' + dueDate.getHours().toString().padStart(2, '0') + ':' + 
+                                       dueDate.getMinutes().toString().padStart(2, '0') + '</small>';
+                    dueDateCell.html('<span class="case-date">' + formattedDate + '</span>');
+                } else {
+                    dueDateCell.html('<span class="text-muted">-</span>');
+                }
+            }
+        }
+        
+        // Update start_date column if provided
+        if (formData.start_date !== undefined) {
+            var startDateCell = row.find('td:nth-child(7)'); // Cột thứ 7 là Ngày tiếp nhận
+            if (startDateCell.length > 0) {
+                if (formData.start_date) {
+                    var startDate = new Date(formData.start_date);
+                    var formattedDate = startDate.getDate().toString().padStart(2, '0') + '/' + 
+                                       (startDate.getMonth() + 1).toString().padStart(2, '0') + '/' + 
+                                       startDate.getFullYear() + '<br>' +
+                                       '<small>' + startDate.getHours().toString().padStart(2, '0') + ':' + 
+                                       startDate.getMinutes().toString().padStart(2, '0') + '</small>';
+                    startDateCell.html('<span class="case-date">' + formattedDate + '</span>');
+                } else {
+                    startDateCell.html('<span class="text-muted">-</span>');
+                }
+            }
+        }
+        
         // Update the updated_at column if it exists
         var updatedAtCell = row.find('.updated-at');
         if (updatedAtCell.length > 0) {
@@ -2583,6 +2622,8 @@ $flash_messages = getFlashMessages();
                                now.getMinutes().toString().padStart(2, '0');
             updatedAtCell.text(formattedDate);
         }
+        
+        console.log('Table row update completed');
     }
     
     // ===== JS: XEM CHI TIẾT CASE ===== //

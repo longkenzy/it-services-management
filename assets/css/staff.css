@@ -408,6 +408,33 @@
     background: #c8f2dd !important;
 }
 
+/* Custom styling for update staff button in modal */
+#addStaffModal button[type="submit"] {
+    background-color: #198754 !important;
+    border-color: #198754 !important;
+    color: white !important;
+}
+
+#addStaffModal button[type="submit"]:hover {
+    background-color: #157347 !important;
+    border-color: #157347 !important;
+}
+
+#addStaffModal button[type="submit"]:focus {
+    background-color: #157347 !important;
+    border-color: #157347 !important;
+    box-shadow: 0 0 0 0.2rem rgba(25, 135, 84, 0.25) !important;
+}
+
+/* Custom styling for modal header text color */
+#addStaffModal .modal-header .modal-title {
+    color: white !important;
+}
+
+#addStaffModal .modal-header .modal-title i {
+    color: white !important;
+}
+
 .btn-delete {
     color: #dc3545 !important;
     background: #fff0f1 !important;
