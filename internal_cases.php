@@ -2377,19 +2377,23 @@ $flash_messages = getFlashMessages();
             data: JSON.stringify(formData),
             success: function(response) {
                 if (response.success) {
-                    showSuccess('Tạo case thành công! Mã case: ' + response.case_number);
+                    // Lấy tên người xử lý từ form để hiển thị trong thông báo
+                    var handlerSelect = $('#handlerId');
+                    var handlerName = handlerSelect.find('option:selected').text();
+                    
+                    showSuccess('Tạo case thành công! Mã case: ' + response.case_number + '. Đã gửi thông báo cho người xử lý: ' + handlerName);
                     
                     // Reset form
                     $('#createCaseForm')[0].reset();
                     $('.form-control, .form-select').removeClass('is-valid is-invalid');
                     
-                    // Close modal and reload page after 2 seconds
+                    // Close modal and reload page after 3 seconds (tăng thời gian để user đọc thông báo)
                     setTimeout(function() {
                         $('#createCaseModal').modal('hide');
                         // Hide empty state if it exists (in case we're not reloading)
                         hideEmptyState();
                         location.reload();
-                    }, 2000);
+                    }, 3000);
                 } else {
                     showError(response.error || 'Có lỗi xảy ra khi tạo case');
                 }

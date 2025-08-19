@@ -595,6 +595,7 @@ function getNotificationIcon(type) {
         'leave_request': 'fas fa-calendar-plus text-primary',
         'leave_approved': 'fas fa-check-circle text-success',
         'leave_rejected': 'fas fa-times-circle text-danger',
+        'internal_case': 'fas fa-building text-info',
         'system': 'fas fa-cog text-info',
         'default': 'fas fa-bell text-warning'
     };
@@ -626,6 +627,10 @@ function handleNotificationClick(notificationId, type, relatedId) {
         case 'leave_rejected':
             // Redirect to leave management page
             window.location.href = 'leave_management.php';
+            break;
+        case 'internal_case':
+            // Redirect to internal cases page
+            window.location.href = 'internal_cases.php';
             break;
         default:
             // Do nothing

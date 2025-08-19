@@ -314,10 +314,13 @@ $user_id = $current_user['id'];
                      <th>BẮT ĐẦU</th>
                      <th>KẾT THÚC</th>
                      <th>TRẠNG THÁI</th>
+                     <?php if (isAdmin()): ?>
+                     <th>NGƯỜI ĐƯỢC GÁN</th>
+                     <?php endif; ?>
                    </tr>
                  </thead>
                                  <tbody id="workspace-tasks-table">
-                   <tr><td colspan="9" class="text-center text-muted py-4"><i class="fas fa-spinner fa-spin"></i> Đang tải dữ liệu...</td></tr>
+                   <tr><td colspan="<?php echo isAdmin() ? '10' : '9'; ?>" class="text-center text-muted py-4"><i class="fas fa-spinner fa-spin"></i> Đang tải dữ liệu...</td></tr>
                  </tbody>
               </table>
             </div>
@@ -760,12 +763,14 @@ function handleDeploymentTaskSubmit(e) {
 
 function loadWorkspaceTasks(statusFilter = 'processing') {
     const tbody = document.getElementById('workspace-tasks-table');
-    tbody.innerHTML = '<tr><td colspan="9" class="text-center text-muted py-4"><i class="fas fa-spinner fa-spin"></i> Đang tải dữ liệu...</td></tr>';
+    const isAdmin = <?php echo isAdmin() ? 'true' : 'false'; ?>;
+    const colspan = isAdmin ? 10 : 9;
+    tbody.innerHTML = '<tr><td colspan="' + colspan + '" class="text-center text-muted py-4"><i class="fas fa-spinner fa-spin"></i> Đang tải dữ liệu...</td></tr>';
     fetch('api/get_workspace_tasks.php?status=' + encodeURIComponent(statusFilter))
         .then(res => res.json())
         .then(data => {
                          if (!data.success || !Array.isArray(data.data) || data.data.length === 0) {
-                 tbody.innerHTML = '<tr><td colspan="9" class="text-center text-muted py-4">Không có task nào</td></tr>';
+                 tbody.innerHTML = '<tr><td colspan="' + colspan + '" class="text-center text-muted py-4">Không có task nào</td></tr>';
                  return;
              }
             tbody.innerHTML = '';
@@ -785,13 +790,14 @@ function loadWorkspaceTasks(statusFilter = 'processing') {
                          <td>${item.start_date ? formatDateForDisplay(item.start_date) : ''}</td>
                          <td>${item.end_date ? formatDateForDisplay(item.end_date) : ''}</td>
                          <td><span class="badge ${item.status === 'Tiếp nhận' ? 'status-received' : (item.status === 'Đang xử lý' ? 'status-processing' : (item.status === 'Hoàn thành' ? 'status-completed' : (item.status === 'Huỷ' ? 'status-cancelled' : 'bg-secondary')))}">${item.status}</span></td>
+                         ${isAdmin ? `<td>${item.assigned_name || 'N/A'}</td>` : ''}
                      </tr>
                  `;
                 
                                  // Tạo row chi tiết (ẩn ban đầu)
                  const detailRow = `
                      <tr class="workspace-detail-row" data-item-id="${item.id}" style="display: none;">
-                         <td colspan="9">
+                         <td colspan="${colspan}">
                             <div class="detail-content p-3 bg-light border-start border-4 border-primary">
                                 <div class="row">
                                     <div class="col-md-6">
@@ -817,6 +823,12 @@ function loadWorkspaceTasks(statusFilter = 'processing') {
                                                 <td class="fw-bold">Khách hàng:</td>
                                                 <td>${item.customer_name || 'N/A'}</td>
                                             </tr>
+                                            ${isAdmin ? `
+                                            <tr>
+                                                <td class="fw-bold">Người được gán:</td>
+                                                <td>${item.assigned_name || 'N/A'}</td>
+                                            </tr>
+                                            ` : ''}
                                         </table>
                                     </div>
                                     <div class="col-md-6">
