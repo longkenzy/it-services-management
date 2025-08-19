@@ -1252,61 +1252,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
-// Function sửa lỗi auto increment
-function fixAutoIncrement() {
-    if (!confirm('Bạn có chắc chắn muốn sửa lỗi auto increment cho bảng deployment_cases? Thao tác này sẽ kiểm tra và sửa lỗi ID = 0.')) {
-        return;
-    }
-    
-    // Hiển thị loading
-    if (typeof showAlert === 'function') {
-        showAlert('Đang sửa lỗi auto increment...', 'info');
-    }
-    
-    fetch('api/fix_deployment_cases_auto_increment.php', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        credentials: 'include'
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            let message = 'Sửa lỗi auto increment thành công!\n';
-            if (data.fixes_applied) {
-                message += 'Các sửa chữa đã áp dụng:\n';
-                for (const [fix, result] of Object.entries(data.fixes_applied)) {
-                    message += `- ${fix}: ${result}\n`;
-                }
-            }
-            message += `\nAuto increment cũ: ${data.old_auto_increment}`;
-            message += `\nAuto increment mới: ${data.new_auto_increment}`;
-            message += `\nID cao nhất: ${data.max_id}`;
-            message += `\nKết quả test: ${data.test_result}`;
-            
-            if (typeof showAlert === 'function') {
-                showAlert(message, 'success');
-            } else {
-                alert(message);
-            }
-        } else {
-            if (typeof showAlert === 'function') {
-                showAlert('Lỗi: ' + (data.error || 'Không thể sửa lỗi auto increment'), 'error');
-            } else {
-                alert('Lỗi: ' + (data.error || 'Không thể sửa lỗi auto increment'));
-            }
-        }
-    })
-    .catch(error => {
-        if (typeof showAlert === 'function') {
-            showAlert('Có lỗi xảy ra khi sửa lỗi auto increment', 'error');
-        } else {
-            alert('Có lỗi xảy ra khi sửa lỗi auto increment');
-        }
-        console.error('Error:', error);
-    });
-}
+
 
 // Function tạo case triển khai
 function createDeploymentCase() {
@@ -3031,16 +2977,11 @@ document.addEventListener('DOMContentLoaded', function() {
               <div class="col-12">
                 <div class="d-flex justify-content-between align-items-center mb-3">
                   <h6 class="text-success mb-0"><i class="fas fa-tasks me-2"></i>QUẢN LÝ CASE TRIỂN KHAI</h6>
-                  <div>
-                    <?php if (in_array($current_role, ['it', 'admin', 'it leader'])): ?>
-                    <button type="button" class="btn btn-warning btn-sm me-2" onclick="fixAutoIncrement()" title="Sửa lỗi ID = 0">
-                      <i class="fas fa-wrench me-1"></i>Sửa lỗi Auto Increment
-                    </button>
-                    <button type="button" class="btn btn-success btn-sm" onclick="createDeploymentCase()">
-                      <i class="fas fa-plus me-1"></i>Tạo case triển khai
-                    </button>
-                    <?php endif; ?>
-                  </div>
+                  <?php if (in_array($current_role, ['it', 'admin', 'it leader'])): ?>
+                  <button type="button" class="btn btn-success btn-sm" onclick="createDeploymentCase()">
+                    <i class="fas fa-plus me-1"></i>Tạo case triển khai
+                  </button>
+                  <?php endif; ?>
                 </div>
                 
                 <!-- Bảng danh sách case triển khai -->
