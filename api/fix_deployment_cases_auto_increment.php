@@ -64,7 +64,16 @@ try {
     
     log_fix("Max ID in table: $maxId");
     
-    // 4. Kiểm tra xem có cần sửa không
+    // 4. Xóa dữ liệu lỗi (ID = 0) nếu có
+    $deleteSql = "DELETE FROM deployment_cases WHERE id = 0";
+    $deleteStmt = $pdo->prepare($deleteSql);
+    $deleteStmt->execute();
+    $deletedCount = $deleteStmt->rowCount();
+    if ($deletedCount > 0) {
+        log_fix("Deleted $deletedCount records with ID = 0");
+    }
+    
+    // 5. Kiểm tra xem có cần sửa không
     $needsFix = false;
     $fixes = [];
     
@@ -93,8 +102,12 @@ try {
     
     log_fix("Fixes needed: " . implode(', ', $fixes));
     
-    // 5. Thực hiện các sửa chữa
+    // 6. Thực hiện các sửa chữa
     $results = [];
+    
+    if ($deletedCount > 0) {
+        $results['deleted_invalid_records'] = "$deletedCount records with ID = 0";
+    }
     
     // Sửa cấu trúc cột id nếu cần
     if (in_array('id_column_structure', $fixes)) {
@@ -110,11 +123,21 @@ try {
     if (in_array('auto_increment_value', $fixes)) {
         log_fix("Fixing auto increment value...");
         $nextId = $maxId + 1;
-        $fixAutoIncrementSql = "ALTER TABLE deployment_cases AUTO_INCREMENT = ?";
+        $fixAutoIncrementSql = "ALTER TABLE deployment_cases AUTO_INCREMENT = $nextId";
         $fixAutoIncrementStmt = $pdo->prepare($fixAutoIncrementSql);
-        $fixAutoIncrementStmt->execute([$nextId]);
+        $fixAutoIncrementStmt->execute();
         $results['auto_increment_value'] = "set to $nextId";
         log_fix("Auto increment value set to $nextId");
+    }
+    
+    // Sửa dữ liệu timestamp lỗi
+    $updateTimestampSql = "UPDATE deployment_cases SET created_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP WHERE created_at = '0000-00-00 00:00:00' OR updated_at = '0000-00-00 00:00:00'";
+    $updateTimestampStmt = $pdo->prepare($updateTimestampSql);
+    $updateTimestampStmt->execute();
+    $updatedCount = $updateTimestampStmt->rowCount();
+    if ($updatedCount > 0) {
+        $results['fixed_timestamps'] = "$updatedCount records";
+        log_fix("Fixed timestamps for $updatedCount records");
     }
     
     // 6. Kiểm tra lại sau khi sửa

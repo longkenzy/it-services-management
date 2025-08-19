@@ -70,9 +70,9 @@ try {
     if ($tableStatus['Auto_increment'] <= $maxId) {
         echo "<p>4. Đang sửa auto increment...</p>";
         $nextId = $maxId + 1;
-        $sql5 = "ALTER TABLE deployment_cases AUTO_INCREMENT = ?";
+        $sql5 = "ALTER TABLE deployment_cases AUTO_INCREMENT = $nextId";
         $stmt5 = $pdo->prepare($sql5);
-        $stmt5->execute([$nextId]);
+        $stmt5->execute();
         echo "<p style='color: green;'>✓ Thành công: Đã set auto increment = $nextId</p>";
     } else {
         echo "<p style='color: blue;'>✓ Auto increment đã đúng, không cần sửa</p>";
