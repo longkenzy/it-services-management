@@ -10,26 +10,45 @@ if (!isLoggedIn()) {
 }
 
 $user_id = getCurrentUserId();
+$user_role = getCurrentUserRole();
 $status_filter = $_GET['status'] ?? 'processing';
 
-file_put_contents(__DIR__ . '/debug_workspace.txt', "Current user_id: $user_id, username: " . getCurrentUsername() . ", role: " . getCurrentUserRole() . ", status_filter: $status_filter\n", FILE_APPEND);
+file_put_contents(__DIR__ . '/debug_workspace.txt', "Current user_id: $user_id, username: " . getCurrentUsername() . ", role: " . $user_role . ", status_filter: $status_filter\n", FILE_APPEND);
 
 try {
     $data = [];
     
+    // Kiểm tra quyền admin - admin có thể thấy tất cả, IT chỉ thấy của mình
+    $is_admin = ($user_role === 'admin');
+    
     // Xử lý deployment_cases
     $case_where_conditions = [];
-    $case_params = [$user_id];
+    $case_params = [];
     
     if ($status_filter === 'processing') {
         // Hiển thị các case có trạng thái không phải "Hoàn thành"
-        $case_where_conditions[] = "assigned_to = ? AND status != 'Hoàn thành'";
+        if ($is_admin) {
+            $case_where_conditions[] = "status != 'Hoàn thành'";
+        } else {
+            $case_where_conditions[] = "assigned_to = ? AND status != 'Hoàn thành'";
+            $case_params[] = $user_id;
+        }
     } elseif ($status_filter === 'done_this_month') {
         // Hiển thị các case hoàn thành trong tháng hiện tại
-        $case_where_conditions[] = "assigned_to = ? AND status = 'Hoàn thành' AND MONTH(end_date) = MONTH(CURRENT_DATE()) AND YEAR(end_date) = YEAR(CURRENT_DATE())";
+        if ($is_admin) {
+            $case_where_conditions[] = "status = 'Hoàn thành' AND MONTH(end_date) = MONTH(CURRENT_DATE()) AND YEAR(end_date) = YEAR(CURRENT_DATE())";
+        } else {
+            $case_where_conditions[] = "assigned_to = ? AND status = 'Hoàn thành' AND MONTH(end_date) = MONTH(CURRENT_DATE()) AND YEAR(end_date) = YEAR(CURRENT_DATE())";
+            $case_params[] = $user_id;
+        }
     } elseif ($status_filter === 'done_last_month') {
         // Hiển thị các case hoàn thành trong các tháng trước
-        $case_where_conditions[] = "assigned_to = ? AND status = 'Hoàn thành' AND (MONTH(end_date) != MONTH(CURRENT_DATE()) OR YEAR(end_date) != YEAR(CURRENT_DATE()))";
+        if ($is_admin) {
+            $case_where_conditions[] = "status = 'Hoàn thành' AND (MONTH(end_date) != MONTH(CURRENT_DATE()) OR YEAR(end_date) != YEAR(CURRENT_DATE()))";
+        } else {
+            $case_where_conditions[] = "assigned_to = ? AND status = 'Hoàn thành' AND (MONTH(end_date) != MONTH(CURRENT_DATE()) OR YEAR(end_date) != YEAR(CURRENT_DATE()))";
+            $case_params[] = $user_id;
+        }
     }
     
     if (!empty($case_where_conditions)) {
@@ -54,6 +73,18 @@ try {
                     }
                 }
             }
+            
+            // Lấy tên người được gán
+            $assigned_name = '';
+            if (!empty($row['assigned_to'])) {
+                $stmt4 = $pdo->prepare('SELECT fullname FROM staffs WHERE id = ? LIMIT 1');
+                $stmt4->execute([$row['assigned_to']]);
+                $staff = $stmt4->fetch(PDO::FETCH_ASSOC);
+                if ($staff && !empty($staff['fullname'])) {
+                    $assigned_name = $staff['fullname'];
+                }
+            }
+            
             $data[] = [
                 'id'            => $row['id'] ?? '',
                 'case_code'     => $row['case_code'] ?? '',
@@ -65,23 +96,39 @@ try {
                 'end_date'      => $row['end_date'] ?? '',
                 'status'        => $row['status'] ?? '',
                 'assigned_to'   => $row['assigned_to'] ?? '',
+                'assigned_name' => $assigned_name,
             ];
         }
     }
 
     // Xử lý deployment_tasks
     $task_where_conditions = [];
-    $task_params = [$user_id];
+    $task_params = [];
     
     if ($status_filter === 'processing') {
         // Hiển thị các task có trạng thái không phải "Hoàn thành"
-        $task_where_conditions[] = "assignee_id = ? AND status != 'Hoàn thành'";
+        if ($is_admin) {
+            $task_where_conditions[] = "status != 'Hoàn thành'";
+        } else {
+            $task_where_conditions[] = "assignee_id = ? AND status != 'Hoàn thành'";
+            $task_params[] = $user_id;
+        }
     } elseif ($status_filter === 'done_this_month') {
         // Hiển thị các task hoàn thành trong tháng hiện tại
-        $task_where_conditions[] = "assignee_id = ? AND status = 'Hoàn thành' AND MONTH(end_date) = MONTH(CURRENT_DATE()) AND YEAR(end_date) = YEAR(CURRENT_DATE())";
+        if ($is_admin) {
+            $task_where_conditions[] = "status = 'Hoàn thành' AND MONTH(end_date) = MONTH(CURRENT_DATE()) AND YEAR(end_date) = YEAR(CURRENT_DATE())";
+        } else {
+            $task_where_conditions[] = "assignee_id = ? AND status = 'Hoàn thành' AND MONTH(end_date) = MONTH(CURRENT_DATE()) AND YEAR(end_date) = YEAR(CURRENT_DATE())";
+            $task_params[] = $user_id;
+        }
     } elseif ($status_filter === 'done_last_month') {
         // Hiển thị các task hoàn thành trong các tháng trước
-        $task_where_conditions[] = "assignee_id = ? AND status = 'Hoàn thành' AND (MONTH(end_date) != MONTH(CURRENT_DATE()) OR YEAR(end_date) != YEAR(CURRENT_DATE()))";
+        if ($is_admin) {
+            $task_where_conditions[] = "status = 'Hoàn thành' AND (MONTH(end_date) != MONTH(CURRENT_DATE()) OR YEAR(end_date) != YEAR(CURRENT_DATE()))";
+        } else {
+            $task_where_conditions[] = "assignee_id = ? AND status = 'Hoàn thành' AND (MONTH(end_date) != MONTH(CURRENT_DATE()) OR YEAR(end_date) != YEAR(CURRENT_DATE()))";
+            $task_params[] = $user_id;
+        }
     }
     
     if (!empty($task_where_conditions)) {
@@ -112,6 +159,18 @@ try {
                     }
                 }
             }
+            
+            // Lấy tên người được gán
+            $assigned_name = '';
+            if (!empty($row['assignee_id'])) {
+                $stmt4 = $pdo->prepare('SELECT fullname FROM staffs WHERE id = ? LIMIT 1');
+                $stmt4->execute([$row['assignee_id']]);
+                $staff = $stmt4->fetch(PDO::FETCH_ASSOC);
+                if ($staff && !empty($staff['fullname'])) {
+                    $assigned_name = $staff['fullname'];
+                }
+            }
+            
             $data[] = [
                 'id'            => $row['id'] ?? '',
                 'case_code'     => $row['task_number'] ?? '',
@@ -123,20 +182,36 @@ try {
                 'end_date'      => $row['end_date'] ?? '',
                 'status'        => $row['status'] ?? '',
                 'assigned_to'   => $row['assignee_id'] ?? '',
+                'assigned_name' => $assigned_name,
             ];
         }
     }
 
     // Xử lý maintenance_cases
     $maintenance_case_where_conditions = [];
-    $maintenance_case_params = [$user_id];
+    $maintenance_case_params = [];
     
     if ($status_filter === 'processing') {
-        $maintenance_case_where_conditions[] = "assigned_to = ? AND status != 'Hoàn thành'";
+        if ($is_admin) {
+            $maintenance_case_where_conditions[] = "status != 'Hoàn thành'";
+        } else {
+            $maintenance_case_where_conditions[] = "assigned_to = ? AND status != 'Hoàn thành'";
+            $maintenance_case_params[] = $user_id;
+        }
     } elseif ($status_filter === 'done_this_month') {
-        $maintenance_case_where_conditions[] = "assigned_to = ? AND status = 'Hoàn thành' AND MONTH(end_date) = MONTH(CURRENT_DATE()) AND YEAR(end_date) = YEAR(CURRENT_DATE())";
+        if ($is_admin) {
+            $maintenance_case_where_conditions[] = "status = 'Hoàn thành' AND MONTH(end_date) = MONTH(CURRENT_DATE()) AND YEAR(end_date) = YEAR(CURRENT_DATE())";
+        } else {
+            $maintenance_case_where_conditions[] = "assigned_to = ? AND status = 'Hoàn thành' AND MONTH(end_date) = MONTH(CURRENT_DATE()) AND YEAR(end_date) = YEAR(CURRENT_DATE())";
+            $maintenance_case_params[] = $user_id;
+        }
     } elseif ($status_filter === 'done_last_month') {
-        $maintenance_case_where_conditions[] = "assigned_to = ? AND status = 'Hoàn thành' AND (MONTH(end_date) != MONTH(CURRENT_DATE()) OR YEAR(end_date) != YEAR(CURRENT_DATE()))";
+        if ($is_admin) {
+            $maintenance_case_where_conditions[] = "status = 'Hoàn thành' AND (MONTH(end_date) != MONTH(CURRENT_DATE()) OR YEAR(end_date) != YEAR(CURRENT_DATE()))";
+        } else {
+            $maintenance_case_where_conditions[] = "assigned_to = ? AND status = 'Hoàn thành' AND (MONTH(end_date) != MONTH(CURRENT_DATE()) OR YEAR(end_date) != YEAR(CURRENT_DATE()))";
+            $maintenance_case_params[] = $user_id;
+        }
     }
     
     if (!empty($maintenance_case_where_conditions)) {
@@ -161,6 +236,18 @@ try {
                     }
                 }
             }
+            
+            // Lấy tên người được gán
+            $assigned_name = '';
+            if (!empty($row['assigned_to'])) {
+                $stmt4 = $pdo->prepare('SELECT fullname FROM staffs WHERE id = ? LIMIT 1');
+                $stmt4->execute([$row['assigned_to']]);
+                $staff = $stmt4->fetch(PDO::FETCH_ASSOC);
+                if ($staff && !empty($staff['fullname'])) {
+                    $assigned_name = $staff['fullname'];
+                }
+            }
+            
             $data[] = [
                 'id'            => $row['id'] ?? '',
                 'case_code'     => $row['case_code'] ?? '',
@@ -172,20 +259,36 @@ try {
                 'end_date'      => $row['end_date'] ?? '',
                 'status'        => $row['status'] ?? '',
                 'assigned_to'   => $row['assigned_to'] ?? '',
+                'assigned_name' => $assigned_name,
             ];
         }
     }
 
     // Xử lý maintenance_tasks
     $maintenance_task_where_conditions = [];
-    $maintenance_task_params = [$user_id];
+    $maintenance_task_params = [];
     
     if ($status_filter === 'processing') {
-        $maintenance_task_where_conditions[] = "assigned_to = ? AND status != 'Hoàn thành'";
+        if ($is_admin) {
+            $maintenance_task_where_conditions[] = "status != 'Hoàn thành'";
+        } else {
+            $maintenance_task_where_conditions[] = "assigned_to = ? AND status != 'Hoàn thành'";
+            $maintenance_task_params[] = $user_id;
+        }
     } elseif ($status_filter === 'done_this_month') {
-        $maintenance_task_where_conditions[] = "assigned_to = ? AND status = 'Hoàn thành' AND MONTH(end_date) = MONTH(CURRENT_DATE()) AND YEAR(end_date) = YEAR(CURRENT_DATE())";
+        if ($is_admin) {
+            $maintenance_task_where_conditions[] = "status = 'Hoàn thành' AND MONTH(end_date) = MONTH(CURRENT_DATE()) AND YEAR(end_date) = YEAR(CURRENT_DATE())";
+        } else {
+            $maintenance_task_where_conditions[] = "assigned_to = ? AND status = 'Hoàn thành' AND MONTH(end_date) = MONTH(CURRENT_DATE()) AND YEAR(end_date) = YEAR(CURRENT_DATE())";
+            $maintenance_task_params[] = $user_id;
+        }
     } elseif ($status_filter === 'done_last_month') {
-        $maintenance_task_where_conditions[] = "assigned_to = ? AND status = 'Hoàn thành' AND (MONTH(end_date) != MONTH(CURRENT_DATE()) OR YEAR(end_date) != YEAR(CURRENT_DATE()))";
+        if ($is_admin) {
+            $maintenance_task_where_conditions[] = "status = 'Hoàn thành' AND (MONTH(end_date) != MONTH(CURRENT_DATE()) OR YEAR(end_date) != YEAR(CURRENT_DATE()))";
+        } else {
+            $maintenance_task_where_conditions[] = "assigned_to = ? AND status = 'Hoàn thành' AND (MONTH(end_date) != MONTH(CURRENT_DATE()) OR YEAR(end_date) != YEAR(CURRENT_DATE()))";
+            $maintenance_task_params[] = $user_id;
+        }
     }
     
     if (!empty($maintenance_task_where_conditions)) {
@@ -216,6 +319,18 @@ try {
                     }
                 }
             }
+            
+            // Lấy tên người được gán
+            $assigned_name = '';
+            if (!empty($row['assigned_to'])) {
+                $stmt4 = $pdo->prepare('SELECT fullname FROM staffs WHERE id = ? LIMIT 1');
+                $stmt4->execute([$row['assigned_to']]);
+                $staff = $stmt4->fetch(PDO::FETCH_ASSOC);
+                if ($staff && !empty($staff['fullname'])) {
+                    $assigned_name = $staff['fullname'];
+                }
+            }
+            
             $data[] = [
                 'id'            => $row['id'] ?? '',
                 'case_code'     => $row['task_number'] ?? '',
@@ -227,20 +342,36 @@ try {
                 'end_date'      => $row['end_date'] ?? '',
                 'status'        => $row['status'] ?? '',
                 'assigned_to'   => $row['assigned_to'] ?? '',
+                'assigned_name' => $assigned_name,
             ];
         }
     }
 
     // Xử lý internal_cases
     $internal_case_where_conditions = [];
-    $internal_case_params = [$user_id];
+    $internal_case_params = [];
     
     if ($status_filter === 'processing') {
-        $internal_case_where_conditions[] = "handler_id = ? AND status != 'completed'";
+        if ($is_admin) {
+            $internal_case_where_conditions[] = "status != 'completed'";
+        } else {
+            $internal_case_where_conditions[] = "handler_id = ? AND status != 'completed'";
+            $internal_case_params[] = $user_id;
+        }
     } elseif ($status_filter === 'done_this_month') {
-        $internal_case_where_conditions[] = "handler_id = ? AND status = 'completed' AND MONTH(completed_at) = MONTH(CURRENT_DATE()) AND YEAR(completed_at) = YEAR(CURRENT_DATE())";
+        if ($is_admin) {
+            $internal_case_where_conditions[] = "status = 'completed' AND MONTH(completed_at) = MONTH(CURRENT_DATE()) AND YEAR(completed_at) = YEAR(CURRENT_DATE())";
+        } else {
+            $internal_case_where_conditions[] = "handler_id = ? AND status = 'completed' AND MONTH(completed_at) = MONTH(CURRENT_DATE()) AND YEAR(completed_at) = YEAR(CURRENT_DATE())";
+            $internal_case_params[] = $user_id;
+        }
     } elseif ($status_filter === 'done_last_month') {
-        $internal_case_where_conditions[] = "handler_id = ? AND status = 'completed' AND (MONTH(completed_at) != MONTH(CURRENT_DATE()) OR YEAR(completed_at) != YEAR(CURRENT_DATE()))";
+        if ($is_admin) {
+            $internal_case_where_conditions[] = "status = 'completed' AND (MONTH(completed_at) != MONTH(CURRENT_DATE()) OR YEAR(completed_at) != YEAR(CURRENT_DATE()))";
+        } else {
+            $internal_case_where_conditions[] = "handler_id = ? AND status = 'completed' AND (MONTH(completed_at) != MONTH(CURRENT_DATE()) OR YEAR(completed_at) != YEAR(CURRENT_DATE()))";
+            $internal_case_params[] = $user_id;
+        }
     }
     
     if (!empty($internal_case_where_conditions)) {
@@ -258,6 +389,17 @@ try {
                 'cancelled' => 'Huỷ'
             ];
             
+            // Lấy tên người được gán
+            $assigned_name = '';
+            if (!empty($row['handler_id'])) {
+                $stmt4 = $pdo->prepare('SELECT fullname FROM staffs WHERE id = ? LIMIT 1');
+                $stmt4->execute([$row['handler_id']]);
+                $staff = $stmt4->fetch(PDO::FETCH_ASSOC);
+                if ($staff && !empty($staff['fullname'])) {
+                    $assigned_name = $staff['fullname'];
+                }
+            }
+            
             $data[] = [
                 'id'            => $row['id'] ?? '',
                 'case_code'     => $row['case_number'] ?? '',
@@ -269,6 +411,7 @@ try {
                 'end_date'      => $row['due_date'] ?? '',
                 'status'        => $status_map[$row['status']] ?? $row['status'],
                 'assigned_to'   => $row['handler_id'] ?? '',
+                'assigned_name' => $assigned_name,
             ];
         }
     }

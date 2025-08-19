@@ -964,3 +964,125 @@ Current user_id: 12, username: khuongdt, role: it, status_filter: processing
 Data returned: [{"id":49,"case_code":"CTK2508001","level":"Case","case_type":"N\u00e2ng c\u1ea5p h\u1ec7 th\u1ed1ng","service_type":"C\u00e0i \u0111\u1eb7t h\u1ec7 th\u1ed1ng m\u1ea1ng","customer_name":"C\u00d4NG TY C\u1ed4 PH\u1ea6N DIPLOMAT","start_date":"2025-08-19","end_date":"","status":"Ti\u1ebfp nh\u1eadn","assigned_to":12}]
 Current user_id: 12, username: khuongdt, role: it, status_filter: processing
 Data returned: [{"id":44,"case_code":"TTK2508002","level":"Task","case_type":"C\u00e0i \u0111\u1eb7t thi\u1ebft b\u1ecb","service_type":"C\u00e0i \u0111\u1eb7t m\u00e1y in","customer_name":"C\u00d4NG TY C\u1ed4 PH\u1ea6N DIPLOMAT","start_date":"2025-08-19 10:17:00","end_date":"","status":"Ti\u1ebfp nh\u1eadn","assigned_to":12},{"id":49,"case_code":"CTK2508001","level":"Case","case_type":"N\u00e2ng c\u1ea5p h\u1ec7 th\u1ed1ng","service_type":"C\u00e0i \u0111\u1eb7t h\u1ec7 th\u1ed1ng m\u1ea1ng","customer_name":"C\u00d4NG TY C\u1ed4 PH\u1ea6N DIPLOMAT","start_date":"2025-08-19","end_date":"","status":"Ti\u1ebfp nh\u1eadn","assigned_to":12}]
+Current user_id: 11, username: longht, role: admin, status_filter: processing
+Data returned: [{"id":25,"case_code":"TBT2508002","level":"Task B\u1ea3o tr\u00ec","case_type":"C\u1ea5u h\u00ecnh ph\u1ea7n m\u1ec1m","service_type":"f\u00e1dfa","customer_name":"C\u00d4NG TY C\u1ed4 PH\u1ea6N DIPLOMAT","start_date":"2025-08-19 09:18:00","end_date":"","status":"Ti\u1ebfp nh\u1eadn","assigned_to":11},{"id":53,"case_code":"CNB.2508003","level":"Case N\u1ed9i b\u1ed9","case_type":"B\u00e1o c\u00e1o","service_type":"\u00e1df","customer_name":"N\u1ed9i b\u1ed9","start_date":"2025-08-18 11:50:00","end_date":"2025-08-19 09:40:00","status":"\u0110ang x\u1eed l\u00fd","assigned_to":11}]
+Current user_id: 11, username: longht, role: admin, status_filter: processing
+Data returned: [{"id":53,"case_code":"CNB.2508003","level":"Case N\u1ed9i b\u1ed9","case_type":"B\u00e1o c\u00e1o","service_type":"\u00e1df","customer_name":"N\u1ed9i b\u1ed9","start_date":"2025-08-18 11:50:00","end_date":"2025-08-19 09:40:00","status":"\u0110ang x\u1eed l\u00fd","assigned_to":11}]
+Current user_id: 11, username: longht, role: admin, status_filter: processing
+Data returned: [{"id":53,"case_code":"CNB.2508003","level":"Case N\u1ed9i b\u1ed9","case_type":"B\u00e1o c\u00e1o","service_type":"\u00e1df","customer_name":"N\u1ed9i b\u1ed9","start_date":"2025-08-18 11:50:00","end_date":"2025-08-19 09:40:00","status":"\u0110ang x\u1eed l\u00fd","assigned_to":11}]
+Current user_id: 11, username: longht, role: admin, status_filter: processing
+Data returned: []
+Current user_id: 11, username: longht, role: admin, status_filter: done_this_month
+Data returned: []
+Current user_id: 11, username: longht, role: admin, status_filter: done_last_month
+Data returned: []
+Current user_id: 11, username: longht, role: admin, status_filter: processing
+Data returned: []
+Current user_id: 11, username: longht, role: admin, status_filter: processing
+Data returned: []
+Current user_id: 11, username: longht, role: admin, status_filter: done_this_month
+Data returned: []
+Current user_id: 11, username: longht, role: admin, status_filter: done_last_month
+Data returned: []
+Current user_id: 11, username: longht, role: admin, status_filter: done_this_month
+Data returned: []
+Current user_id: 11, username: longht, role: admin, status_filter: processing
+Data returned: []
+Current user_id: 11, username: longht, role: admin, status_filter: done_this_month
+Data returned: []
+Current user_id: 11, username: longht, role: admin, status_filter: done_last_month
+Data returned: []
+Current user_id: 11, username: longht, role: admin, status_filter: done_this_month
+Data returned: []
+Current user_id: 11, username: longht, role: admin, status_filter: processing
+Data returned: []
+Current user_id: 11, username: longht, role: admin, status_filter: done_this_month
+Data returned: []
+Current user_id: 11, username: longht, role: admin, status_filter: done_last_month
+Data returned: []
+Current user_id: 11, username: longht, role: admin, status_filter: done_this_month
+Data returned: []
+Current user_id: 11, username: longht, role: admin, status_filter: processing
+Data returned: []
+Current user_id: 12, username: khuongdt, role: it, status_filter: processing
+Data returned: [{"id":56,"case_code":"CNB.2508001","level":"Case N\u1ed9i b\u1ed9","case_type":"B\u00e1o c\u00e1o","service_type":"\u00e1df\u00e1df","customer_name":"N\u1ed9i b\u1ed9","start_date":"2025-08-19 10:41:00","end_date":"","status":"Ti\u1ebfp nh\u1eadn","assigned_to":12}]
+Current user_id: 12, username: khuongdt, role: it, status_filter: done_this_month
+Data returned: []
+Current user_id: 12, username: khuongdt, role: it, status_filter: done_last_month
+Data returned: []
+Current user_id: 12, username: khuongdt, role: it, status_filter: done_this_month
+Data returned: []
+Current user_id: 12, username: khuongdt, role: it, status_filter: processing
+Data returned: [{"id":56,"case_code":"CNB.2508001","level":"Case N\u1ed9i b\u1ed9","case_type":"B\u00e1o c\u00e1o","service_type":"\u00e1df\u00e1df","customer_name":"N\u1ed9i b\u1ed9","start_date":"2025-08-19 10:41:00","end_date":"","status":"Ti\u1ebfp nh\u1eadn","assigned_to":12}]
+Current user_id: 11, username: longht, role: admin, status_filter: done_this_month
+Data returned: []
+Current user_id: 11, username: longht, role: admin, status_filter: done_last_month
+Data returned: []
+Current user_id: 11, username: longht, role: admin, status_filter: done_this_month
+Data returned: []
+Current user_id: 11, username: longht, role: admin, status_filter: processing
+Data returned: []
+Current user_id: 11, username: longht, role: admin, status_filter: processing
+Data returned: [{"id":56,"case_code":"CNB.2508001","level":"Case N\u1ed9i b\u1ed9","case_type":"B\u00e1o c\u00e1o","service_type":"\u00e1df\u00e1df","customer_name":"N\u1ed9i b\u1ed9","start_date":"2025-08-19 10:41:00","end_date":"","status":"Ti\u1ebfp nh\u1eadn","assigned_to":12,"assigned_name":"\u0110o\u00e0n Tr\u00ed Kh\u01b0\u01a1ng"}]
+Current user_id: 11, username: longht, role: admin, status_filter: processing
+Data returned: [{"id":56,"case_code":"CNB.2508001","level":"Case N\u1ed9i b\u1ed9","case_type":"B\u00e1o c\u00e1o","service_type":"\u00e1df\u00e1df","customer_name":"N\u1ed9i b\u1ed9","start_date":"2025-08-19 10:41:00","end_date":"","status":"Ti\u1ebfp nh\u1eadn","assigned_to":12,"assigned_name":"\u0110o\u00e0n Tr\u00ed Kh\u01b0\u01a1ng"}]
+Current user_id: 11, username: longht, role: admin, status_filter: processing
+Data returned: [{"id":56,"case_code":"CNB.2508001","level":"Case N\u1ed9i b\u1ed9","case_type":"B\u00e1o c\u00e1o","service_type":"\u00e1df\u00e1df","customer_name":"N\u1ed9i b\u1ed9","start_date":"2025-08-19 10:41:00","end_date":"","status":"Ti\u1ebfp nh\u1eadn","assigned_to":12,"assigned_name":"\u0110o\u00e0n Tr\u00ed Kh\u01b0\u01a1ng"}]
+Current user_id: 11, username: longht, role: admin, status_filter: done_this_month
+Data returned: [{"id":43,"case_code":"TTK2508001","level":"Task","case_type":"Kh\u1eafc ph\u1ee5c s\u1ef1 c\u1ed1","service_type":"giao h\u00e0ng","customer_name":"","start_date":"2025-08-18 10:58:00","end_date":"2025-08-18 10:59:00","status":"Ho\u00e0n th\u00e0nh","assigned_to":23,"assigned_name":"Tr\u1ea7n C\u00f4ng V\u0169"}]
+Current user_id: 11, username: longht, role: admin, status_filter: done_last_month
+Data returned: []
+Current user_id: 11, username: longht, role: admin, status_filter: done_this_month
+Data returned: [{"id":43,"case_code":"TTK2508001","level":"Task","case_type":"Kh\u1eafc ph\u1ee5c s\u1ef1 c\u1ed1","service_type":"giao h\u00e0ng","customer_name":"","start_date":"2025-08-18 10:58:00","end_date":"2025-08-18 10:59:00","status":"Ho\u00e0n th\u00e0nh","assigned_to":23,"assigned_name":"Tr\u1ea7n C\u00f4ng V\u0169"}]
+Current user_id: 12, username: khuongdt, role: it, status_filter: processing
+Data returned: [{"id":56,"case_code":"CNB.2508001","level":"Case N\u1ed9i b\u1ed9","case_type":"B\u00e1o c\u00e1o","service_type":"\u00e1df\u00e1df","customer_name":"N\u1ed9i b\u1ed9","start_date":"2025-08-19 10:41:00","end_date":"","status":"Ti\u1ebfp nh\u1eadn","assigned_to":12,"assigned_name":"\u0110o\u00e0n Tr\u00ed Kh\u01b0\u01a1ng"}]
+Current user_id: 12, username: khuongdt, role: it, status_filter: processing
+Data returned: [{"id":56,"case_code":"CNB.2508001","level":"Case N\u1ed9i b\u1ed9","case_type":"B\u00e1o c\u00e1o","service_type":"\u00e1df\u00e1df","customer_name":"N\u1ed9i b\u1ed9","start_date":"2025-08-19 10:41:00","end_date":"","status":"Ti\u1ebfp nh\u1eadn","assigned_to":12,"assigned_name":"\u0110o\u00e0n Tr\u00ed Kh\u01b0\u01a1ng"}]
+Current user_id: 12, username: khuongdt, role: it, status_filter: processing
+Data returned: [{"id":56,"case_code":"CNB.2508001","level":"Case N\u1ed9i b\u1ed9","case_type":"B\u00e1o c\u00e1o","service_type":"\u00e1df\u00e1df","customer_name":"N\u1ed9i b\u1ed9","start_date":"2025-08-19 10:41:00","end_date":"","status":"Ti\u1ebfp nh\u1eadn","assigned_to":12,"assigned_name":"\u0110o\u00e0n Tr\u00ed Kh\u01b0\u01a1ng"}]
+Current user_id: 12, username: khuongdt, role: it, status_filter: processing
+Data returned: [{"id":56,"case_code":"CNB.2508001","level":"Case N\u1ed9i b\u1ed9","case_type":"B\u00e1o c\u00e1o","service_type":"\u00e1df\u00e1df","customer_name":"N\u1ed9i b\u1ed9","start_date":"2025-08-19 10:41:00","end_date":"","status":"Ti\u1ebfp nh\u1eadn","assigned_to":12,"assigned_name":"\u0110o\u00e0n Tr\u00ed Kh\u01b0\u01a1ng"}]
+Current user_id: 12, username: khuongdt, role: it, status_filter: processing
+Data returned: [{"id":56,"case_code":"CNB.2508001","level":"Case N\u1ed9i b\u1ed9","case_type":"B\u00e1o c\u00e1o","service_type":"\u00e1df\u00e1df","customer_name":"N\u1ed9i b\u1ed9","start_date":"2025-08-19 10:41:00","end_date":"","status":"Ti\u1ebfp nh\u1eadn","assigned_to":12,"assigned_name":"\u0110o\u00e0n Tr\u00ed Kh\u01b0\u01a1ng"}]
+Current user_id: 12, username: khuongdt, role: it, status_filter: processing
+Data returned: [{"id":56,"case_code":"CNB.2508001","level":"Case N\u1ed9i b\u1ed9","case_type":"B\u00e1o c\u00e1o","service_type":"\u00e1df\u00e1df","customer_name":"N\u1ed9i b\u1ed9","start_date":"2025-08-19 10:41:00","end_date":"","status":"Ti\u1ebfp nh\u1eadn","assigned_to":12,"assigned_name":"\u0110o\u00e0n Tr\u00ed Kh\u01b0\u01a1ng"}]
+Current user_id: 11, username: longht, role: admin, status_filter: processing
+Data returned: [{"id":57,"case_code":"CNB.2508002","level":"Case N\u1ed9i b\u1ed9","case_type":"Helpdesk n\u1ed9i b\u1ed9","service_type":"\u00e1df","customer_name":"N\u1ed9i b\u1ed9","start_date":"2025-08-19 10:46:00","end_date":"","status":"Ti\u1ebfp nh\u1eadn","assigned_to":22,"assigned_name":"Nguy\u1ec5n Th\u00e0nh \u0110\u1ea1t"},{"id":56,"case_code":"CNB.2508001","level":"Case N\u1ed9i b\u1ed9","case_type":"B\u00e1o c\u00e1o","service_type":"\u00e1df\u00e1df","customer_name":"N\u1ed9i b\u1ed9","start_date":"2025-08-19 10:41:00","end_date":"","status":"Ti\u1ebfp nh\u1eadn","assigned_to":12,"assigned_name":"\u0110o\u00e0n Tr\u00ed Kh\u01b0\u01a1ng"}]
+Current user_id: 11, username: longht, role: admin, status_filter: processing
+Data returned: [{"id":57,"case_code":"CNB.2508002","level":"Case N\u1ed9i b\u1ed9","case_type":"Helpdesk n\u1ed9i b\u1ed9","service_type":"\u00e1df","customer_name":"N\u1ed9i b\u1ed9","start_date":"2025-08-19 10:46:00","end_date":"","status":"Ti\u1ebfp nh\u1eadn","assigned_to":22,"assigned_name":"Nguy\u1ec5n Th\u00e0nh \u0110\u1ea1t"},{"id":56,"case_code":"CNB.2508001","level":"Case N\u1ed9i b\u1ed9","case_type":"B\u00e1o c\u00e1o","service_type":"\u00e1df\u00e1df","customer_name":"N\u1ed9i b\u1ed9","start_date":"2025-08-19 10:41:00","end_date":"","status":"Ti\u1ebfp nh\u1eadn","assigned_to":12,"assigned_name":"\u0110o\u00e0n Tr\u00ed Kh\u01b0\u01a1ng"}]
+Current user_id: 12, username: khuongdt, role: it, status_filter: processing
+Data returned: [{"id":56,"case_code":"CNB.2508001","level":"Case N\u1ed9i b\u1ed9","case_type":"B\u00e1o c\u00e1o","service_type":"\u00e1df\u00e1df","customer_name":"N\u1ed9i b\u1ed9","start_date":"2025-08-19 10:41:00","end_date":"","status":"Ti\u1ebfp nh\u1eadn","assigned_to":12,"assigned_name":"\u0110o\u00e0n Tr\u00ed Kh\u01b0\u01a1ng"}]
+Current user_id: 12, username: khuongdt, role: it, status_filter: processing
+Data returned: [{"id":56,"case_code":"CNB.2508001","level":"Case N\u1ed9i b\u1ed9","case_type":"B\u00e1o c\u00e1o","service_type":"\u00e1df\u00e1df","customer_name":"N\u1ed9i b\u1ed9","start_date":"2025-08-19 10:41:00","end_date":"","status":"Ti\u1ebfp nh\u1eadn","assigned_to":12,"assigned_name":"\u0110o\u00e0n Tr\u00ed Kh\u01b0\u01a1ng"}]
+Current user_id: 12, username: khuongdt, role: it, status_filter: processing
+Data returned: [{"id":56,"case_code":"CNB.2508001","level":"Case N\u1ed9i b\u1ed9","case_type":"B\u00e1o c\u00e1o","service_type":"\u00e1df\u00e1df","customer_name":"N\u1ed9i b\u1ed9","start_date":"2025-08-19 10:41:00","end_date":"","status":"Ti\u1ebfp nh\u1eadn","assigned_to":12,"assigned_name":"\u0110o\u00e0n Tr\u00ed Kh\u01b0\u01a1ng"}]
+Current user_id: 12, username: khuongdt, role: it, status_filter: processing
+Data returned: [{"id":56,"case_code":"CNB.2508001","level":"Case N\u1ed9i b\u1ed9","case_type":"B\u00e1o c\u00e1o","service_type":"\u00e1df\u00e1df","customer_name":"N\u1ed9i b\u1ed9","start_date":"2025-08-19 10:41:00","end_date":"","status":"Ti\u1ebfp nh\u1eadn","assigned_to":12,"assigned_name":"\u0110o\u00e0n Tr\u00ed Kh\u01b0\u01a1ng"}]
+Current user_id: 12, username: khuongdt, role: it, status_filter: processing
+Data returned: [{"id":56,"case_code":"CNB.2508001","level":"Case N\u1ed9i b\u1ed9","case_type":"B\u00e1o c\u00e1o","service_type":"\u00e1df\u00e1df","customer_name":"N\u1ed9i b\u1ed9","start_date":"2025-08-19 10:41:00","end_date":"","status":"Ti\u1ebfp nh\u1eadn","assigned_to":12,"assigned_name":"\u0110o\u00e0n Tr\u00ed Kh\u01b0\u01a1ng"}]
+Current user_id: 12, username: khuongdt, role: it, status_filter: processing
+Data returned: [{"id":56,"case_code":"CNB.2508001","level":"Case N\u1ed9i b\u1ed9","case_type":"B\u00e1o c\u00e1o","service_type":"\u00e1df\u00e1df","customer_name":"N\u1ed9i b\u1ed9","start_date":"2025-08-19 10:41:00","end_date":"","status":"Ti\u1ebfp nh\u1eadn","assigned_to":12,"assigned_name":"\u0110o\u00e0n Tr\u00ed Kh\u01b0\u01a1ng"}]
+Current user_id: 11, username: longht, role: admin, status_filter: processing
+Data returned: [{"id":57,"case_code":"CNB.2508002","level":"Case N\u1ed9i b\u1ed9","case_type":"Helpdesk n\u1ed9i b\u1ed9","service_type":"\u00e1df","customer_name":"N\u1ed9i b\u1ed9","start_date":"2025-08-19 10:46:00","end_date":"","status":"Ti\u1ebfp nh\u1eadn","assigned_to":22,"assigned_name":"Nguy\u1ec5n Th\u00e0nh \u0110\u1ea1t"},{"id":56,"case_code":"CNB.2508001","level":"Case N\u1ed9i b\u1ed9","case_type":"B\u00e1o c\u00e1o","service_type":"\u00e1df\u00e1df","customer_name":"N\u1ed9i b\u1ed9","start_date":"2025-08-19 10:41:00","end_date":"","status":"Ti\u1ebfp nh\u1eadn","assigned_to":12,"assigned_name":"\u0110o\u00e0n Tr\u00ed Kh\u01b0\u01a1ng"}]
+Current user_id: 11, username: longht, role: admin, status_filter: processing
+Data returned: [{"id":57,"case_code":"CNB.2508002","level":"Case N\u1ed9i b\u1ed9","case_type":"Helpdesk n\u1ed9i b\u1ed9","service_type":"\u00e1df","customer_name":"N\u1ed9i b\u1ed9","start_date":"2025-08-19 10:46:00","end_date":"","status":"Ti\u1ebfp nh\u1eadn","assigned_to":22,"assigned_name":"Nguy\u1ec5n Th\u00e0nh \u0110\u1ea1t"},{"id":56,"case_code":"CNB.2508001","level":"Case N\u1ed9i b\u1ed9","case_type":"B\u00e1o c\u00e1o","service_type":"\u00e1df\u00e1df","customer_name":"N\u1ed9i b\u1ed9","start_date":"2025-08-19 10:41:00","end_date":"","status":"Ti\u1ebfp nh\u1eadn","assigned_to":12,"assigned_name":"\u0110o\u00e0n Tr\u00ed Kh\u01b0\u01a1ng"}]
+Current user_id: 11, username: longht, role: admin, status_filter: processing
+Data returned: [{"id":57,"case_code":"CNB.2508002","level":"Case N\u1ed9i b\u1ed9","case_type":"Helpdesk n\u1ed9i b\u1ed9","service_type":"\u00e1df","customer_name":"N\u1ed9i b\u1ed9","start_date":"2025-08-19 10:46:00","end_date":"","status":"Ti\u1ebfp nh\u1eadn","assigned_to":22,"assigned_name":"Nguy\u1ec5n Th\u00e0nh \u0110\u1ea1t"},{"id":56,"case_code":"CNB.2508001","level":"Case N\u1ed9i b\u1ed9","case_type":"B\u00e1o c\u00e1o","service_type":"\u00e1df\u00e1df","customer_name":"N\u1ed9i b\u1ed9","start_date":"2025-08-19 10:41:00","end_date":"","status":"Ti\u1ebfp nh\u1eadn","assigned_to":12,"assigned_name":"\u0110o\u00e0n Tr\u00ed Kh\u01b0\u01a1ng"}]
+Current user_id: 11, username: longht, role: admin, status_filter: processing
+Data returned: [{"id":57,"case_code":"CNB.2508002","level":"Case N\u1ed9i b\u1ed9","case_type":"Helpdesk n\u1ed9i b\u1ed9","service_type":"\u00e1df","customer_name":"N\u1ed9i b\u1ed9","start_date":"2025-08-19 10:46:00","end_date":"","status":"Ti\u1ebfp nh\u1eadn","assigned_to":22,"assigned_name":"Nguy\u1ec5n Th\u00e0nh \u0110\u1ea1t"},{"id":56,"case_code":"CNB.2508001","level":"Case N\u1ed9i b\u1ed9","case_type":"B\u00e1o c\u00e1o","service_type":"\u00e1df\u00e1df","customer_name":"N\u1ed9i b\u1ed9","start_date":"2025-08-19 10:41:00","end_date":"","status":"Ti\u1ebfp nh\u1eadn","assigned_to":12,"assigned_name":"\u0110o\u00e0n Tr\u00ed Kh\u01b0\u01a1ng"}]
+Current user_id: 11, username: longht, role: admin, status_filter: processing
+Data returned: [{"id":57,"case_code":"CNB.2508002","level":"Case N\u1ed9i b\u1ed9","case_type":"Helpdesk n\u1ed9i b\u1ed9","service_type":"\u00e1df","customer_name":"N\u1ed9i b\u1ed9","start_date":"2025-08-19 10:46:00","end_date":"","status":"Ti\u1ebfp nh\u1eadn","assigned_to":22,"assigned_name":"Nguy\u1ec5n Th\u00e0nh \u0110\u1ea1t"},{"id":56,"case_code":"CNB.2508001","level":"Case N\u1ed9i b\u1ed9","case_type":"B\u00e1o c\u00e1o","service_type":"\u00e1df\u00e1df","customer_name":"N\u1ed9i b\u1ed9","start_date":"2025-08-19 10:41:00","end_date":"","status":"Ti\u1ebfp nh\u1eadn","assigned_to":12,"assigned_name":"\u0110o\u00e0n Tr\u00ed Kh\u01b0\u01a1ng"}]
+Current user_id: 11, username: longht, role: admin, status_filter: processing
+Data returned: [{"id":57,"case_code":"CNB.2508002","level":"Case N\u1ed9i b\u1ed9","case_type":"Helpdesk n\u1ed9i b\u1ed9","service_type":"\u00e1df","customer_name":"N\u1ed9i b\u1ed9","start_date":"2025-08-19 10:46:00","end_date":"","status":"Ti\u1ebfp nh\u1eadn","assigned_to":22,"assigned_name":"Nguy\u1ec5n Th\u00e0nh \u0110\u1ea1t"},{"id":56,"case_code":"CNB.2508001","level":"Case N\u1ed9i b\u1ed9","case_type":"B\u00e1o c\u00e1o","service_type":"\u00e1df\u00e1df","customer_name":"N\u1ed9i b\u1ed9","start_date":"2025-08-19 10:41:00","end_date":"","status":"Ti\u1ebfp nh\u1eadn","assigned_to":12,"assigned_name":"\u0110o\u00e0n Tr\u00ed Kh\u01b0\u01a1ng"}]
+Current user_id: 12, username: khuongdt, role: it, status_filter: processing
+Data returned: [{"id":56,"case_code":"CNB.2508001","level":"Case N\u1ed9i b\u1ed9","case_type":"B\u00e1o c\u00e1o","service_type":"\u00e1df\u00e1df","customer_name":"N\u1ed9i b\u1ed9","start_date":"2025-08-19 10:41:00","end_date":"","status":"Ti\u1ebfp nh\u1eadn","assigned_to":12,"assigned_name":"\u0110o\u00e0n Tr\u00ed Kh\u01b0\u01a1ng"}]
+Current user_id: 12, username: khuongdt, role: it, status_filter: done_last_month
+Data returned: []
+Current user_id: 12, username: khuongdt, role: it, status_filter: done_this_month
+Data returned: []
+Current user_id: 12, username: khuongdt, role: it, status_filter: processing
+Data returned: [{"id":56,"case_code":"CNB.2508001","level":"Case N\u1ed9i b\u1ed9","case_type":"B\u00e1o c\u00e1o","service_type":"\u00e1df\u00e1df","customer_name":"N\u1ed9i b\u1ed9","start_date":"2025-08-19 10:41:00","end_date":"","status":"Ti\u1ebfp nh\u1eadn","assigned_to":12,"assigned_name":"\u0110o\u00e0n Tr\u00ed Kh\u01b0\u01a1ng"}]
+Current user_id: 11, username: longht, role: admin, status_filter: processing
+Data returned: [{"id":57,"case_code":"CNB.2508002","level":"Case N\u1ed9i b\u1ed9","case_type":"Helpdesk n\u1ed9i b\u1ed9","service_type":"\u00e1df","customer_name":"N\u1ed9i b\u1ed9","start_date":"2025-08-19 10:46:00","end_date":"","status":"Ti\u1ebfp nh\u1eadn","assigned_to":22,"assigned_name":"Nguy\u1ec5n Th\u00e0nh \u0110\u1ea1t"},{"id":56,"case_code":"CNB.2508001","level":"Case N\u1ed9i b\u1ed9","case_type":"B\u00e1o c\u00e1o","service_type":"\u00e1df\u00e1df","customer_name":"N\u1ed9i b\u1ed9","start_date":"2025-08-19 10:41:00","end_date":"","status":"Ti\u1ebfp nh\u1eadn","assigned_to":12,"assigned_name":"\u0110o\u00e0n Tr\u00ed Kh\u01b0\u01a1ng"}]
+Current user_id: 11, username: longht, role: admin, status_filter: processing
+Data returned: [{"id":57,"case_code":"CNB.2508002","level":"Case N\u1ed9i b\u1ed9","case_type":"Helpdesk n\u1ed9i b\u1ed9","service_type":"\u00e1df","customer_name":"N\u1ed9i b\u1ed9","start_date":"2025-08-19 10:46:00","end_date":"","status":"Ti\u1ebfp nh\u1eadn","assigned_to":22,"assigned_name":"Nguy\u1ec5n Th\u00e0nh \u0110\u1ea1t"},{"id":56,"case_code":"CNB.2508001","level":"Case N\u1ed9i b\u1ed9","case_type":"B\u00e1o c\u00e1o","service_type":"\u00e1df\u00e1df","customer_name":"N\u1ed9i b\u1ed9","start_date":"2025-08-19 10:41:00","end_date":"","status":"Ti\u1ebfp nh\u1eadn","assigned_to":12,"assigned_name":"\u0110o\u00e0n Tr\u00ed Kh\u01b0\u01a1ng"}]

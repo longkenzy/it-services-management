@@ -281,6 +281,57 @@ try {
         // Ignore logging errors - don't fail the case creation
     }
     
+    // Gửi thông báo cho người xử lý (handler)
+    try {
+        // Lấy thông tin người yêu cầu
+        $requester_stmt = $pdo->prepare("SELECT fullname FROM staffs WHERE id = ?");
+        $requester_stmt->execute([$requester_id]);
+        $requester = $requester_stmt->fetch(PDO::FETCH_ASSOC);
+        $requester_name = $requester ? $requester['fullname'] : '';
+        
+        // Chuẩn bị dữ liệu cho thông báo
+        $notification_data = [
+            'case_id' => $case_id,
+            'case_number' => $case_number,
+            'handler_id' => $handler_id,
+            'issue_title' => $issue_title,
+            'requester_name' => $requester_name
+        ];
+        
+        // Gọi API tạo thông báo
+        $notification_url = 'http://' . $_SERVER['HTTP_HOST'] . dirname($_SERVER['REQUEST_URI']) . '/create_internal_case_notification.php';
+        
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $notification_url);
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($notification_data));
+        curl_setopt($ch, CURLOPT_HTTPHEADER, [
+            'Content-Type: application/json',
+            'X-Requested-With: XMLHttpRequest'
+        ]);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 10);
+        
+        $notification_response = curl_exec($ch);
+        $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        curl_close($ch);
+        
+        if ($http_code === 200) {
+            $notification_result = json_decode($notification_response, true);
+            if ($notification_result && $notification_result['success']) {
+                error_log("DEBUG: Notification sent successfully to handler ID: $handler_id");
+            } else {
+                error_log("DEBUG: Notification failed: " . ($notification_result['message'] ?? 'Unknown error'));
+            }
+        } else {
+            error_log("DEBUG: Notification HTTP error: $http_code");
+        }
+        
+    } catch (Exception $e) {
+        // Ignore notification errors - don't fail the case creation
+        error_log("DEBUG: Notification error: " . $e->getMessage());
+    }
+    
     echo json_encode([
         'success' => true,
         'message' => 'Tạo case thành công',
