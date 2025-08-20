@@ -704,12 +704,6 @@ if (isset($_SESSION['user_id'])) {
                         <i class="fas fa-file-excel me-2"></i>
                         Xuất Excel
                     </button>
-                    <?php if ($current_role === 'admin' || $current_role === 'super_admin'): ?>
-                    <button class="btn btn-warning me-2" id="fixAutoIncrementBtn" title="Sửa lỗi Auto Increment">
-                        <i class="fas fa-tools me-2"></i>
-                        Sửa Auto Increment
-                    </button>
-                    <?php endif; ?>
                     <?php if ($current_role !== 'it' && $current_role !== 'user'): ?>
                     <button class="button" id="createRequestBtn" data-bs-toggle="modal" data-bs-target="#addmaintenanceRequestModal">
                         <span class="button_lg">
@@ -1679,7 +1673,7 @@ function loadmaintenanceCases(requestId) {
             tbody.innerHTML = '';
 
             if (!data.success || !Array.isArray(data.data) || data.data.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="14" class="text-center text-muted py-3">
+                tbody.innerHTML = `<tr><td colspan="13" class="text-center text-muted py-3">
                   <i class='fas fa-inbox fa-2x mb-2'></i><br>Chưa có case bảo trì nào
                 </td></tr>`;
                 return;
@@ -1692,6 +1686,7 @@ function loadmaintenanceCases(requestId) {
                     <td class='text-center'>${idx + 1}</td>
                     <td class='text-center'>${item.case_code || ''}</td>
                     <td class='text-center'>${item.case_description || ''}</td>
+                    <td class='text-center'>${item.progress || ''}</td>
                     <td class='text-center'>${item.notes || ''}</td>
                     <td class='text-center'>${item.assigned_to_name || ''}</td>
                     <td class='text-center'>${formatDateForDisplay(item.start_date)}</td>
@@ -1723,7 +1718,7 @@ function loadmaintenanceCases(requestId) {
         .catch(error => {
             const tbody = document.getElementById('maintenance-cases-table');
             if (tbody) {
-                tbody.innerHTML = `<tr><td colspan="14" class="text-center text-danger py-3">
+                tbody.innerHTML = `<tr><td colspan="13" class="text-center text-danger py-3">
                   <i class='fas fa-exclamation-triangle fa-2x mb-2'></i><br>Lỗi khi tải dữ liệu
                 </td></tr>`;
             }
@@ -3343,6 +3338,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         <th class="text-center">STT</th>
                         <th class="text-center">Số case</th>
                         <th class="text-center">Mô tả case</th>
+                        <th class="text-center">Tiến trình</th>
                         <th class="text-center">Ghi chú</th>
                         <th class="text-center">Người phụ trách</th>
                         <th class="text-center">Ngày bắt đầu</th>
@@ -3356,7 +3352,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     </thead>
                     <tbody id="maintenance-cases-table">
                       <tr>
-                        <td colspan="12" class="text-center text-muted py-3">
+                        <td colspan="13" class="text-center text-muted py-3">
                           <i class="fas fa-inbox fa-2x mb-2"></i><br>
                           Chưa có case bảo trì nào
                         </td>
@@ -4480,58 +4476,7 @@ $(document).ready(function() {
     }
 });
 
-// Fix Auto Increment functionality
-$(document).ready(function() {
-    $('#fixAutoIncrementBtn').on('click', function() {
-        if (confirm('Bạn có chắc chắn muốn sửa lỗi Auto Increment cho bảng maintenance_requests?\n\nLưu ý: Hãy backup database trước khi thực hiện.')) {
-            var btn = $(this);
-            var originalText = btn.html();
-            
-            // Disable button and show loading
-            btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-2"></i>Đang sửa...');
-            
-            // Call API to fix auto increment
-            $.ajax({
-                url: 'api/fix_maintenance_requests_auto_increment.php',
-                method: 'POST',
-                dataType: 'json',
-                success: function(response) {
-                    if (response.success) {
-                        var message = 'Sửa Auto Increment thành công!\n\n';
-                        if (response.final_status) {
-                            message += 'Giá trị AUTO_INCREMENT mới: ' + response.final_status.auto_increment_value + '\n';
-                            message += 'ID tiếp theo sẽ là: ' + response.final_status.next_id_will_be + '\n\n';
-                        }
-                        message += 'Chi tiết các bước thực hiện:\n';
-                        response.steps.forEach(function(step) {
-                            message += step.step + '. ' + step.action + ': ' + step.details + '\n';
-                        });
-                        
-                        alert(message);
-                        showSuccess('Đã sửa Auto Increment thành công!');
-                        
-                        // Reload page to refresh data
-                        setTimeout(function() {
-                            location.reload();
-                        }, 2000);
-                    } else {
-                        alert('Lỗi: ' + (response.error || 'Không thể sửa Auto Increment'));
-                        showError('Lỗi khi sửa Auto Increment: ' + (response.error || 'Unknown error'));
-                    }
-                },
-                error: function(xhr, status, error) {
-                    console.error('AJAX Error:', error);
-                    alert('Lỗi kết nối: ' + error);
-                    showError('Lỗi kết nối khi sửa Auto Increment');
-                },
-                complete: function() {
-                    // Re-enable button
-                    btn.prop('disabled', false).html(originalText);
-                }
-            });
-        }
-    });
-});
+
 
 </script>
 <script src="assets/js/dashboard.js?v=<?php echo filemtime('assets/js/dashboard.js'); ?>"></script>

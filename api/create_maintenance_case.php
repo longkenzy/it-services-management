@@ -31,6 +31,8 @@ try {
     $raw_input = file_get_contents('php://input');
     $input = json_decode($raw_input, true);
     if (!is_array($input)) throw new Exception('Invalid JSON: ' . json_last_error_msg());
+    
+
 
     // Validate required fields
     $required = [
@@ -47,6 +49,8 @@ try {
     $progress = isset($input['progress']) ? trim($input['progress']) : null;
     $case_description = isset($input['case_description']) ? trim($input['case_description']) : null;
     $notes = isset($input['notes']) ? trim($input['notes']) : null;
+    
+
     $assigned_to = (int)$input['assigned_to'];
     $work_type = isset($input['work_type']) ? trim($input['work_type']) : null;
     $start_date = !empty($input['start_date']) ? $input['start_date'] : null;
