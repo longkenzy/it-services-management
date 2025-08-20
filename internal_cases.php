@@ -84,6 +84,7 @@ try {
                     ic.priority,
                     ic.issue_title,
                     ic.issue_description,
+                    ic.notes,
                     ic.status,
                     ic.created_at,
                     ic.start_date,
@@ -105,6 +106,7 @@ try {
                     ic.priority,
                     ic.issue_title,
                     ic.issue_description,
+                    ic.notes,
                     ic.status,
                     ic.created_at,
                     ic.start_date,
@@ -505,6 +507,7 @@ $flash_messages = getFlashMessages();
                                                 <th scope="col">Người xử lý</th>
                                                 <th scope="col">Loại case</th>
                                                 <th scope="col">Vụ việc hỗ trợ</th>
+                                                <th scope="col">Ghi chú</th>
                                                 <th scope="col">Ngày tiếp nhận</th>
                                                 <th scope="col">Ngày hoàn thành</th>
                                                 <th scope="col">Trạng thái</th>
@@ -548,6 +551,18 @@ $flash_messages = getFlashMessages();
                                                         <div class="case-title" 
                                                              title="<?php echo htmlspecialchars($case['issue_title']); ?>">
                                                             <?php echo htmlspecialchars($case['issue_title']); ?>
+                                                        </div>
+                                                    </td>
+                                                    <td>
+                                                        <div class="case-notes" 
+                                                             title="<?php echo htmlspecialchars($case['notes'] ?? ''); ?>">
+                                                            <?php if (!empty($case['notes'])): ?>
+                                                                <span class="text-truncate d-inline-block" style="max-width: 150px;">
+                                                                    <?php echo htmlspecialchars($case['notes']); ?>
+                                                                </span>
+                                                            <?php else: ?>
+                                                                <span class="text-muted">-</span>
+                                                            <?php endif; ?>
                                                         </div>
                                                     </td>
                                                     <td>
@@ -2571,17 +2586,22 @@ $flash_messages = getFlashMessages();
                      .text(statusText);
         }
         
-        // Update notes column if provided (if it exists in the table)
+        // Update notes column if provided
         if (formData.notes !== undefined) {
-            var notesCell = row.find('.case-notes');
+            var notesCell = row.find('td:nth-child(7) .case-notes'); // Cột thứ 7 là Ghi chú
             if (notesCell.length > 0) {
-                notesCell.text(formData.notes || '');
+                if (formData.notes && formData.notes.trim() !== '') {
+                    notesCell.html('<span class="text-truncate d-inline-block" style="max-width: 150px;">' + 
+                                  formData.notes + '</span>');
+                } else {
+                    notesCell.html('<span class="text-muted">-</span>');
+                }
             }
         }
         
         // Update due_date column (Ngày hoàn thành)
         if (formData.due_date !== undefined) {
-            var dueDateCell = row.find('td:nth-child(8)'); // Cột thứ 8 là Ngày hoàn thành
+            var dueDateCell = row.find('td:nth-child(9)'); // Cột thứ 9 là Ngày hoàn thành
             if (dueDateCell.length > 0) {
                 if (formData.due_date) {
                     var dueDate = new Date(formData.due_date);
@@ -2599,7 +2619,7 @@ $flash_messages = getFlashMessages();
         
         // Update start_date column if provided
         if (formData.start_date !== undefined) {
-            var startDateCell = row.find('td:nth-child(7)'); // Cột thứ 7 là Ngày tiếp nhận
+            var startDateCell = row.find('td:nth-child(8)'); // Cột thứ 8 là Ngày tiếp nhận
             if (startDateCell.length > 0) {
                 if (formData.start_date) {
                     var startDate = new Date(formData.start_date);
@@ -2781,9 +2801,10 @@ $flash_messages = getFlashMessages();
                 handler_name: row.find('td:eq(3) div').text().trim(),
                 case_type: row.find('td:eq(4) span').text().trim(),
                 issue_title: row.find('td:eq(5) .case-title').text().trim(),
-                start_date: row.find('td:eq(6) .case-date').text().trim() || '-',
-                due_date: row.find('td:eq(7) .case-date').text().trim() || '-',
-                status: row.find('td:eq(8) .case-status').text().trim()
+                notes: row.find('td:eq(6) .case-notes').text().trim() || '-',
+                start_date: row.find('td:eq(7) .case-date').text().trim() || '-',
+                due_date: row.find('td:eq(8) .case-date').text().trim() || '-',
+                status: row.find('td:eq(9) .case-status').text().trim()
             };
             visibleRows.push(caseData);
         });
@@ -2802,7 +2823,7 @@ $flash_messages = getFlashMessages();
         
         // Tạo dữ liệu cho worksheet
         var wsData = [
-            ['STT', 'Số case', 'Người yêu cầu', 'Người xử lý', 'Loại case', 'Vụ việc hỗ trợ', 'Ngày tiếp nhận', 'Ngày hoàn thành', 'Trạng thái']
+            ['STT', 'Số case', 'Người yêu cầu', 'Người xử lý', 'Loại case', 'Vụ việc hỗ trợ', 'Ghi chú', 'Ngày tiếp nhận', 'Ngày hoàn thành', 'Trạng thái']
         ];
         
         // Thêm dữ liệu từ các row
@@ -2814,6 +2835,7 @@ $flash_messages = getFlashMessages();
                 row.handler_name,
                 row.case_type,
                 row.issue_title,
+                row.notes,
                 row.start_date,
                 row.due_date,
                 row.status
@@ -2843,7 +2865,7 @@ $flash_messages = getFlashMessages();
         
         // Định dạng dữ liệu (các dòng còn lại)
         for (var row = 1; row <= visibleRows.length; row++) {
-            for (var col = 0; col <= 8; col++) {
+            for (var col = 0; col <= 9; col++) {
                 var cellAddress = XLSX.utils.encode_cell({r: row, c: col});
                 if (!ws[cellAddress]) ws[cellAddress] = {};
                 ws[cellAddress].s = {
@@ -2869,6 +2891,7 @@ $flash_messages = getFlashMessages();
             { width: 20 },  // Người xử lý
             { width: 18 },  // Loại case
             { width: 35 },  // Vụ việc hỗ trợ
+            { width: 25 },  // Ghi chú
             { width: 15 },  // Ngày tiếp nhận
             { width: 15 },  // Ngày hoàn thành
             { width: 15 }   // Trạng thái

@@ -46,6 +46,7 @@ try {
                 ic.priority,
                 ic.issue_title,
                 ic.issue_description,
+                ic.notes,
                 ic.status,
                 ic.created_at,
                 ic.start_date,
@@ -118,6 +119,7 @@ try {
         'Loại case',
         'Hình thức',
         'Vụ việc hỗ trợ',
+        'Ghi chú',
         'Mô tả chi tiết',
         'Ngày tiếp nhận',
         'Ngày bắt đầu',
@@ -200,6 +202,7 @@ try {
             $case['case_type'],
             $work_type_vn,
             $case['issue_title'],
+            $case['notes'] ?? '-',
             $case['issue_description'],
             $case['created_at'] ? date('d/m/Y H:i', strtotime($case['created_at'])) : '-',
             $case['start_date'] ? date('d/m/Y', strtotime($case['start_date'])) : '-',
@@ -228,7 +231,7 @@ try {
     }
     
     // Tự động điều chỉnh chiều rộng cột
-    foreach (range('A', 'L') as $column) {
+    foreach (range('A', 'M') as $column) {
         $sheet->getColumnDimension($column)->setAutoSize(true);
     }
     
