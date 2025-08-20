@@ -508,6 +508,7 @@ $flash_messages = getFlashMessages();
                                                 <th scope="col">Loại case</th>
                                                 <th scope="col">Vụ việc hỗ trợ</th>
                                                 <th scope="col">Ghi chú</th>
+                                                <th scope="col">Mô tả chi tiết</th>
                                                 <th scope="col">Ngày tiếp nhận</th>
                                                 <th scope="col">Ngày hoàn thành</th>
                                                 <th scope="col">Trạng thái</th>
@@ -554,11 +555,21 @@ $flash_messages = getFlashMessages();
                                                         </div>
                                                     </td>
                                                     <td>
-                                                        <div class="case-notes" 
-                                                             title="<?php echo htmlspecialchars($case['notes'] ?? ''); ?>">
+                                                        <div class="case-notes">
                                                             <?php if (!empty($case['notes'])): ?>
-                                                                <span class="text-truncate d-inline-block" style="max-width: 150px;">
-                                                                    <?php echo htmlspecialchars($case['notes']); ?>
+                                                                <span class="notes-content">
+                                                                    <?php echo nl2br(htmlspecialchars($case['notes'])); ?>
+                                                                </span>
+                                                            <?php else: ?>
+                                                                <span class="text-muted">-</span>
+                                                            <?php endif; ?>
+                                                        </div>
+                                                    </td>
+                                                    <td>
+                                                        <div class="case-description">
+                                                            <?php if (!empty($case['issue_description'])): ?>
+                                                                <span class="description-content">
+                                                                    <?php echo nl2br(htmlspecialchars($case['issue_description'])); ?>
                                                                 </span>
                                                             <?php else: ?>
                                                                 <span class="text-muted">-</span>
@@ -2591,17 +2602,32 @@ $flash_messages = getFlashMessages();
             var notesCell = row.find('td:nth-child(7) .case-notes'); // Cột thứ 7 là Ghi chú
             if (notesCell.length > 0) {
                 if (formData.notes && formData.notes.trim() !== '') {
-                    notesCell.html('<span class="text-truncate d-inline-block" style="max-width: 150px;">' + 
-                                  formData.notes + '</span>');
+                    // Chuyển đổi \n thành <br> để hiển thị xuống dòng
+                    var notesWithBreaks = formData.notes.replace(/\n/g, '<br>');
+                    notesCell.html('<span class="notes-content">' + notesWithBreaks + '</span>');
                 } else {
                     notesCell.html('<span class="text-muted">-</span>');
                 }
             }
         }
         
+        // Update description column if provided
+        if (formData.issue_description !== undefined) {
+            var descriptionCell = row.find('td:nth-child(8) .case-description'); // Cột thứ 8 là Mô tả chi tiết
+            if (descriptionCell.length > 0) {
+                if (formData.issue_description && formData.issue_description.trim() !== '') {
+                    // Chuyển đổi \n thành <br> để hiển thị xuống dòng
+                    var descriptionWithBreaks = formData.issue_description.replace(/\n/g, '<br>');
+                    descriptionCell.html('<span class="description-content">' + descriptionWithBreaks + '</span>');
+                } else {
+                    descriptionCell.html('<span class="text-muted">-</span>');
+                }
+            }
+        }
+        
         // Update due_date column (Ngày hoàn thành)
         if (formData.due_date !== undefined) {
-            var dueDateCell = row.find('td:nth-child(9)'); // Cột thứ 9 là Ngày hoàn thành
+            var dueDateCell = row.find('td:nth-child(10)'); // Cột thứ 10 là Ngày hoàn thành
             if (dueDateCell.length > 0) {
                 if (formData.due_date) {
                     var dueDate = new Date(formData.due_date);
@@ -2619,7 +2645,7 @@ $flash_messages = getFlashMessages();
         
         // Update start_date column if provided
         if (formData.start_date !== undefined) {
-            var startDateCell = row.find('td:nth-child(8)'); // Cột thứ 8 là Ngày tiếp nhận
+            var startDateCell = row.find('td:nth-child(9)'); // Cột thứ 9 là Ngày tiếp nhận
             if (startDateCell.length > 0) {
                 if (formData.start_date) {
                     var startDate = new Date(formData.start_date);
@@ -2801,10 +2827,11 @@ $flash_messages = getFlashMessages();
                 handler_name: row.find('td:eq(3) div').text().trim(),
                 case_type: row.find('td:eq(4) span').text().trim(),
                 issue_title: row.find('td:eq(5) .case-title').text().trim(),
-                notes: row.find('td:eq(6) .case-notes').text().trim() || '-',
-                start_date: row.find('td:eq(7) .case-date').text().trim() || '-',
-                due_date: row.find('td:eq(8) .case-date').text().trim() || '-',
-                status: row.find('td:eq(9) .case-status').text().trim()
+                notes: row.find('td:eq(6) .case-notes .notes-content').text().trim() || row.find('td:eq(6) .case-notes').text().trim() || '-',
+                description: row.find('td:eq(7) .case-description .description-content').text().trim() || row.find('td:eq(7) .case-description').text().trim() || '-',
+                start_date: row.find('td:eq(8) .case-date').text().trim() || '-',
+                due_date: row.find('td:eq(9) .case-date').text().trim() || '-',
+                status: row.find('td:eq(10) .case-status').text().trim()
             };
             visibleRows.push(caseData);
         });
@@ -2823,7 +2850,7 @@ $flash_messages = getFlashMessages();
         
         // Tạo dữ liệu cho worksheet
         var wsData = [
-            ['STT', 'Số case', 'Người yêu cầu', 'Người xử lý', 'Loại case', 'Vụ việc hỗ trợ', 'Ghi chú', 'Ngày tiếp nhận', 'Ngày hoàn thành', 'Trạng thái']
+            ['STT', 'Số case', 'Người yêu cầu', 'Người xử lý', 'Loại case', 'Vụ việc hỗ trợ', 'Ghi chú', 'Mô tả chi tiết', 'Ngày tiếp nhận', 'Ngày hoàn thành', 'Trạng thái']
         ];
         
         // Thêm dữ liệu từ các row
@@ -2836,6 +2863,7 @@ $flash_messages = getFlashMessages();
                 row.case_type,
                 row.issue_title,
                 row.notes,
+                row.description,
                 row.start_date,
                 row.due_date,
                 row.status
@@ -2865,7 +2893,7 @@ $flash_messages = getFlashMessages();
         
         // Định dạng dữ liệu (các dòng còn lại)
         for (var row = 1; row <= visibleRows.length; row++) {
-            for (var col = 0; col <= 9; col++) {
+            for (var col = 0; col <= 10; col++) {
                 var cellAddress = XLSX.utils.encode_cell({r: row, c: col});
                 if (!ws[cellAddress]) ws[cellAddress] = {};
                 ws[cellAddress].s = {
@@ -2892,6 +2920,7 @@ $flash_messages = getFlashMessages();
             { width: 18 },  // Loại case
             { width: 35 },  // Vụ việc hỗ trợ
             { width: 25 },  // Ghi chú
+            { width: 40 },  // Mô tả chi tiết
             { width: 15 },  // Ngày tiếp nhận
             { width: 15 },  // Ngày hoàn thành
             { width: 15 }   // Trạng thái

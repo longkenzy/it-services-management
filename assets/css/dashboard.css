@@ -997,34 +997,37 @@ button:focus-visible,
 .internal-cases-table td:nth-child(1) { width: 3%; } /* STT */
 
 .internal-cases-table th:nth-child(2),
-.internal-cases-table td:nth-child(2) { width: 12%; } /* Số case */
+.internal-cases-table td:nth-child(2) { width: 9%; } /* Số case */
 
 .internal-cases-table th:nth-child(3),
 .internal-cases-table td:nth-child(3) { width: 12%; } /* Người yêu cầu */
 
 .internal-cases-table th:nth-child(4),
-.internal-cases-table td:nth-child(4) { width: 12%; } /* Người xử lý */
+.internal-cases-table td:nth-child(4) { width: 9%; } /* Người xử lý */
 
 .internal-cases-table th:nth-child(5),
 .internal-cases-table td:nth-child(5) { width: 10%; } /* Loại case */
 
 .internal-cases-table th:nth-child(6),
-.internal-cases-table td:nth-child(6) { width: 15%; } /* Vụ việc hỗ trợ */
+.internal-cases-table td:nth-child(6) { width: 11%; } /* Vụ việc hỗ trợ */
 
 .internal-cases-table th:nth-child(7),
-.internal-cases-table td:nth-child(7) { width: 12%; } /* Ghi chú */
+.internal-cases-table td:nth-child(7) { width: 10%; } /* Ghi chú */
 
 .internal-cases-table th:nth-child(8),
-.internal-cases-table td:nth-child(8) { width: 10%; } /* Ngày tiếp nhận */
+.internal-cases-table td:nth-child(8) { width: 15%; } /* Mô tả chi tiết */
 
 .internal-cases-table th:nth-child(9),
-.internal-cases-table td:nth-child(9) { width: 10%; } /* Ngày hoàn thành */
+.internal-cases-table td:nth-child(9) { width: 10%; } /* Ngày tiếp nhận */
 
 .internal-cases-table th:nth-child(10),
-.internal-cases-table td:nth-child(10) { width: 8%; } /* Trạng thái */
+.internal-cases-table td:nth-child(10) { width: 13%; } /* Ngày hoàn thành */
 
 .internal-cases-table th:nth-child(11),
-.internal-cases-table td:nth-child(11) { width: 8%; } /* Thao tác */
+.internal-cases-table td:nth-child(11) { width: 7%; } /* Trạng thái */
+
+.internal-cases-table th:nth-child(12),
+.internal-cases-table td:nth-child(12) { width: 7%; } /* Thao tác */
 
 .internal-cases-table .case-title {
     white-space: nowrap;
@@ -1067,13 +1070,29 @@ button:focus-visible,
 .internal-cases-table .case-notes {
     font-size: 0.8rem;
     color: #495057;
+    word-wrap: break-word;
+    white-space: normal;
 }
 
-.internal-cases-table .case-notes .text-truncate {
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    display: block;
+.internal-cases-table .case-notes .notes-content {
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    word-break: break-word;
+    line-height: 1.4;
+}
+
+.internal-cases-table .case-description {
+    font-size: 0.8rem;
+    color: #495057;
+    word-wrap: break-word;
+    white-space: normal;
+}
+
+.internal-cases-table .case-description .description-content {
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    word-break: break-word;
+    line-height: 1.4;
 }
 
 .internal-cases-table .action-buttons {
