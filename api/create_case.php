@@ -70,12 +70,12 @@ try {
     $current_user_id = getCurrentUserId();
     $requester_id = $input['requester_id'];
     $handler_id = $input['handler_id'];
-    $case_type = $input['case_type'];
+    $case_type = trim($input['case_type']);
     $priority = $input['priority'] ?? 'onsite';
-    $issue_title = $input['issue_title'];
-    $issue_description = $input['issue_description'];
+    $issue_title = trim($input['issue_title']);
+    $issue_description = trim($input['issue_description']);
     $status = $input['status'];
-    $notes = $input['notes'] ?? '';
+    $notes = trim($input['notes'] ?? '');
     $start_date = !empty($input['start_date']) ? $input['start_date'] : null;
     $due_date = !empty($input['due_date']) ? $input['due_date'] : null;
     $transferred_by = 'Trần Nguyễn Anh Khoa';

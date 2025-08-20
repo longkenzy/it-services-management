@@ -1075,7 +1075,7 @@ button:focus-visible,
 }
 
 .internal-cases-table .case-notes .notes-content {
-    white-space: pre-wrap;
+    white-space: normal;
     word-wrap: break-word;
     word-break: break-word;
     line-height: 1.4;
@@ -1089,7 +1089,7 @@ button:focus-visible,
 }
 
 .internal-cases-table .case-description .description-content {
-    white-space: pre-wrap;
+    white-space: normal;
     word-wrap: break-word;
     word-break: break-word;
     line-height: 1.4;
