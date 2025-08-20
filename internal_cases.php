@@ -550,15 +550,15 @@ $flash_messages = getFlashMessages();
                                                     </td>
                                                     <td>
                                                         <div class="case-title" 
-                                                             title="<?php echo htmlspecialchars($case['issue_title']); ?>">
-                                                            <?php echo htmlspecialchars($case['issue_title']); ?>
+                                                             title="<?php echo htmlspecialchars(trim($case['issue_title'])); ?>">
+                                                            <?php echo htmlspecialchars(trim($case['issue_title'])); ?>
                                                         </div>
                                                     </td>
                                                     <td>
                                                         <div class="case-notes">
-                                                            <?php if (!empty($case['notes'])): ?>
+                                                            <?php if (!empty(trim($case['notes']))): ?>
                                                                 <span class="notes-content">
-                                                                    <?php echo nl2br(htmlspecialchars($case['notes'])); ?>
+                                                                    <?php echo htmlspecialchars(trim($case['notes'])); ?>
                                                                 </span>
                                                             <?php else: ?>
                                                                 <span class="text-muted">-</span>
@@ -567,9 +567,9 @@ $flash_messages = getFlashMessages();
                                                     </td>
                                                     <td>
                                                         <div class="case-description">
-                                                            <?php if (!empty($case['issue_description'])): ?>
+                                                            <?php if (!empty(trim($case['issue_description']))): ?>
                                                                 <span class="description-content">
-                                                                    <?php echo nl2br(htmlspecialchars($case['issue_description'])); ?>
+                                                                    <?php echo htmlspecialchars(trim($case['issue_description'])); ?>
                                                                 </span>
                                                             <?php else: ?>
                                                                 <span class="text-muted">-</span>
@@ -2602,9 +2602,7 @@ $flash_messages = getFlashMessages();
             var notesCell = row.find('td:nth-child(7) .case-notes'); // Cột thứ 7 là Ghi chú
             if (notesCell.length > 0) {
                 if (formData.notes && formData.notes.trim() !== '') {
-                    // Chuyển đổi \n thành <br> để hiển thị xuống dòng
-                    var notesWithBreaks = formData.notes.replace(/\n/g, '<br>');
-                    notesCell.html('<span class="notes-content">' + notesWithBreaks + '</span>');
+                    notesCell.html('<span class="notes-content">' + formData.notes.trim() + '</span>');
                 } else {
                     notesCell.html('<span class="text-muted">-</span>');
                 }
@@ -2616,9 +2614,7 @@ $flash_messages = getFlashMessages();
             var descriptionCell = row.find('td:nth-child(8) .case-description'); // Cột thứ 8 là Mô tả chi tiết
             if (descriptionCell.length > 0) {
                 if (formData.issue_description && formData.issue_description.trim() !== '') {
-                    // Chuyển đổi \n thành <br> để hiển thị xuống dòng
-                    var descriptionWithBreaks = formData.issue_description.replace(/\n/g, '<br>');
-                    descriptionCell.html('<span class="description-content">' + descriptionWithBreaks + '</span>');
+                    descriptionCell.html('<span class="description-content">' + formData.issue_description.trim() + '</span>');
                 } else {
                     descriptionCell.html('<span class="text-muted">-</span>');
                 }

@@ -129,8 +129,14 @@ try {
                 }
             }
             
+            // Trim text fields to remove leading/trailing whitespace
+            $value = $input[$field];
+            if (in_array($field, ['case_type', 'issue_title', 'issue_description', 'notes'])) {
+                $value = trim($value);
+            }
+            
             $updates[] = "$field = ?";
-            $params[] = $input[$field];
+            $params[] = $value;
         }
     }
     
