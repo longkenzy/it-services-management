@@ -231,7 +231,7 @@ try {
     }
     
     // Tự động điều chỉnh chiều rộng cột
-    foreach (range('A', 'M') as $column) {
+    foreach (range('A', 'N') as $column) {
         $sheet->getColumnDimension($column)->setAutoSize(true);
     }
     
