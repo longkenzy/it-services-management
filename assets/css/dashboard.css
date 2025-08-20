@@ -1009,19 +1009,22 @@ button:focus-visible,
 .internal-cases-table td:nth-child(5) { width: 10%; } /* Loại case */
 
 .internal-cases-table th:nth-child(6),
-.internal-cases-table td:nth-child(6) { width: 18%; } /* Vụ việc hỗ trợ */
+.internal-cases-table td:nth-child(6) { width: 15%; } /* Vụ việc hỗ trợ */
 
 .internal-cases-table th:nth-child(7),
-.internal-cases-table td:nth-child(7) { width: 12%; } /* Ngày tiếp nhận */
+.internal-cases-table td:nth-child(7) { width: 12%; } /* Ghi chú */
 
 .internal-cases-table th:nth-child(8),
-.internal-cases-table td:nth-child(8) { width: 12%; } /* Ngày hoàn thành */
+.internal-cases-table td:nth-child(8) { width: 10%; } /* Ngày tiếp nhận */
 
 .internal-cases-table th:nth-child(9),
-.internal-cases-table td:nth-child(9) { width: 8%; } /* Trạng thái */
+.internal-cases-table td:nth-child(9) { width: 10%; } /* Ngày hoàn thành */
 
 .internal-cases-table th:nth-child(10),
-.internal-cases-table td:nth-child(10) { width: 8%; } /* Thao tác */
+.internal-cases-table td:nth-child(10) { width: 8%; } /* Trạng thái */
+
+.internal-cases-table th:nth-child(11),
+.internal-cases-table td:nth-child(11) { width: 8%; } /* Thao tác */
 
 .internal-cases-table .case-title {
     white-space: nowrap;
@@ -1059,6 +1062,18 @@ button:focus-visible,
     font-size: 0.8rem;
     color: #6c757d;
     white-space: nowrap;
+}
+
+.internal-cases-table .case-notes {
+    font-size: 0.8rem;
+    color: #495057;
+}
+
+.internal-cases-table .case-notes .text-truncate {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: block;
 }
 
 .internal-cases-table .action-buttons {
